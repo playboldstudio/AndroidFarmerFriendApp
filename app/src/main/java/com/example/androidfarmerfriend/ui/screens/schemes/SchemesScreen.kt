@@ -29,6 +29,7 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
     val schemes by viewModel.schemesState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
     var selectedFilter by remember { mutableStateOf("அனைத்து") }
 
@@ -105,14 +106,28 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             Text("இணையத்தில் தேடு")
         }
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(filteredSchemes) { scheme ->
-                SchemeItem(scheme, onSearch = { query ->
-                    WebSearchUtil.search(context, query)
-                })
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = FarmerGreenPrimary)
+            }
+        } else if (filteredSchemes.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("திட்டங்கள் எதுவும் இல்லை", color = GrayText)
+                }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(filteredSchemes) { scheme ->
+                    SchemeItem(scheme, onSearch = { query ->
+                        WebSearchUtil.search(context, query)
+                    })
+                }
             }
         }
     }

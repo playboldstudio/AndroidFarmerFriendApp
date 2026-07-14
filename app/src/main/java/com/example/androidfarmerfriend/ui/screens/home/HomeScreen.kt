@@ -31,10 +31,7 @@ import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.navigation.Screen
-import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
-import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
-import com.example.androidfarmerfriend.ui.theme.GrayText
-import com.example.androidfarmerfriend.ui.theme.WeatherYellow
+import com.example.androidfarmerfriend.ui.theme.*
 
 @Composable
 fun HomeScreen(
@@ -179,12 +176,12 @@ data class QuickActionItem(val title: String, val icon: ImageVector, val color: 
 @Composable
 fun QuickAccessGrid(onNavigate: (String) -> Unit = {}) {
     val items = listOf(
-        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, Color(0xFF4CAF50), Screen.Market.route),
-        QuickActionItem("வானிலை", Icons.Default.WbCloudy, Color(0xFF2196F3), Screen.Weather.route),
-        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, Color(0xFF8BC34A), Screen.Schemes.route),
-        QuickActionItem("நோய்கள்", Icons.Default.BugReport, Color(0xFFFF9800), Screen.Disease.route),
-        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, Color(0xFF9C27B0), Screen.Alerts.route),
-        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548), Screen.CropNotes.route)
+        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, FarmerGreenSecondary, Screen.Market.route),
+        QuickActionItem("வானிலை", Icons.Default.WbCloudy, WeatherBlue, Screen.Weather.route),
+        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, SchemeLightGreen, Screen.Schemes.route),
+        QuickActionItem("நோய்கள்", Icons.Default.BugReport, DiseaseOrange, Screen.Disease.route),
+        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, AlertPurple, Screen.Alerts.route),
+        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, CropNotesBrown, Screen.CropNotes.route)
     )
 
     LazyVerticalGrid(

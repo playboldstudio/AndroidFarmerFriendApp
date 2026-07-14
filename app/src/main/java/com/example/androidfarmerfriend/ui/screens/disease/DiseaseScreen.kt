@@ -13,7 +13,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +29,7 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
     val diseases by viewModel.diseasesState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
     var selectedFilter by remember { mutableStateOf("அனைத்து") }
 
@@ -103,14 +103,28 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             Text("இணையத்தில் தேடு")
         }
 
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(diseases) { disease ->
-                DiseaseItem(disease, onSearch = { query ->
-                    WebSearchUtil.search(context, query)
-                })
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = FarmerGreenPrimary)
+            }
+        } else if (diseases.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("நோய்கள் எதுவும் இல்லை", color = GrayText)
+                }
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(diseases) { disease ->
+                    DiseaseItem(disease, onSearch = { query ->
+                        WebSearchUtil.search(context, query)
+                    })
+                }
             }
         }
     }
@@ -133,7 +147,7 @@ fun DiseaseItem(disease: Disease, onSearch: (String) -> Unit) {
                 shape = MaterialTheme.shapes.medium
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.BugReport, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(28.dp))
+                    Icon(Icons.Default.BugReport, contentDescription = null, tint = DiseaseOrange, modifier = Modifier.size(28.dp))
                 }
             }
 

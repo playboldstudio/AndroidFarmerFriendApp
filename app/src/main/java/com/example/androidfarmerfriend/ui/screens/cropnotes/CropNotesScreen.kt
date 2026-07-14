@@ -29,6 +29,7 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val notes by viewModel.cropNotesState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
     val context = LocalContext.current
     var expandedNoteId by remember { mutableStateOf<Int?>(null) }
     var selectedCrop by remember { mutableStateOf("அனைத்து") }
@@ -122,7 +123,11 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             Text("இணையத்தில் தேடு")
         }
 
-        if (filteredNotes.isEmpty()) {
+        if (isLoading) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = FarmerGreenPrimary)
+            }
+        } else if (filteredNotes.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
