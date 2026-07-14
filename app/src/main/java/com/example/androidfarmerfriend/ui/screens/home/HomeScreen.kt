@@ -157,9 +157,9 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                WeatherStatItem(label = "மழை", value = "20%", icon = Icons.Default.WaterDrop)
-                WeatherStatItem(label = "ஈரப்பதம்", value = "65%", icon = Icons.Default.Opacity)
-                WeatherStatItem(label = "காற்று", value = "12 km/h", icon = Icons.Default.Air)
+                WeatherStatItem(label = "மழை", value = weather.rainChance, icon = Icons.Default.WaterDrop)
+                WeatherStatItem(label = "ஈரப்பதம்", value = weather.humidity, icon = Icons.Default.Opacity)
+                WeatherStatItem(label = "காற்று", value = weather.windSpeed, icon = Icons.Default.Air)
             }
         }
     }

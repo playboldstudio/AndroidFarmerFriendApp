@@ -3,10 +3,16 @@ package com.example.androidfarmerfriend.data.model
 data class Crop(
     val id: Int,
     val name: String,
+    val nameEng: String = "",
     val price: String,
+    val priceValue: Double = 0.0,
     val trend: Double,
     val category: String,
-    val imageUrl: String = ""
+    val units: String = "kg",
+    val imageUrl: String = "",
+    val prevPrice: Double? = null,
+    val priceDiff: Double? = null,
+    val priceDiffPercent: Double? = null
 )
 
 data class WeatherInfo(
@@ -14,16 +20,18 @@ data class WeatherInfo(
     val condition: String,
     val humidity: String,
     val windSpeed: String,
-    val windDirection: String,
+    val windDirection: String = "SW",
     val rainChance: String,
     val location: String,
-    val highLow: String = "35° / 25°"
+    val highLow: String = "35° / 25°",
+    val feelsLike: String = "",
+    val visibility: String = ""
 )
 
 data class ForecastDay(
     val day: String,
     val temp: String,
-    val icon: String // In real app, this would be an ID or URL
+    val icon: String
 )
 
 data class QuickAction(
