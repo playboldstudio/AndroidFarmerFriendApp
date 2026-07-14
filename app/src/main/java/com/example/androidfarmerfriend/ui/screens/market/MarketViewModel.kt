@@ -17,6 +17,9 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     private val _selectedFilter = MutableStateFlow("காய்கறிகள்")
     val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
 
@@ -35,9 +38,11 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
     fun onFilterSelected(filter: String) {
         _selectedFilter.value = filter
         _searchQuery.value = ""
+        _error.value = null
         viewModelScope.launch {
             _isLoading.value = true
             _cropsState.value = emptyList()
+            _error.value = null
             try {
                 val crops = when (filter) {
                     "காய்கறிகள்" -> repository.getVegetablePrices()
@@ -48,10 +53,16 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                 }
                 _allCrops.value = crops
                 _cropsState.value = crops
+            } catch (e: Exception) {
+                _error.value = e.message ?: "தரவுகளை ஏற்ற முடியவில்லை"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun retry() {
+        onFilterSelected(_selectedFilter.value)
     }
 
     private fun applyLocalFilter() {

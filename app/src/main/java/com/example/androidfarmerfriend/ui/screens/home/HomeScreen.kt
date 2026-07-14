@@ -39,6 +39,8 @@ fun HomeScreen(
     viewModel: HomeViewModel = viewModel()
 ) {
     val weather by viewModel.weatherState.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
 
     Column(
         modifier = Modifier
@@ -59,8 +61,18 @@ fun HomeScreen(
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        weather?.let {
-            WeatherSummaryCard(it)
+        when {
+            isLoading -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = FarmerGreenPrimary, modifier = Modifier.size(32.dp))
+            }
+            error != null -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(24.dp))
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text("வானிலை தரவு இல்லை", color = GrayText, style = MaterialTheme.typography.bodySmall)
+                }
+            }
+            weather != null -> WeatherSummaryCard(weather!!)
         }
         
         Spacer(modifier = Modifier.height(24.dp))

@@ -30,6 +30,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
     val diseases by viewModel.diseasesState.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     val context = LocalContext.current
     var selectedFilter by remember { mutableStateOf("அனைத்து") }
 
@@ -103,7 +104,21 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             Text("இணையத்தில் தேடு")
         }
 
-        if (isLoading) {
+        if (error != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("நோய் தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(error ?: "", color = GrayText, style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.retry() }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
+                        Text("மீண்டும் முயற்சிக்க")
+                    }
+                }
+            }
+        } else if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = FarmerGreenPrimary)
             }

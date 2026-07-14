@@ -13,13 +13,32 @@ class HomeViewModel(private val repository: FarmerRepository = FarmerRepository(
     private val _weatherState = MutableStateFlow<WeatherInfo?>(null)
     val weatherState: StateFlow<WeatherInfo?> = _weatherState.asStateFlow()
 
+    private val _isLoading = MutableStateFlow(false)
+    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
+
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     init {
         loadData()
     }
 
     private fun loadData() {
         viewModelScope.launch {
-            _weatherState.value = repository.getWeather()
+            _isLoading.value = true
+            _error.value = null
+            try {
+                _weatherState.value = repository.getWeather()
+            } catch (e: Exception) {
+                _error.value = e.message ?: "வானிலை தரவுகளை ஏற்ற முடியவில்லை"
+                _weatherState.value = null
+            } finally {
+                _isLoading.value = false
+            }
         }
+    }
+
+    fun retry() {
+        loadData()
     }
 }

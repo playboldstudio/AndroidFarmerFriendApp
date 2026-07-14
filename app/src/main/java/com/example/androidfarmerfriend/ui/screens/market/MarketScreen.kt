@@ -26,6 +26,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val crops by viewModel.cropsState.collectAsState()
     val selectedCategory by viewModel.selectedFilter.collectAsState()
     val isLoading by viewModel.isLoading.collectAsState()
+    val error by viewModel.error.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
 
     Column(
@@ -74,7 +75,21 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        if (isLoading) {
+        if (error != null) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    Text("தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(error ?: "", color = GrayText, style = MaterialTheme.typography.bodySmall)
+                    Spacer(modifier = Modifier.height(16.dp))
+                    Button(onClick = { viewModel.retry() }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
+                        Text("மீண்டும் முயற்சிக்க")
+                    }
+                }
+            }
+        } else if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = FarmerGreenPrimary)
             }

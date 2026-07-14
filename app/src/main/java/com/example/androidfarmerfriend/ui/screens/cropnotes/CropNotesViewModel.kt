@@ -16,6 +16,9 @@ class CropNotesViewModel(private val repository: FarmerRepository = FarmerReposi
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -26,12 +29,19 @@ class CropNotesViewModel(private val repository: FarmerRepository = FarmerReposi
     private fun loadData() {
         viewModelScope.launch {
             _isLoading.value = true
+            _error.value = null
             try {
                 _cropNotesState.value = repository.getCropNotes()
+            } catch (e: Exception) {
+                _error.value = e.message ?: "பயிர் குறிப்புகளை ஏற்ற முடியவில்லை"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun retry() {
+        loadData()
     }
 
     fun onSearchQueryChanged(query: String) {

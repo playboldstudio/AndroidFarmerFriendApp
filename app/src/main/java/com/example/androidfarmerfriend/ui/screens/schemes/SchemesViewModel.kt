@@ -16,6 +16,9 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _isLoading = MutableStateFlow(false)
     val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
 
+    private val _error = MutableStateFlow<String?>(null)
+    val error: StateFlow<String?> = _error.asStateFlow()
+
     private val _searchQuery = MutableStateFlow("")
     val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
 
@@ -26,12 +29,19 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
     private fun loadData() {
         viewModelScope.launch {
             _isLoading.value = true
+            _error.value = null
             try {
                 _schemesState.value = repository.getSchemes()
+            } catch (e: Exception) {
+                _error.value = e.message ?: "திட்டங்களை ஏற்ற முடியவில்லை"
             } finally {
                 _isLoading.value = false
             }
         }
+    }
+
+    fun retry() {
+        loadData()
     }
 
     fun onSearchQueryChanged(query: String) {
