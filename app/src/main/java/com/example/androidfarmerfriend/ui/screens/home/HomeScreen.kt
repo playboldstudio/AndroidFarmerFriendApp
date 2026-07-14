@@ -1,0 +1,190 @@
+package com.example.androidfarmerfriend.ui.screens.home
+
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.model.WeatherInfo
+import com.example.androidfarmerfriend.ui.components.FarmerCard
+import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.GrayText
+import com.example.androidfarmerfriend.ui.theme.WeatherYellow
+
+@Composable
+fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+    val weather by viewModel.weatherState.collectAsState()
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background)
+            .padding(16.dp)
+    ) {
+        ScreenHeader(
+            title = "வணக்கம், விவசாயி! 👋",
+            subtitle = weather?.location ?: "Namakkal, Tamil Nadu",
+            isHome = true,
+            showSearch = false
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        weather?.let {
+            WeatherSummaryCard(it)
+        }
+        
+        Spacer(modifier = Modifier.height(24.dp))
+        
+        Text(
+            text = "விரைவு அணுகல்",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            modifier = Modifier.padding(bottom = 16.dp),
+            color = MaterialTheme.colorScheme.onBackground
+        )
+        
+        QuickAccessGrid()
+    }
+}
+
+@Composable
+fun WeatherSummaryCard(weather: WeatherInfo) {
+    FarmerCard {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.Default.WbSunny, 
+                    contentDescription = null, 
+                    modifier = Modifier.size(44.dp),
+                    tint = WeatherYellow
+                )
+                Spacer(modifier = Modifier.width(16.dp))
+                Column {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = weather.temperature, 
+                            style = MaterialTheme.typography.headlineMedium, 
+                            fontWeight = FontWeight.Bold,
+                            fontSize = 32.sp,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(
+                            text = weather.condition, 
+                            style = MaterialTheme.typography.titleMedium,
+                            color = MaterialTheme.colorScheme.onSurface
+                        )
+                    }
+                    Text(
+                        text = "நாளை 25° | அதிகபட்சம் 33°", 
+                        style = MaterialTheme.typography.bodySmall, 
+                        color = GrayText
+                    )
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(24.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround
+            ) {
+                WeatherStatItem(label = "மழை", value = "20%", icon = Icons.Default.WaterDrop)
+                WeatherStatItem(label = "ஈரப்பதம்", value = "65%", icon = Icons.Default.Opacity)
+                WeatherStatItem(label = "காற்று", value = "12 km/h", icon = Icons.Default.Air)
+            }
+        }
+    }
+}
+
+@Composable
+fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = GrayText, fontSize = 10.sp)
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(text = value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color)
+
+@Composable
+fun QuickAccessGrid() {
+    val items = listOf(
+        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, Color(0xFF4CAF50)),
+        QuickActionItem("வானிலை", Icons.Default.WbCloudy, Color(0xFF2196F3)),
+        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, Color(0xFF8BC34A)),
+        QuickActionItem("நோய்கள்", Icons.Default.BugReport, Color(0xFFFF9800)),
+        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, Color(0xFF9C27B0)),
+        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548))
+    )
+
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(24.dp),
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        items(items) { item ->
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.clickable { }
+            ) {
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = CircleShape,
+                    shadowElevation = 1.dp,
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
+                        Icon(item.icon, contentDescription = item.title, tint = item.color, modifier = Modifier.size(32.dp))
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = item.title,
+                    style = MaterialTheme.typography.labelSmall,
+                    textAlign = TextAlign.Center,
+                    maxLines = 2,
+                    fontSize = 12.sp,
+                    color = MaterialTheme.colorScheme.onBackground,
+                    lineHeight = 16.sp,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun HomeScreenPreview() {
+    AndroidFarmerFriendTheme {
+        HomeScreen()
+    }
+}
