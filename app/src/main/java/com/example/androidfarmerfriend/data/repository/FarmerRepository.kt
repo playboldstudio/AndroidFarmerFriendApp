@@ -44,6 +44,19 @@ class FarmerRepository {
         }
     }
 
+    suspend fun getEggPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getLatestEggPrices(location)
+            if (response.success && response.data?.prices != null) {
+                response.data.prices!!.mapNotNull { it.toCrop() }
+            } else {
+                getEggFallback()
+            }
+        } catch (e: Exception) {
+            getEggFallback()
+        }
+    }
+
     private fun getWeatherFallback(): WeatherInfo = WeatherInfo(
         temperature = "32°C",
         condition = "Partly Cloudy",
@@ -54,12 +67,24 @@ class FarmerRepository {
         location = "Namakkal, Tamil Nadu"
     )
 
+    private fun getEggFallback(): List<Crop> = listOf(
+        Crop(6, "Chicken Egg", "Chicken Egg", "₹7 / piece", 7.0, 0.5, "egg", units = "piece"),
+        Crop(7, "Chicken Egg (Tray)", "Chicken Egg Tray", "₹180 / tray", 180.0, -2.0, "egg", units = "tray (30 eggs)"),
+        Crop(8, "Country Egg", "Country Egg", "₹10 / piece", 10.0, 1.2, "egg", units = "piece"),
+        Crop(9, "Duck Egg", "Duck Egg", "₹12 / piece", 12.0, 0.8, "egg", units = "piece")
+    )
+
     private fun getCropsFallback(): List<Crop> = listOf(
         Crop(1, "தக்காளி", "Tomato", "₹28 / kg", 28.0, 4.2, "vegetable"),
         Crop(2, "வெங்காயம்", "Onion", "₹22 / kg", 22.0, -1.3, "vegetable"),
         Crop(3, "மிளகாய்", "Chilli", "₹60 / kg", 60.0, 2.1, "vegetable"),
         Crop(4, "உருளைக்கிழங்கு", "Potato", "₹18 / kg", 18.0, -0.5, "vegetable"),
-        Crop(5, "கத்தரிக்காய்", "Eggplant", "₹32 / kg", 32.0, 1.8, "vegetable")
+        Crop(5, "கத்தரிக்காய்", "Eggplant", "₹32 / kg", 32.0, 1.8, "vegetable"),
+        Crop(10, "ஆப்பிள்", "Apple", "₹120 / kg", 120.0, 3.0, "fruit"),
+        Crop(11, "வாழைப்பழம்", "Banana", "₹40 / dozen", 40.0, -1.0, "fruit"),
+        Crop(12, "மாம்பழம்", "Mango", "₹80 / kg", 80.0, 5.5, "fruit"),
+        Crop(13, "நெல்", "Paddy", "₹2,200 / quintal", 2200.0, 1.2, "grain"),
+        Crop(14, "கோதுமை", "Wheat", "₹2,500 / quintal", 2500.0, -0.8, "grain")
     )
 
     fun getAlerts(): List<Alert> = listOf(
@@ -75,6 +100,15 @@ class FarmerRepository {
         Scheme(4, "விதை மானியம் திட்டம்", "உயர் விளைச்சல் ரக விதைகள் மானிய விலையில்", "மத்திய அரசு")
     )
 
+    fun getCropNotes(): List<CropNote> = listOf(
+        CropNote(1, "தக்காளி", "நடவு செய்வது", "தக்காளி நாற்றுகளை 60×45 செ.மீ இடைவெளியில் நட வேண்டும். அதிக மகசூலுக்கு சூரிய ஒளி தேவை.", "கார்"),
+        CropNote(2, "தக்காளி", "நீர் பாசனம்", "வாரத்திற்கு 2-3 முறை நீர் பாய்ச்சவும். சொட்டு நீர் பாசனம் சிறந்தது.", "கார்"),
+        CropNote(3, "வெங்காயம்", "நடவு முறை", "வெங்காய விதைகளை 15×10 செ.மீ இடைவெளியில் விதைக்கவும். மணல் கலந்த மண் சிறந்தது.", "திருப்பூர்"),
+        CropNote(4, "வெங்காயம்", "உர மேலாண்மை", "ஏக்கருக்கு 60 கிலோ நைட்ரஜன், 30 கிலோ பாஸ்பரஸ், 30 கிலோ பொட்டாஷ் இடவும்.", "திருப்பூர்"),
+        CropNote(5, "மிளகாய்", "நோய் தடுப்பு", "இலை கருகல் நோய் தடுக்கு 14 நாட்களுக்கு ஒருமுறை இயற்கை பூச்சிக்கொல்லி தெளிக்கவும்.", "மே-சூன்"),
+        CropNote(6, "உருளைக்கிழங்கு", "சேமிப்பு முறை", "உருளைக்கிழங்கை குளிர்ந்த, இருண்ட இடத்தில் சேமிக்கவும். நேரடி சூரிய ஒளி தவிர்க்கவும்.", "தற்போது")
+    )
+
     fun getDiseases(): List<Disease> = listOf(
         Disease(1, "இலை கருகல் நோய்", "தக்காளி"),
         Disease(2, "பூஞ்சை நோய்", "வெங்காயம்"),
@@ -82,6 +116,32 @@ class FarmerRepository {
         Disease(4, "வேர் அழுகல்", "நிலக்கடலை"),
         Disease(5, "மஞ்சள் வைரஸ்", "பயறு")
     )
+
+    private fun com.example.androidfarmerfriend.data.api.EggPriceDto.toCrop(): Crop? {
+        val name = eggType ?: return null
+        val priceVal = when (val p = price) {
+            is Double -> p
+            is String -> p.toDoubleOrNull() ?: 0.0
+            is Number -> p.toDouble()
+            else -> 0.0
+        }
+        val diffPctVal = when (val d = priceDiffPercent) {
+            is Double -> d
+            is String -> d.toDoubleOrNull()
+            is Number -> d.toDouble()
+            else -> null
+        }
+        return Crop(
+            id = id?.hashCode() ?: name.hashCode(),
+            name = name,
+            nameEng = name,
+            price = "₹${"%.0f".format(priceVal)} / ${units ?: "piece"}",
+            priceValue = priceVal,
+            trend = diffPctVal ?: 0.0,
+            category = "egg",
+            units = units ?: "piece"
+        )
+    }
 
     private fun com.example.androidfarmerfriend.data.api.MarketPriceDto.toCrop(): Crop? {
         val nameEng = productNameEng ?: return null

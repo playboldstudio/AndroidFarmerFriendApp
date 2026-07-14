@@ -5,8 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowDownward
-import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -25,7 +24,7 @@ import com.example.androidfarmerfriend.ui.theme.*
 @Composable
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val crops by viewModel.cropsState.collectAsState()
-    var selectedCategory by remember { mutableStateOf("காய்கறிகள்") }
+    val selectedCategory by viewModel.selectedFilter.collectAsState()
 
     Column(
         modifier = Modifier
@@ -51,19 +50,25 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         )
         
         FilterChipGroup(
-            filters = listOf("காய்கறிகள்", "பழங்கள்", "தானியங்கள்"),
+            filters = listOf("காய்கறிகள்", "பழங்கள்", "தானியங்கள்", "முட்டை"),
             selectedFilter = selectedCategory,
-            onFilterSelected = { selectedCategory = it }
+            onFilterSelected = { viewModel.onFilterSelected(it) }
         )
         
         Spacer(modifier = Modifier.height(8.dp))
         
-        LazyColumn(
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-            contentPadding = PaddingValues(bottom = 16.dp)
-        ) {
-            items(crops) { crop ->
-                MarketCropItem(crop)
+        if (crops.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Text("தரவுகள் ஏதுமில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+            }
+        } else {
+            LazyColumn(
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+                contentPadding = PaddingValues(bottom = 16.dp)
+            ) {
+                items(crops) { crop ->
+                    MarketCropItem(crop)
+                }
             }
         }
     }

@@ -184,7 +184,7 @@ fun QuickAccessGrid(onNavigate: (String) -> Unit = {}) {
         QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, Color(0xFF8BC34A), Screen.Schemes.route),
         QuickActionItem("நோய்கள்", Icons.Default.BugReport, Color(0xFFFF9800), Screen.Disease.route),
         QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, Color(0xFF9C27B0), Screen.Alerts.route),
-        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548), Screen.Home.route)
+        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548), Screen.CropNotes.route)
     )
 
     LazyVerticalGrid(

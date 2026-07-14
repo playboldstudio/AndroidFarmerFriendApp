@@ -43,6 +43,26 @@ data class MarketPriceDto(
     @SerializedName("updatedAt") val updatedAt: String?
 )
 
+data class EggPricesResponse(
+    val location: String?,
+    val count: Int?,
+    val prices: List<EggPriceDto>?
+)
+
+data class EggPriceDto(
+    val id: String?,
+    val eggType: String?,
+    val location: String?,
+    val price: Any?,
+    val retailPrice: Any?,
+    val units: String?,
+    val gradeType: String?,
+    val date: String?,
+    val prevPrice: Any?,
+    val priceDiff: Any?,
+    val priceDiffPercent: Any?
+)
+
 data class WeatherResponse(
     val id: String?,
     val location: String?,

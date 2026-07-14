@@ -32,6 +32,11 @@ interface FarmerApi {
         @Query("location") location: String = "chennai"
     ): ApiResponse<PriceListResponse>
 
+    @GET("api/egg-prices/latest")
+    suspend fun getLatestEggPrices(
+        @Query("location") location: String = "chennai"
+    ): ApiResponse<EggPricesResponse>
+
     @GET("api/weather")
     suspend fun getWeather(
         @Query("lat") lat: Double = 13.0827,

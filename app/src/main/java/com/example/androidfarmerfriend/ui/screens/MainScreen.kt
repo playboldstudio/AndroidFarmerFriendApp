@@ -27,6 +27,7 @@ import com.example.androidfarmerfriend.ui.screens.weather.WeatherScreen
 import com.example.androidfarmerfriend.ui.screens.profile.ProfileScreen
 import com.example.androidfarmerfriend.ui.screens.disease.DiseaseScreen
 import com.example.androidfarmerfriend.ui.screens.schemes.SchemesScreen
+import com.example.androidfarmerfriend.ui.screens.cropnotes.CropNotesScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.GrayText
 
@@ -121,6 +122,7 @@ fun MainScreen() {
             composable(Screen.Profile.route) { ProfileScreen() }
             composable(Screen.Disease.route) { DiseaseScreen() }
             composable(Screen.Schemes.route) { SchemesScreen() }
+            composable(Screen.CropNotes.route) { CropNotesScreen() }
         }
     }
 }

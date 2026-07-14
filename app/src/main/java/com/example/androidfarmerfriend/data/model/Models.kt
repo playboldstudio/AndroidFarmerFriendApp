@@ -64,6 +64,14 @@ data class Disease(
     val imageUrl: String = ""
 )
 
+data class CropNote(
+    val id: Int,
+    val cropName: String,
+    val title: String,
+    val content: String,
+    val season: String = ""
+)
+
 enum class AlertType {
     PRICE, WEATHER, CROP
 }
