@@ -1,5 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.home
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -15,24 +16,31 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
 import com.example.androidfarmerfriend.ui.theme.GrayText
 import com.example.androidfarmerfriend.ui.theme.WeatherYellow
 
 @Composable
-fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
+fun HomeScreen(
+    onNavigate: (String) -> Unit = {},
+    viewModel: HomeViewModel = viewModel()
+) {
     val weather by viewModel.weatherState.collectAsState()
 
     Column(
@@ -41,6 +49,10 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
+        FarmerFriendLogo()
+
+        Spacer(modifier = Modifier.height(12.dp))
+
         ScreenHeader(
             title = "வணக்கம், விவசாயி! 👋",
             subtitle = weather?.location ?: "Namakkal, Tamil Nadu",
@@ -64,7 +76,38 @@ fun HomeScreen(viewModel: HomeViewModel = viewModel()) {
             color = MaterialTheme.colorScheme.onBackground
         )
         
-        QuickAccessGrid()
+        QuickAccessGrid(onNavigate = onNavigate)
+    }
+}
+
+@Composable
+fun FarmerFriendLogo() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.Center
+    ) {
+        Image(
+            painter = painterResource(R.mipmap.ic_launcher),
+            contentDescription = "Farmer Friend Logo",
+            modifier = Modifier.size(48.dp)
+        )
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+            Text(
+                text = "Farmer Friend",
+                style = MaterialTheme.typography.headlineSmall,
+                fontWeight = FontWeight.Bold,
+                color = FarmerGreenPrimary
+            )
+            Text(
+                text = "விவசாயி நண்பன்",
+                style = MaterialTheme.typography.bodySmall,
+                color = GrayText
+            )
+        }
     }
 }
 
@@ -131,17 +174,17 @@ fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
     }
 }
 
-data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color)
+data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val route: String)
 
 @Composable
-fun QuickAccessGrid() {
+fun QuickAccessGrid(onNavigate: (String) -> Unit = {}) {
     val items = listOf(
-        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, Color(0xFF4CAF50)),
-        QuickActionItem("வானிலை", Icons.Default.WbCloudy, Color(0xFF2196F3)),
-        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, Color(0xFF8BC34A)),
-        QuickActionItem("நோய்கள்", Icons.Default.BugReport, Color(0xFFFF9800)),
-        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, Color(0xFF9C27B0)),
-        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548))
+        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, Color(0xFF4CAF50), Screen.Market.route),
+        QuickActionItem("வானிலை", Icons.Default.WbCloudy, Color(0xFF2196F3), Screen.Weather.route),
+        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, Color(0xFF8BC34A), Screen.Schemes.route),
+        QuickActionItem("நோய்கள்", Icons.Default.BugReport, Color(0xFFFF9800), Screen.Disease.route),
+        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, Color(0xFF9C27B0), Screen.Alerts.route),
+        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, Color(0xFF795548), Screen.Home.route)
     )
 
     LazyVerticalGrid(
@@ -153,7 +196,7 @@ fun QuickAccessGrid() {
         items(items) { item ->
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.clickable { }
+                modifier = Modifier.clickable { onNavigate(item.route) }
             ) {
                 Surface(
                     modifier = Modifier.size(64.dp),
