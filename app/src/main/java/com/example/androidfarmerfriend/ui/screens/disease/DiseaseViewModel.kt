@@ -11,11 +11,18 @@ class DiseaseViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _diseasesState = MutableStateFlow<List<Disease>>(emptyList())
     val diseasesState: StateFlow<List<Disease>> = _diseasesState.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     init {
         loadData()
     }
 
     private fun loadData() {
         _diseasesState.value = repository.getDiseases()
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 }

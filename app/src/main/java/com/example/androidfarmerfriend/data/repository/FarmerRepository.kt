@@ -44,6 +44,45 @@ class FarmerRepository {
         }
     }
 
+    suspend fun getVegetablePrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getVegetablePrices(location)
+            if (response.success && response.data?.data != null) {
+                response.data.data!!.mapNotNull { it.toCrop() }
+            } else {
+                getCropsFallback().filter { it.category == "vegetable" }
+            }
+        } catch (e: Exception) {
+            getCropsFallback().filter { it.category == "vegetable" }
+        }
+    }
+
+    suspend fun getFruitPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getFruitPrices(location)
+            if (response.success && response.data?.data != null) {
+                response.data.data!!.mapNotNull { it.toCrop() }
+            } else {
+                getCropsFallback().filter { it.category == "fruit" }
+            }
+        } catch (e: Exception) {
+            getCropsFallback().filter { it.category == "fruit" }
+        }
+    }
+
+    suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+        try {
+            val response = api.getGoldPrices(location)
+            if (response.success && response.data?.data != null) {
+                response.data.data!!.mapNotNull { it.toCrop() }
+            } else {
+                getGoldFallback()
+            }
+        } catch (e: Exception) {
+            getGoldFallback()
+        }
+    }
+
     suspend fun getEggPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
         try {
             val response = api.getLatestEggPrices(location)
@@ -65,6 +104,12 @@ class FarmerRepository {
         windDirection = "SW",
         rainChance = "20%",
         location = "Namakkal, Tamil Nadu"
+    )
+
+    private fun getGoldFallback(): List<Crop> = listOf(
+        Crop(20, "Gold 24K (1g)", "Gold 24K (1g)", "₹7,200 / gram", 7200.0, 0.3, "gold", units = "gram"),
+        Crop(21, "Gold 22K (1g)", "Gold 22K (1g)", "₹6,800 / gram", 6800.0, 0.2, "gold", units = "gram"),
+        Crop(22, "Gold 18K (1g)", "Gold 18K (1g)", "₹5,400 / gram", 5400.0, -0.1, "gold", units = "gram")
     )
 
     private fun getEggFallback(): List<Crop> = listOf(

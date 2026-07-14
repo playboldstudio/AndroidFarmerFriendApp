@@ -11,11 +11,18 @@ class CropNotesViewModel(private val repository: FarmerRepository = FarmerReposi
     private val _cropNotesState = MutableStateFlow<List<CropNote>>(emptyList())
     val cropNotesState: StateFlow<List<CropNote>> = _cropNotesState.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     init {
         loadData()
     }
 
     private fun loadData() {
         _cropNotesState.value = repository.getCropNotes()
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 }

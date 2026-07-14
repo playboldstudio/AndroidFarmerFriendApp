@@ -4,17 +4,16 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandLess
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -23,20 +22,27 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
-import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
-import com.example.androidfarmerfriend.ui.theme.GrayText
-import com.example.androidfarmerfriend.ui.theme.TrendGreen
+import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @Composable
 fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val notes by viewModel.cropNotesState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val context = LocalContext.current
     var expandedNoteId by remember { mutableStateOf<Int?>(null) }
     var selectedCrop by remember { mutableStateOf("அனைத்து") }
     val crops = listOf("அனைத்து") + notes.map { it.cropName }.distinct()
 
-    val filteredNotes = if (selectedCrop == "அனைத்து") notes
-    else notes.filter { it.cropName == selectedCrop }
+    val filteredNotes = when {
+        selectedCrop != "அனைத்து" -> notes.filter { it.cropName == selectedCrop }
+        searchQuery.isNotBlank() -> notes.filter {
+            it.title.contains(searchQuery, ignoreCase = true) ||
+            it.cropName.contains(searchQuery, ignoreCase = true) ||
+            it.content.contains(searchQuery, ignoreCase = true)
+        }
+        else -> notes
+    }
 
     Column(
         modifier = Modifier
@@ -49,20 +55,47 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             subtitle = "விவசாய குறிப்புகள் மற்றும் தகவல்கள்"
         )
 
-        Spacer(modifier = Modifier.height(12.dp))
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { viewModel.onSearchQueryChanged(it) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("குறிப்புகளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = {
+                        WebSearchUtil.search(context, "விவசாய பயிர் குறிப்புகள் $searchQuery")
+                    }) {
+                        Icon(Icons.Default.OpenInBrowser, contentDescription = "இணையத்தில் தேட", tint = FarmerGreenPrimary)
+                    }
+                }
+            },
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
+        )
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
                 .horizontalScroll(rememberScrollState())
-                .padding(vertical = 4.dp)
+                .padding(vertical = 8.dp)
         ) {
             crops.forEach { crop ->
                 val isSelected = crop == selectedCrop
                 FilterChip(
                     selected = isSelected,
-                    onClick = { selectedCrop = crop },
+                    onClick = { selectedCrop = crop; expandedNoteId = null },
                     label = {
                         Text(
                             crop,
@@ -79,11 +112,23 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             }
         }
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Button(
+            onClick = { WebSearchUtil.search(context, "விவசாய பயிர் குறிப்புகள் ${if (selectedCrop != "அனைத்து") selectedCrop else ""}") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)
+        ) {
+            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("இணையத்தில் தேடு")
+        }
 
         if (filteredNotes.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("இந்த பயிருக்கு குறிப்புகள் இல்லை", color = GrayText)
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("குறிப்புகள் எதுவும் இல்லை", color = GrayText)
+                }
             }
         } else {
             LazyColumn(
@@ -95,7 +140,8 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                     CropNoteItem(
                         note = note,
                         isExpanded = isExpanded,
-                        onToggle = { expandedNoteId = if (isExpanded) null else note.id }
+                        onToggle = { expandedNoteId = if (isExpanded) null else note.id },
+                        onSearch = { query -> WebSearchUtil.search(context, query) }
                     )
                 }
             }
@@ -104,7 +150,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
 }
 
 @Composable
-fun CropNoteItem(note: CropNote, isExpanded: Boolean, onToggle: () -> Unit) {
+fun CropNoteItem(note: CropNote, isExpanded: Boolean, onToggle: () -> Unit, onSearch: (String) -> Unit) {
     FarmerCard(
         modifier = Modifier.clickable { onToggle() }
     ) {
@@ -173,6 +219,15 @@ fun CropNoteItem(note: CropNote, isExpanded: Boolean, onToggle: () -> Unit) {
                     color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
                     lineHeight = 22.sp
                 )
+                Spacer(modifier = Modifier.height(8.dp))
+                TextButton(
+                    onClick = { onSearch("பயிர் குறிப்பு ${note.cropName} ${note.title}") },
+                    modifier = Modifier.align(Alignment.End)
+                ) {
+                    Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(4.dp))
+                    Text("இணையத்தில் தேட", color = FarmerGreenPrimary, fontSize = 13.sp)
+                }
             }
         }
     }

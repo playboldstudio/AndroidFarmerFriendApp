@@ -11,11 +11,18 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _schemesState = MutableStateFlow<List<Scheme>>(emptyList())
     val schemesState: StateFlow<List<Scheme>> = _schemesState.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     init {
         loadData()
     }
 
     private fun loadData() {
         _schemesState.value = repository.getSchemes()
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
     }
 }

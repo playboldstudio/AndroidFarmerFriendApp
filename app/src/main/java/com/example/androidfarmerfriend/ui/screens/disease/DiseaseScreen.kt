@@ -1,15 +1,20 @@
 package com.example.androidfarmerfriend.ui.screens.disease
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -17,14 +22,15 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.ui.components.FarmerCard
-import com.example.androidfarmerfriend.ui.components.FilterChipGroup
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
-import com.example.androidfarmerfriend.ui.theme.GrayText
+import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @Composable
 fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
     val diseases by viewModel.diseasesState.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
+    val context = LocalContext.current
     var selectedFilter by remember { mutableStateOf("அனைத்து") }
 
     Column(
@@ -34,15 +40,25 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         ScreenHeader(title = "நோய் கண்டறிதல்")
-        
+
+        Spacer(modifier = Modifier.height(8.dp))
+
         OutlinedTextField(
-            value = "",
-            onValueChange = {},
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(vertical = 8.dp),
+            value = searchQuery,
+            onValueChange = { viewModel.onSearchQueryChanged(it) },
+            modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("நோய் பெயரைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = {
+                        WebSearchUtil.search(context, "விவசாய நோய்கள் $searchQuery")
+                    }) {
+                        Icon(Icons.Default.OpenInBrowser, contentDescription = "இணையத்தில் தேட", tint = FarmerGreenPrimary)
+                    }
+                }
+            },
+            singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
                 unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
@@ -53,29 +69,58 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 focusedTextColor = MaterialTheme.colorScheme.onSurface
             )
         )
-        
-        FilterChipGroup(
-            filters = listOf("அனைத்து", "இலை நோய்கள்", "பழ நோய்கள்"),
-            selectedFilter = selectedFilter,
-            onFilterSelected = { selectedFilter = it }
-        )
-        
-        Spacer(modifier = Modifier.height(8.dp))
-        
+
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState())
+                .padding(vertical = 8.dp)
+        ) {
+            listOf("அனைத்து", "இலை நோய்கள்", "பழ நோய்கள்").forEach { filter ->
+                val isSelected = filter == selectedFilter
+                FilterChip(
+                    selected = isSelected,
+                    onClick = { selectedFilter = filter },
+                    label = { Text(filter, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        containerColor = MaterialTheme.colorScheme.surface,
+                        selectedContainerColor = FarmerGreenPrimary,
+                        labelColor = MaterialTheme.colorScheme.onSurface,
+                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
+        }
+
+        Button(
+            onClick = { WebSearchUtil.search(context, "விவசாய பயிர் நோய்கள் மற்றும் தீர்வுகள்") },
+            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)
+        ) {
+            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("இணையத்தில் தேடு")
+        }
+
         LazyColumn(
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(bottom = 16.dp)
         ) {
             items(diseases) { disease ->
-                DiseaseItem(disease)
+                DiseaseItem(disease, onSearch = { query ->
+                    WebSearchUtil.search(context, query)
+                })
             }
         }
     }
 }
 
 @Composable
-fun DiseaseItem(disease: Disease) {
-    FarmerCard {
+fun DiseaseItem(disease: Disease, onSearch: (String) -> Unit) {
+    FarmerCard(
+        modifier = Modifier.clickable { onSearch("${disease.name} ${disease.cropAffected} நோய் தீர்வு") }
+    ) {
         Row(
             modifier = Modifier
                 .padding(12.dp)
@@ -86,26 +131,30 @@ fun DiseaseItem(disease: Disease) {
                 modifier = Modifier.size(56.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.medium
-            ) { }
-            
+            ) {
+                Box(contentAlignment = Alignment.Center) {
+                    Icon(Icons.Default.BugReport, contentDescription = null, tint = Color(0xFFFF9800), modifier = Modifier.size(28.dp))
+                }
+            }
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = disease.name, 
-                    style = MaterialTheme.typography.bodyLarge, 
+                    text = disease.name,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = disease.cropAffected, 
-                    style = MaterialTheme.typography.bodySmall, 
+                    text = disease.cropAffected,
+                    style = MaterialTheme.typography.bodySmall,
                     color = GrayText
                 )
                 Text(
-                    text = "விவரங்கள்", 
-                    style = MaterialTheme.typography.labelSmall, 
+                    text = "விவரங்கள்",
+                    style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.primary,
                     fontWeight = FontWeight.Bold,
                     modifier = Modifier.padding(top = 2.dp)

@@ -25,6 +25,8 @@ import com.example.androidfarmerfriend.ui.theme.*
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val crops by viewModel.cropsState.collectAsState()
     val selectedCategory by viewModel.selectedFilter.collectAsState()
+    val isLoading by viewModel.isLoading.collectAsState()
+    val searchQuery by viewModel.searchQuery.collectAsState()
 
     Column(
         modifier = Modifier
@@ -34,32 +36,55 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     ) {
         ScreenHeader(
             title = "மார்க்கெட் விலை",
-            showSearch = true
+            showSearch = false
         )
-        
-        Text(
-            text = "Koyambedu Market, Chennai",
-            style = MaterialTheme.typography.bodyMedium,
-            color = GrayText
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedTextField(
+            value = searchQuery,
+            onValueChange = { viewModel.onSearchQueryChanged(it) },
+            modifier = Modifier.fillMaxWidth(),
+            placeholder = { Text("பொருளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+            trailingIcon = {
+                if (searchQuery.isNotEmpty()) {
+                    IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                        Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+                    }
+                }
+            },
+            singleLine = true,
+            shape = MaterialTheme.shapes.medium,
+            colors = OutlinedTextFieldDefaults.colors(
+                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                focusedBorderColor = MaterialTheme.colorScheme.primary,
+                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                focusedContainerColor = MaterialTheme.colorScheme.surface,
+                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                focusedTextColor = MaterialTheme.colorScheme.onSurface
+            )
         )
-        Text(
-            text = "24 மே, 2025",
-            style = MaterialTheme.typography.bodySmall,
-            color = GrayText,
-            modifier = Modifier.padding(bottom = 8.dp)
-        )
-        
+
         FilterChipGroup(
-            filters = listOf("காய்கறிகள்", "பழங்கள்", "தானியங்கள்", "முட்டை"),
+            filters = listOf("காய்கறிகள்", "பழங்கள்", "தங்கம்", "முட்டை"),
             selectedFilter = selectedCategory,
             onFilterSelected = { viewModel.onFilterSelected(it) }
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
-        if (crops.isEmpty()) {
+
+        if (isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("தரவுகள் ஏதுமில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                CircularProgressIndicator(color = FarmerGreenPrimary)
+            }
+        } else if (crops.isEmpty()) {
+            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
+                    Spacer(modifier = Modifier.height(8.dp))
+                    Text("தரவுகள் ஏதுமில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                }
             }
         } else {
             LazyColumn(
@@ -88,24 +113,24 @@ fun MarketCropItem(crop: Crop) {
                 shape = androidx.compose.foundation.shape.CircleShape,
                 color = MaterialTheme.colorScheme.surfaceVariant
             ) { }
-            
+
             Spacer(modifier = Modifier.width(12.dp))
-            
+
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = crop.name, 
-                    style = MaterialTheme.typography.bodyLarge, 
+                    text = crop.name,
+                    style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
-                    text = crop.price, 
-                    style = MaterialTheme.typography.bodyMedium, 
+                    text = crop.price,
+                    style = MaterialTheme.typography.bodyMedium,
                     color = GrayText
                 )
             }
-            
+
             MarketTrendIndicator(crop.trend)
         }
     }
@@ -117,12 +142,12 @@ fun MarketTrendIndicator(trend: Double) {
     val color = if (isPositive) TrendGreen else TrendRed
     val icon = if (isPositive) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward
     val sign = if (isPositive) "+" else ""
-    
+
     Row(verticalAlignment = Alignment.CenterVertically) {
         Icon(
-            imageVector = icon, 
-            contentDescription = null, 
-            tint = color, 
+            imageVector = icon,
+            contentDescription = null,
+            tint = color,
             modifier = Modifier.size(14.dp)
         )
         Spacer(modifier = Modifier.width(2.dp))
