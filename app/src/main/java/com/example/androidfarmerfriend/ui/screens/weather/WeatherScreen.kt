@@ -16,8 +16,10 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.model.ForecastDay
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.ui.screens.home.HomeViewModel
 import com.example.androidfarmerfriend.ui.theme.*
 
@@ -49,7 +51,7 @@ fun WeatherScreen(viewModel: HomeViewModel = viewModel()) {
 fun WeatherDetailedView(weather: WeatherInfo) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Icon(
-            Icons.Default.WbSunny, 
+            weatherIconFor(weather.weatherCode),
             contentDescription = null, 
             modifier = Modifier.size(80.dp),
             tint = WeatherYellow
@@ -66,48 +68,44 @@ fun WeatherDetailedView(weather: WeatherInfo) {
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onBackground
         )
-        Text(
-            text = "நாளை 25° | அதிகபட்சம் 33°", 
-            style = MaterialTheme.typography.bodyMedium, 
-            color = GrayText
-        )
+        if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
+            Text(
+                text = "குறைந்தபட்சம் ${weather.todayLow} | அதிகபட்சம் ${weather.todayHigh}",
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrayText
+            )
+        }
         
         Spacer(modifier = Modifier.height(32.dp))
         
-        WeatherForecastRow()
-        
-        Spacer(modifier = Modifier.height(32.dp))
+        if (weather.forecast.isNotEmpty()) {
+            WeatherForecastRow(weather.forecast)
+            Spacer(modifier = Modifier.height(32.dp))
+        }
         
         WeatherDetailsList(weather)
     }
 }
 
 @Composable
-fun WeatherForecastRow() {
-    val forecast = listOf(
-        Triple("இன்று", "24°/33°", Icons.Default.Cloud),
-        Triple("நாளை", "24°/32°", Icons.Default.CloudQueue),
-        Triple("26 மே", "23°/31°", Icons.Default.WbCloudy),
-        Triple("27 மே", "24°/32°", Icons.Default.CloudQueue)
-    )
-    
+fun WeatherForecastRow(forecast: List<ForecastDay>) {
     Row(
         horizontalArrangement = Arrangement.SpaceBetween,
         modifier = Modifier.fillMaxWidth()
     ) {
         forecast.forEach { item ->
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = item.first, style = MaterialTheme.typography.labelMedium, color = GrayText)
+                Text(text = item.day, style = MaterialTheme.typography.labelMedium, color = GrayText)
                 Spacer(modifier = Modifier.height(8.dp))
                 Icon(
-                    item.third, 
+                    weatherIconFor(item.weatherCode),
                     contentDescription = null, 
                     tint = WeatherBlue, 
                     modifier = Modifier.size(28.dp)
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = item.second, 
+                    text = "${item.minTemp}/${item.maxTemp}",
                     style = MaterialTheme.typography.labelLarge, 
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground

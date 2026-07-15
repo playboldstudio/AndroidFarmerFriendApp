@@ -28,6 +28,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val searchQuery by viewModel.searchQuery.collectAsState()
+    var showSearchBar by remember { mutableStateOf(false) }
 
     Column(
         modifier = Modifier
@@ -37,35 +38,41 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     ) {
         ScreenHeader(
             title = "மார்க்கெட் விலை",
-            showSearch = false
+            isSearchActive = showSearchBar,
+            onSearchClick = {
+                showSearchBar = !showSearchBar
+                if (!showSearchBar) viewModel.onSearchQueryChanged("")
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChanged(it) },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("பொருளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
-                        Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+        if (showSearchBar) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("பொருளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+                trailingIcon = {
+                    if (searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+                        }
                     }
-                }
-            },
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface
+                },
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        )
+        }
 
         FilterChipGroup(
             filters = listOf("காய்கறிகள்", "பழங்கள்", "இறைச்சி", "தங்கம்", "முட்டை"),

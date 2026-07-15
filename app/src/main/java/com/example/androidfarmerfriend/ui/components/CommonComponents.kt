@@ -5,18 +5,39 @@ import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Cloud
+import androidx.compose.material.icons.filled.CloudQueue
+import androidx.compose.material.icons.filled.Grain
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Thunderstorm
+import androidx.compose.material.icons.filled.WbCloudy
+import androidx.compose.material.icons.filled.WbSunny
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.ui.theme.GrayText
+
+fun weatherIconFor(code: Int): ImageVector = when (code) {
+    0, 1 -> Icons.Default.WbSunny
+    2 -> Icons.Default.WbCloudy
+    3 -> Icons.Default.Cloud
+    45, 48 -> Icons.Default.CloudQueue
+    in 51..67 -> Icons.Default.Grain
+    in 71..77 -> Icons.Default.Grain
+    in 80..82 -> Icons.Default.Grain
+    in 85..86 -> Icons.Default.Grain
+    in 95..99 -> Icons.Default.Thunderstorm
+    else -> Icons.Default.WbCloudy
+}
 
 @Composable
 fun ScreenHeader(
@@ -24,7 +45,9 @@ fun ScreenHeader(
     modifier: Modifier = Modifier,
     showSearch: Boolean = true,
     subtitle: String? = null,
-    isHome: Boolean = false
+    isHome: Boolean = false,
+    isSearchActive: Boolean = false,
+    onSearchClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -47,13 +70,13 @@ fun ScreenHeader(
             
             if (showSearch) {
                 IconButton(
-                    onClick = { },
+                    onClick = { onSearchClick?.invoke() },
                     modifier = Modifier.size(24.dp)
                 ) {
                     Icon(
-                        Icons.Default.Search, 
-                        contentDescription = "Search",
-                        tint = MaterialTheme.colorScheme.onBackground,
+                        if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
+                        contentDescription = if (isSearchActive) "Close search" else "Search",
+                        tint = if (isSearchActive) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground,
                         modifier = Modifier.size(24.dp)
                     )
                 }

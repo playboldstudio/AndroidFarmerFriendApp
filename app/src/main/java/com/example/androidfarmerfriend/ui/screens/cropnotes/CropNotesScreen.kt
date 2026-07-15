@@ -33,6 +33,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val error by viewModel.error.collectAsState()
     val context = LocalContext.current
     var selectedCrop by remember { mutableStateOf("அனைத்து") }
+    var showSearchBar by remember { mutableStateOf(false) }
     val crops = listOf("அனைத்து") + notes.map { it.cropName }.distinct()
 
     val filteredNotes = when {
@@ -53,29 +54,36 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     ) {
         ScreenHeader(
             title = "பயிர் குறிப்புகள்",
-            subtitle = "விவசாய குறிப்புகள் மற்றும் தகவல்கள்"
+            subtitle = "விவசாய குறிப்புகள் மற்றும் தகவல்கள்",
+            isSearchActive = showSearchBar,
+            onSearchClick = {
+                showSearchBar = !showSearchBar
+                if (!showSearchBar) viewModel.onSearchQueryChanged("")
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChanged(it) },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("குறிப்புகளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {},
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface
+        if (showSearchBar) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("குறிப்புகளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+                trailingIcon = {},
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        )
+        }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

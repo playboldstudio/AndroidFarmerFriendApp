@@ -28,7 +28,19 @@ object ApiClient {
             .build()
     }
 
+    private val openMeteoRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ApiConfig.OPEN_METEO_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
     val api: FarmerApi by lazy {
         retrofit.create(FarmerApi::class.java)
+    }
+
+    val weatherApi: OpenMeteoApi by lazy {
+        openMeteoRetrofit.create(OpenMeteoApi::class.java)
     }
 }

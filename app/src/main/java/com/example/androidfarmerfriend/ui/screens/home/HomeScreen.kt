@@ -30,6 +30,7 @@ import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.theme.*
 
@@ -130,7 +131,7 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                 horizontalArrangement = Arrangement.Center
             ) {
                 Icon(
-                    Icons.Default.WbSunny, 
+                    weatherIconFor(weather.weatherCode),
                     contentDescription = null, 
                     modifier = Modifier.size(44.dp),
                     tint = WeatherYellow
@@ -152,11 +153,13 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                             color = MaterialTheme.colorScheme.onSurface
                         )
                     }
-                    Text(
-                        text = "நாளை 25° | அதிகபட்சம் 33°", 
-                        style = MaterialTheme.typography.bodySmall, 
-                        color = GrayText
-                    )
+                    if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
+                        Text(
+                            text = "குறைந்தபட்சம் ${weather.todayLow} | அதிகபட்சம் ${weather.todayHigh}",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GrayText
+                        )
+                    }
                 }
             }
             

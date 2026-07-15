@@ -33,6 +33,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
     val error by viewModel.error.collectAsState()
     val context = LocalContext.current
     var selectedFilter by remember { mutableStateOf("அனைத்து") }
+    var showSearchBar by remember { mutableStateOf(false) }
 
     val filteredSchemes = if (selectedFilter == "அனைத்து") schemes
     else schemes.filter { it.category == selectedFilter }
@@ -43,28 +44,37 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        ScreenHeader(title = "திட்டங்கள்")
+        ScreenHeader(
+            title = "திட்டங்கள்",
+            isSearchActive = showSearchBar,
+            onSearchClick = {
+                showSearchBar = !showSearchBar
+                if (!showSearchBar) viewModel.onSearchQueryChanged("")
+            }
+        )
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = searchQuery,
-            onValueChange = { viewModel.onSearchQueryChanged(it) },
-            modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("திட்டத்தைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {},
-            singleLine = true,
-            shape = MaterialTheme.shapes.medium,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                focusedContainerColor = MaterialTheme.colorScheme.surface,
-                unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                focusedTextColor = MaterialTheme.colorScheme.onSurface
+        if (showSearchBar) {
+            OutlinedTextField(
+                value = searchQuery,
+                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                modifier = Modifier.fillMaxWidth(),
+                placeholder = { Text("திட்டத்தைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+                trailingIcon = {},
+                singleLine = true,
+                shape = MaterialTheme.shapes.medium,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
+                    focusedBorderColor = MaterialTheme.colorScheme.primary,
+                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
+                    focusedContainerColor = MaterialTheme.colorScheme.surface,
+                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                    focusedTextColor = MaterialTheme.colorScheme.onSurface
+                )
             )
-        )
+        }
 
         Row(
             horizontalArrangement = Arrangement.spacedBy(8.dp),

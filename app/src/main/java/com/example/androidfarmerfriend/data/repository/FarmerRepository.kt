@@ -3,29 +3,52 @@ package com.example.androidfarmerfriend.data.repository
 import com.example.androidfarmerfriend.data.api.ApiClient
 import com.example.androidfarmerfriend.data.model.*
 import com.example.androidfarmerfriend.data.scraper.WebDataScraper
+import com.example.androidfarmerfriend.util.WeatherCodeMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
 class FarmerRepository {
     private val api = ApiClient.api
+    private val weatherApi = ApiClient.weatherApi
 
-    suspend fun getWeather(lat: Double = 13.0827, lon: Double = 80.2707): WeatherInfo? = withContext(Dispatchers.IO) {
-        val response = api.getWeather(lat, lon)
-        if (response.success && response.data != null) {
-            val w = response.data
-            WeatherInfo(
-                temperature = "${w.temperature?.toInt() ?: 32}°C",
-                condition = w.condition ?: "Partly Cloudy",
-                humidity = "${w.humidity?.toInt() ?: 65}%",
-                windSpeed = "${w.windSpeed?.toInt() ?: 12} km/h",
-                rainChance = "${w.rainProbability?.toInt() ?: 20}%",
-                location = "Namakkal, Tamil Nadu",
-                feelsLike = "${w.feelsLike?.toInt() ?: 30}°C",
-                visibility = "${w.visibility?.toInt() ?: 10} km"
-            )
-        } else {
-            throw Exception(response.message ?: "Failed to load weather data")
+    suspend fun getWeather(lat: Double = 11.2189, lon: Double = 78.1674): WeatherInfo? = withContext(Dispatchers.IO) {
+        val response = weatherApi.getForecast(latitude = lat, longitude = lon)
+        val current = response.current ?: throw Exception("Failed to load weather data")
+        val daily = response.daily
+
+        val forecast = buildList {
+            val times = daily?.time ?: emptyList()
+            times.forEachIndexed { index, date ->
+                add(
+                    ForecastDay(
+                        day = WeatherCodeMapper.dayLabelTamil(date, index),
+                        maxTemp = "${daily?.tempMax?.getOrNull(index)?.toInt() ?: 0}°",
+                        minTemp = "${daily?.tempMin?.getOrNull(index)?.toInt() ?: 0}°",
+                        weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0
+                    )
+                )
+            }
         }
+
+        val code = current.weatherCode ?: 0
+        val todayHigh = daily?.tempMax?.getOrNull(0)?.toInt()
+        val todayLow = daily?.tempMin?.getOrNull(0)?.toInt()
+        val rainProb = daily?.precipitationProbabilityMax?.getOrNull(0)
+
+        WeatherInfo(
+            temperature = "${current.temperature?.toInt() ?: 0}°C",
+            condition = WeatherCodeMapper.conditionTamil(code),
+            humidity = "${current.humidity?.toInt() ?: 0}%",
+            windSpeed = "${current.windSpeed?.toInt() ?: 0} km/h",
+            windDirection = WeatherCodeMapper.windDirection(current.windDirection ?: 0.0),
+            rainChance = "${rainProb ?: 0}%",
+            location = "Namakkal, Tamil Nadu",
+            feelsLike = "${current.feelsLike?.toInt() ?: 0}°C",
+            todayHigh = todayHigh?.let { "$it°" } ?: "",
+            todayLow = todayLow?.let { "$it°" } ?: "",
+            weatherCode = code,
+            forecast = forecast
+        )
     }
 
     suspend fun getMarketPrices(location: String = "chennai", productType: String? = null): List<Crop> = withContext(Dispatchers.IO) {

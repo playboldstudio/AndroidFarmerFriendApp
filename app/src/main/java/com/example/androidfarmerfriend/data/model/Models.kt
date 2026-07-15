@@ -25,13 +25,18 @@ data class WeatherInfo(
     val location: String,
     val highLow: String = "35° / 25°",
     val feelsLike: String = "",
-    val visibility: String = ""
+    val visibility: String = "",
+    val todayHigh: String = "",
+    val todayLow: String = "",
+    val weatherCode: Int = 0,
+    val forecast: List<ForecastDay> = emptyList()
 )
 
 data class ForecastDay(
     val day: String,
-    val temp: String,
-    val icon: String
+    val maxTemp: String,
+    val minTemp: String,
+    val weatherCode: Int
 )
 
 data class QuickAction(
