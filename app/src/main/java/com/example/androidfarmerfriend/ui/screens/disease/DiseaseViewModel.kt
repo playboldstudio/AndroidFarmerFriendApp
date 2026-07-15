@@ -4,47 +4,70 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
+import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+sealed interface DiseaseEvent {
+    data class SelectFilter(val filter: String) : DiseaseEvent
+    data class Search(val query: String) : DiseaseEvent
+    data object Retry : DiseaseEvent
+}
+
+data class DiseaseState(
+    val diseasesState: UiState<List<Disease>> = UiState.Loading,
+    val selectedFilter: String = "அனைத்து",
+    val searchQuery: String = ""
+) {
+    val filteredDiseases: List<Disease>
+        get() {
+            val data = (diseasesState as? UiState.Success)?.data ?: return emptyList()
+            val query = searchQuery.trim().lowercase()
+            return data.filter { disease ->
+                val matchesFilter = selectedFilter == "அனைத்தు" || selectedFilter == "அனைத்து" ||
+                    disease.name.contains(selectedFilter, ignoreCase = true) ||
+                    disease.cropAffected.contains(selectedFilter, ignoreCase = true)
+                val matchesSearch = query.isEmpty() ||
+                    disease.name.lowercase().contains(query) ||
+                    disease.cropAffected.lowercase().contains(query)
+                matchesFilter && matchesSearch
+            }
+        }
+}
+
 class DiseaseViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
-    private val _diseasesState = MutableStateFlow<List<Disease>>(emptyList())
-    val diseasesState: StateFlow<List<Disease>> = _diseasesState.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
-
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _state = MutableStateFlow(DiseaseState())
+    val state: StateFlow<DiseaseState> = _state.asStateFlow()
 
     init {
         loadData()
     }
 
-    private fun loadData() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-            try {
-                _diseasesState.value = repository.getDiseases()
-            } catch (e: Exception) {
-                _error.value = e.message ?: "நோய் தரவுகளை ஏற்ற முடியவில்லை"
-            } finally {
-                _isLoading.value = false
+    fun onEvent(event: DiseaseEvent) {
+        when (event) {
+            is DiseaseEvent.SelectFilter -> {
+                _state.value = _state.value.copy(selectedFilter = event.filter, searchQuery = "")
             }
+            is DiseaseEvent.Search -> {
+                _state.value = _state.value.copy(searchQuery = event.query)
+            }
+            is DiseaseEvent.Retry -> loadData()
         }
     }
 
-    fun retry() {
-        loadData()
-    }
-
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
+    private fun loadData() {
+        _state.value = _state.value.copy(diseasesState = UiState.Loading)
+        viewModelScope.launch {
+            try {
+                val diseases = repository.getDiseases()
+                _state.value = _state.value.copy(diseasesState = UiState.Success(diseases))
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    diseasesState = UiState.Error(e.message ?: "நோய் தரவுகளை ஏற்ற முடியவில்லை")
+                )
+            }
+        }
     }
 }

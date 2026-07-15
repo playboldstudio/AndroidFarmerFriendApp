@@ -12,7 +12,8 @@ import java.util.concurrent.TimeUnit
 
 object WebDataScraper {
 
-    private const val WIKI_API = "https://ta.wikipedia.org/api/rest_v1"
+    private const val WIKI_HOST = "https://ta.wikipedia.org"
+    private const val SEARCH_API = "$WIKI_HOST/w/rest.php/v1/search/page"
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(10, TimeUnit.SECONDS)
@@ -30,8 +31,8 @@ object WebDataScraper {
                 id = index + 1,
                 cropName = title,
                 title = title,
-                content = page.extract ?: page.description ?: "",
-                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+                content = cleanExcerpt(page.excerpt) ?: page.description ?: "",
+                sourceUrl = pageUrl(page.key)
             )
         }
     }
@@ -43,8 +44,8 @@ object WebDataScraper {
             Disease(
                 id = index + 1,
                 name = page.title ?: "நோய் ${index + 1}",
-                cropAffected = page.description ?: "பொது",
-                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+                cropAffected = page.description ?: cleanExcerpt(page.excerpt) ?: "பொது",
+                sourceUrl = pageUrl(page.key)
             )
         }
     }
@@ -56,40 +57,55 @@ object WebDataScraper {
             Scheme(
                 id = index + 1,
                 title = page.title ?: "திட்டம் ${index + 1}",
-                description = page.extract ?: page.description ?: "",
+                description = cleanExcerpt(page.excerpt) ?: page.description ?: "",
                 category = "மத்திய அரசு",
-                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+                sourceUrl = pageUrl(page.key)
             )
         }
     }
 
-    suspend fun getPageSummary(title: String): WikipediaPage? = withContext(Dispatchers.IO) {
-        val encoded = URLEncoder.encode(title, "UTF-8")
-        val url = "$WIKI_API/page/summary/$encoded"
-        val request = Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) return@withContext null
-        val body = response.body?.string() ?: return@withContext null
-        try {
-            gson.fromJson(body, WikipediaPage::class.java)
-        } catch (e: Exception) {
-            null
-        }
-    }
-
     private fun searchWikipedia(query: String, limit: Int): List<WikipediaPage> {
-        val encoded = URLEncoder.encode(query, "UTF-8")
-        val url = "$WIKI_API/search/title?q=$encoded&limit=$limit"
-        val request = Request.Builder().url(url).build()
-        val response = client.newCall(request).execute()
-        if (!response.isSuccessful) return emptyList()
-        val body = response.body?.string() ?: return emptyList()
         return try {
-            val searchResult = gson.fromJson(body, WikipediaSearchResult::class.java)
-            searchResult.pages ?: emptyList()
+            val encoded = URLEncoder.encode(query, "UTF-8")
+            val url = "$SEARCH_API?q=$encoded&limit=$limit"
+            val request = Request.Builder()
+                .url(url)
+                .header("User-Agent", "AndroidFarmerFriend/1.0 (contact: app@farmerfriend.example)")
+                .build()
+            val response = client.newCall(request).execute()
+            response.use {
+                if (!it.isSuccessful) return@use emptyList()
+                val body = it.body?.string() ?: return@use emptyList()
+                try {
+                    val searchResult = gson.fromJson(body, WikipediaSearchResult::class.java)
+                    searchResult.pages ?: emptyList()
+                } catch (e: Exception) {
+                    emptyList()
+                }
+            }
         } catch (e: Exception) {
             emptyList()
         }
+    }
+
+    private fun pageUrl(key: String?): String {
+        if (key.isNullOrBlank()) return ""
+        val encoded = URLEncoder.encode(key, "UTF-8").replace("+", "%20")
+        return "$WIKI_HOST/wiki/$encoded"
+    }
+
+    private fun cleanExcerpt(excerpt: String?): String? {
+        if (excerpt.isNullOrBlank()) return null
+        return excerpt
+            .replace(Regex("<[^>]*>"), "")
+            .replace("&quot;", "\"")
+            .replace("&amp;", "&")
+            .replace("&lt;", "<")
+            .replace("&gt;", ">")
+            .replace("&#039;", "'")
+            .replace("&nbsp;", " ")
+            .trim()
+            .ifBlank { null }
     }
 }
 
@@ -101,17 +117,8 @@ data class WikipediaPage(
     val id: Long? = null,
     val key: String? = null,
     val title: String? = null,
+    val excerpt: String? = null,
     val description: String? = null,
-    val extract: String? = null,
-    @SerializedName("content_urls")
-    val contentUrls: WikipediaContentUrls? = null
-)
-
-data class WikipediaContentUrls(
-    val desktop: WikipediaPageUrl? = null,
-    val mobile: WikipediaPageUrl? = null
-)
-
-data class WikipediaPageUrl(
-    val page: String? = null
+    @SerializedName("matched_title")
+    val matchedTitle: String? = null
 )

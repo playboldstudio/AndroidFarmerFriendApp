@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.ui.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -47,7 +48,8 @@ fun ScreenHeader(
     subtitle: String? = null,
     isHome: Boolean = false,
     isSearchActive: Boolean = false,
-    onSearchClick: (() -> Unit)? = null
+    onSearchClick: (() -> Unit)? = null,
+    onLocationClick: (() -> Unit)? = null
 ) {
     Column(
         modifier = modifier
@@ -86,7 +88,12 @@ fun ScreenHeader(
         if (subtitle != null) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(top = 4.dp)
+                modifier = Modifier
+                    .padding(top = 4.dp)
+                    .then(
+                        if (onLocationClick != null) Modifier.clickable { onLocationClick() }
+                        else Modifier
+                    )
             ) {
                 if (isHome || title == "வானிலை" || title == "மார்க்கெட் விலை") {
                     Icon(

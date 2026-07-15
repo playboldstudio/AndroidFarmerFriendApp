@@ -11,13 +11,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -25,10 +24,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import com.example.androidfarmerfriend.R
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
+import com.example.androidfarmerfriend.data.repository.FarmerRepository
+import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
+import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.ui.navigation.Screen
@@ -39,9 +41,32 @@ fun HomeScreen(
     onNavigate: (String) -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
-    val weather by viewModel.weatherState.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val state by viewModel.state.collectAsState()
+
+    val context = LocalContext.current
+    val locationPrefs = remember { LocationPrefs(context) }
+    var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
+    var showLocationPicker by remember { mutableStateOf(false) }
+
+    LaunchedEffect(Unit) {
+        viewModel.onEvent(HomeEvent.LoadLocation(selectedLocation))
+    }
+
+    val repository = remember { FarmerRepository() }
+
+    if (showLocationPicker) {
+        LocationPickerSheet(
+            currentLocation = selectedLocation,
+            onLocationSelected = { loc ->
+                selectedLocation = loc
+                locationPrefs.selectedLocation = loc
+                showLocationPicker = false
+                viewModel.onEvent(HomeEvent.LoadLocation(loc))
+            },
+            onSearch = { query -> repository.searchLocations(query) },
+            onDismiss = { showLocationPicker = false }
+        )
+    }
 
     Column(
         modifier = Modifier
@@ -55,29 +80,30 @@ fun HomeScreen(
 
         ScreenHeader(
             title = "வணக்கம், விவசாயி! 👋",
-            subtitle = weather?.location ?: "Namakkal, Tamil Nadu",
+            subtitle = selectedLocation.name,
             isHome = true,
-            showSearch = false
+            showSearch = false,
+            onLocationClick = { showLocationPicker = true }
         )
-        
+
         Spacer(modifier = Modifier.height(8.dp))
-        
-        when {
-            isLoading -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+
+        when (val weatherState = state.weatherState) {
+            is UiState.Loading -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = FarmerGreenPrimary, modifier = Modifier.size(32.dp))
             }
-            error != null -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+            is UiState.Error -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.height(4.dp))
                     Text("வானிலை தரவு இல்லை", color = GrayText, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            weather != null -> WeatherSummaryCard(weather!!)
+            is UiState.Success -> WeatherSummaryCard(weatherState.data)
         }
-        
+
         Spacer(modifier = Modifier.height(24.dp))
-        
+
         Text(
             text = "விரைவு அணுகல்",
             style = MaterialTheme.typography.titleMedium,
@@ -85,7 +111,7 @@ fun HomeScreen(
             modifier = Modifier.padding(bottom = 16.dp),
             color = MaterialTheme.colorScheme.onBackground
         )
-        
+
         QuickAccessGrid(onNavigate = onNavigate)
     }
 }
@@ -132,7 +158,7 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
             ) {
                 Icon(
                     weatherIconFor(weather.weatherCode),
-                    contentDescription = null, 
+                    contentDescription = null,
                     modifier = Modifier.size(44.dp),
                     tint = WeatherYellow
                 )
@@ -140,15 +166,15 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                 Column {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
-                            text = weather.temperature, 
-                            style = MaterialTheme.typography.headlineMedium, 
+                            text = weather.temperature,
+                            style = MaterialTheme.typography.headlineMedium,
                             fontWeight = FontWeight.Bold,
                             fontSize = 32.sp,
                             color = MaterialTheme.colorScheme.onSurface
                         )
                         Spacer(modifier = Modifier.width(8.dp))
                         Text(
-                            text = weather.condition, 
+                            text = weather.condition,
                             style = MaterialTheme.typography.titleMedium,
                             color = MaterialTheme.colorScheme.onSurface
                         )
@@ -162,9 +188,9 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                     }
                 }
             }
-            
+
             Spacer(modifier = Modifier.height(24.dp))
-            
+
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround

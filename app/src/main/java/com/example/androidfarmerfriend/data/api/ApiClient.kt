@@ -36,11 +36,23 @@ object ApiClient {
             .build()
     }
 
+    private val geocodingRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ApiConfig.GEOCODING_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
     val api: FarmerApi by lazy {
         retrofit.create(FarmerApi::class.java)
     }
 
     val weatherApi: OpenMeteoApi by lazy {
         openMeteoRetrofit.create(OpenMeteoApi::class.java)
+    }
+
+    val geocodingApi: GeocodingApi by lazy {
+        geocodingRetrofit.create(GeocodingApi::class.java)
     }
 }

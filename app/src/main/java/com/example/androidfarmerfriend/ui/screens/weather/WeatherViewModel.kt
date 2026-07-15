@@ -1,4 +1,4 @@
-package com.example.androidfarmerfriend.ui.screens.home
+package com.example.androidfarmerfriend.ui.screens.weather
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -11,24 +11,24 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed interface HomeEvent {
-    data class LoadLocation(val location: SelectedLocation) : HomeEvent
-    data object Retry : HomeEvent
+sealed interface WeatherEvent {
+    data class LoadLocation(val location: SelectedLocation) : WeatherEvent
+    data object Retry : WeatherEvent
 }
 
-data class HomeState(
+data class WeatherScreenState(
     val weatherState: UiState<WeatherInfo> = UiState.Loading,
     val selectedLocation: SelectedLocation? = null
 )
 
-class HomeViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
-    private val _state = MutableStateFlow(HomeState())
-    val state: StateFlow<HomeState> = _state.asStateFlow()
+class WeatherViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
+    private val _state = MutableStateFlow(WeatherScreenState())
+    val state: StateFlow<WeatherScreenState> = _state.asStateFlow()
 
-    fun onEvent(event: HomeEvent) {
+    fun onEvent(event: WeatherEvent) {
         when (event) {
-            is HomeEvent.LoadLocation -> loadWeather(event.location)
-            is HomeEvent.Retry -> {
+            is WeatherEvent.LoadLocation -> loadWeather(event.location)
+            is WeatherEvent.Retry -> {
                 val loc = _state.value.selectedLocation ?: return
                 loadWeather(loc)
             }

@@ -4,9 +4,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -20,6 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.model.Scheme
+import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
@@ -27,16 +28,9 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @Composable
 fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
-    val schemes by viewModel.schemesState.collectAsState()
-    val searchQuery by viewModel.searchQuery.collectAsState()
-    val isLoading by viewModel.isLoading.collectAsState()
-    val error by viewModel.error.collectAsState()
+    val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    var selectedFilter by remember { mutableStateOf("அனைத்து") }
     var showSearchBar by remember { mutableStateOf(false) }
-
-    val filteredSchemes = if (selectedFilter == "அனைத்து") schemes
-    else schemes.filter { it.category == selectedFilter }
 
     Column(
         modifier = Modifier
@@ -49,7 +43,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             isSearchActive = showSearchBar,
             onSearchClick = {
                 showSearchBar = !showSearchBar
-                if (!showSearchBar) viewModel.onSearchQueryChanged("")
+                if (!showSearchBar) viewModel.onEvent(SchemeEvent.Search(""))
             }
         )
 
@@ -57,12 +51,18 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
 
         if (showSearchBar) {
             OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { viewModel.onSearchQueryChanged(it) },
+                value = state.searchQuery,
+                onValueChange = { viewModel.onEvent(SchemeEvent.Search(it)) },
                 modifier = Modifier.fillMaxWidth(),
                 placeholder = { Text("திட்டத்தைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-                trailingIcon = {},
+                trailingIcon = {
+                    if (state.searchQuery.isNotEmpty()) {
+                        IconButton(onClick = { viewModel.onEvent(SchemeEvent.Search("")) }) {
+                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+                        }
+                    }
+                },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
@@ -84,10 +84,10 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
                 .padding(vertical = 8.dp)
         ) {
             listOf("அனைத்து", "மத்திய அரசு", "மாநில அரசு").forEach { filter ->
-                val isSelected = filter == selectedFilter
+                val isSelected = filter == state.selectedFilter
                 FilterChip(
                     selected = isSelected,
-                    onClick = { selectedFilter = filter },
+                    onClick = { viewModel.onEvent(SchemeEvent.SelectFilter(filter)) },
                     label = { Text(filter, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = MaterialTheme.colorScheme.surface,
@@ -99,39 +99,41 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             }
         }
 
-        if (error != null) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        when (val schemeState = state.schemesState) {
+            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = FarmerGreenPrimary)
+            }
+            is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
                     Spacer(modifier = Modifier.height(12.dp))
                     Text("திட்டங்களை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(error ?: "", color = GrayText, style = MaterialTheme.typography.bodySmall)
+                    Text(schemeState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.retry() }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
+                    Button(onClick = { viewModel.onEvent(SchemeEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
                         Text("மீண்டும் முயற்சிக்க")
                     }
                 }
             }
-        } else if (isLoading) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
-        } else if (filteredSchemes.isEmpty()) {
-            Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text("திட்டங்கள் எதுவும் இல்லை", color = GrayText)
-                }
-            }
-        } else {
-            LazyColumn(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                contentPadding = PaddingValues(bottom = 16.dp)
-            ) {
-                items(filteredSchemes) { scheme ->
-                    SchemeItem(scheme)
+            is UiState.Success -> {
+                if (state.filteredSchemes.isEmpty()) {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                            Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text("திட்டங்கள் எதுவும் இல்லை", color = GrayText)
+                        }
+                    }
+                } else {
+                    LazyColumn(
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        contentPadding = PaddingValues(bottom = 16.dp)
+                    ) {
+                        items(state.filteredSchemes) { scheme ->
+                            SchemeItem(scheme)
+                        }
+                    }
                 }
             }
         }

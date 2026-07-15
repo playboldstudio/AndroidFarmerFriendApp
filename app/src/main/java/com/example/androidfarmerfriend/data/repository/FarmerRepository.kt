@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.model.*
 import com.example.androidfarmerfriend.data.scraper.WebDataScraper
 import com.example.androidfarmerfriend.util.WeatherCodeMapper
@@ -11,7 +12,7 @@ class FarmerRepository {
     private val api = ApiClient.api
     private val weatherApi = ApiClient.weatherApi
 
-    suspend fun getWeather(lat: Double = 11.2189, lon: Double = 78.1674): WeatherInfo? = withContext(Dispatchers.IO) {
+    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu"): WeatherInfo? = withContext(Dispatchers.IO) {
         val response = weatherApi.getForecast(latitude = lat, longitude = lon)
         val current = response.current ?: throw Exception("Failed to load weather data")
         val daily = response.daily
@@ -42,7 +43,7 @@ class FarmerRepository {
             windSpeed = "${current.windSpeed?.toInt() ?: 0} km/h",
             windDirection = WeatherCodeMapper.windDirection(current.windDirection ?: 0.0),
             rainChance = "${rainProb ?: 0}%",
-            location = "Namakkal, Tamil Nadu",
+            location = locationName,
             feelsLike = "${current.feelsLike?.toInt() ?: 0}°C",
             todayHigh = todayHigh?.let { "$it°" } ?: "",
             todayLow = todayLow?.let { "$it°" } ?: "",
@@ -101,6 +102,26 @@ class FarmerRepository {
         if (response.success && response.data?.prices != null) {
             response.data.prices!!.mapNotNull { it.toCrop() }
         } else {
+            emptyList()
+        }
+    }
+
+    suspend fun searchLocations(query: String): List<SelectedLocation> = withContext(Dispatchers.IO) {
+        if (query.length < 2) return@withContext emptyList()
+        try {
+            val response = ApiClient.geocodingApi.search(query)
+            response.results?.mapNotNull { result ->
+                val name = result.name ?: return@mapNotNull null
+                val lat = result.latitude ?: return@mapNotNull null
+                val lon = result.longitude ?: return@mapNotNull null
+                val region = listOfNotNull(result.admin1, result.country).joinToString(", ")
+                SelectedLocation(
+                    name = if (region.isNotEmpty()) "$name, $region" else name,
+                    lat = lat,
+                    lon = lon
+                )
+            } ?: emptyList()
+        } catch (e: Exception) {
             emptyList()
         }
     }

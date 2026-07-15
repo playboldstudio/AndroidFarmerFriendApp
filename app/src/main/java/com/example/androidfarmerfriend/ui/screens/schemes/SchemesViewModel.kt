@@ -4,47 +4,68 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
+import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+sealed interface SchemeEvent {
+    data class SelectFilter(val filter: String) : SchemeEvent
+    data class Search(val query: String) : SchemeEvent
+    data object Retry : SchemeEvent
+}
+
+data class SchemesState(
+    val schemesState: UiState<List<Scheme>> = UiState.Loading,
+    val selectedFilter: String = "அனைத்து",
+    val searchQuery: String = ""
+) {
+    val filteredSchemes: List<Scheme>
+        get() {
+            val data = (schemesState as? UiState.Success)?.data ?: return emptyList()
+            val categoryFiltered = if (selectedFilter == "அனைத்து") data
+            else data.filter { it.category == selectedFilter }
+            val query = searchQuery.trim().lowercase()
+            return if (query.isEmpty()) categoryFiltered
+            else categoryFiltered.filter {
+                it.title.lowercase().contains(query) ||
+                it.description.lowercase().contains(query)
+            }
+        }
+}
+
 class SchemesViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
-    private val _schemesState = MutableStateFlow<List<Scheme>>(emptyList())
-    val schemesState: StateFlow<List<Scheme>> = _schemesState.asStateFlow()
-
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
-
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+    private val _state = MutableStateFlow(SchemesState())
+    val state: StateFlow<SchemesState> = _state.asStateFlow()
 
     init {
         loadData()
     }
 
-    private fun loadData() {
-        viewModelScope.launch {
-            _isLoading.value = true
-            _error.value = null
-            try {
-                _schemesState.value = repository.getSchemes()
-            } catch (e: Exception) {
-                _error.value = e.message ?: "திட்டங்களை ஏற்ற முடியவில்லை"
-            } finally {
-                _isLoading.value = false
+    fun onEvent(event: SchemeEvent) {
+        when (event) {
+            is SchemeEvent.SelectFilter -> {
+                _state.value = _state.value.copy(selectedFilter = event.filter, searchQuery = "")
             }
+            is SchemeEvent.Search -> {
+                _state.value = _state.value.copy(searchQuery = event.query)
+            }
+            is SchemeEvent.Retry -> loadData()
         }
     }
 
-    fun retry() {
-        loadData()
-    }
-
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
+    private fun loadData() {
+        _state.value = _state.value.copy(schemesState = UiState.Loading)
+        viewModelScope.launch {
+            try {
+                val schemes = repository.getSchemes()
+                _state.value = _state.value.copy(schemesState = UiState.Success(schemes))
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    schemesState = UiState.Error(e.message ?: "திட்டங்களை ஏற்ற முடியவில்லை")
+                )
+            }
+        }
     }
 }

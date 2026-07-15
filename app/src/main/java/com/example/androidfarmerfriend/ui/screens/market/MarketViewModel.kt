@@ -4,75 +4,80 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
+import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+sealed interface MarketEvent {
+    data class SelectFilter(val filter: String) : MarketEvent
+    data class Search(val query: String) : MarketEvent
+    data class ChangeLocation(val marketName: String) : MarketEvent
+    data object Retry : MarketEvent
+}
+
+data class MarketState(
+    val cropsState: UiState<List<Crop>> = UiState.Loading,
+    val selectedFilter: String = "காய்கறிகள்",
+    val searchQuery: String = "",
+    val locationName: String = "Namakkal",
+    val fetchDate: String = ""
+) {
+    val filteredCrops: List<Crop>
+        get() {
+            val data = (cropsState as? UiState.Success)?.data ?: return emptyList()
+            val query = searchQuery.trim().lowercase()
+            return if (query.isEmpty()) data
+            else data.filter {
+                it.name.lowercase().contains(query) || it.nameEng.lowercase().contains(query)
+            }
+        }
+}
 
 class MarketViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
-    private val _allCrops = MutableStateFlow<List<Crop>>(emptyList())
-    private val _cropsState = MutableStateFlow<List<Crop>>(emptyList())
-    val cropsState: StateFlow<List<Crop>> = _cropsState.asStateFlow()
+    private val _state = MutableStateFlow(MarketState())
+    val state: StateFlow<MarketState> = _state.asStateFlow()
 
-    private val _isLoading = MutableStateFlow(false)
-    val isLoading: StateFlow<Boolean> = _isLoading.asStateFlow()
-
-    private val _error = MutableStateFlow<String?>(null)
-    val error: StateFlow<String?> = _error.asStateFlow()
-
-    private val _selectedFilter = MutableStateFlow("காய்கறிகள்")
-    val selectedFilter: StateFlow<String> = _selectedFilter.asStateFlow()
-
-    private val _searchQuery = MutableStateFlow("")
-    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
-
-    init {
-        onFilterSelected("காய்கறிகள்")
-    }
-
-    fun onSearchQueryChanged(query: String) {
-        _searchQuery.value = query
-        applyLocalFilter()
-    }
-
-    fun onFilterSelected(filter: String) {
-        _selectedFilter.value = filter
-        _searchQuery.value = ""
-        _error.value = null
-        viewModelScope.launch {
-            _isLoading.value = true
-            _cropsState.value = emptyList()
-            _error.value = null
-            try {
-                val crops = when (filter) {
-                    "காய்கறிகள்" -> repository.getVegetablePrices()
-                    "பழங்கள்" -> repository.getFruitPrices()
-                    "இறைச்சி" -> repository.getNonVegPrices()
-                    "தங்கம்" -> repository.getGoldPrices()
-                    "முட்டை" -> repository.getEggPrices()
-                    else -> repository.getMarketPrices()
-                }
-                _allCrops.value = crops
-                _cropsState.value = crops
-            } catch (e: Exception) {
-                _error.value = e.message ?: "தரவுகளை ஏற்ற முடியவில்லை"
-            } finally {
-                _isLoading.value = false
+    fun onEvent(event: MarketEvent) {
+        when (event) {
+            is MarketEvent.SelectFilter -> loadData(event.filter)
+            is MarketEvent.Search -> {
+                _state.value = _state.value.copy(searchQuery = event.query)
             }
+            is MarketEvent.ChangeLocation -> {
+                _state.value = _state.value.copy(locationName = event.marketName)
+                loadData(_state.value.selectedFilter)
+            }
+            is MarketEvent.Retry -> loadData(_state.value.selectedFilter)
         }
     }
 
-    fun retry() {
-        onFilterSelected(_selectedFilter.value)
-    }
-
-    private fun applyLocalFilter() {
-        val query = _searchQuery.value.trim().lowercase()
-        _cropsState.value = if (query.isEmpty()) {
-            _allCrops.value
-        } else {
-            _allCrops.value.filter {
-                it.name.lowercase().contains(query) || it.nameEng.lowercase().contains(query)
+    private fun loadData(filter: String) {
+        _state.value = _state.value.copy(selectedFilter = filter, cropsState = UiState.Loading, searchQuery = "")
+        viewModelScope.launch {
+            try {
+                val location = _state.value.locationName.lowercase()
+                val crops = when (filter) {
+                    "காய்கறிகள்" -> repository.getVegetablePrices(location)
+                    "பழங்கள்" -> repository.getFruitPrices(location)
+                    "இறைச்சி" -> repository.getNonVegPrices(location)
+                    "தங்கம்" -> repository.getGoldPrices(location)
+                    "முட்டை" -> repository.getEggPrices(location)
+                    else -> repository.getMarketPrices(location)
+                }
+                val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale("ta", "IN")).format(Date())
+                _state.value = _state.value.copy(
+                    cropsState = UiState.Success(crops),
+                    fetchDate = date
+                )
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    cropsState = UiState.Error(e.message ?: "தரவுகளை ஏற்ற முடியவில்லை")
+                )
             }
         }
     }
