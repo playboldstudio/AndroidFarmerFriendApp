@@ -47,6 +47,7 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                 val crops = when (filter) {
                     "காய்கறிகள்" -> repository.getVegetablePrices()
                     "பழங்கள்" -> repository.getFruitPrices()
+                    "இறைச்சி" -> repository.getNonVegPrices()
                     "தங்கம்" -> repository.getGoldPrices()
                     "முட்டை" -> repository.getEggPrices()
                     else -> repository.getMarketPrices()

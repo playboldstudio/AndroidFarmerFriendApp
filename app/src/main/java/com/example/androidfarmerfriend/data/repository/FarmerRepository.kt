@@ -55,6 +55,15 @@ class FarmerRepository {
         }
     }
 
+    suspend fun getNonVegPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+        val response = api.getNonVegPrices(location)
+        if (response.success && response.data?.data != null) {
+            response.data.data!!.mapNotNull { it.toCrop() }
+        } else {
+            emptyList()
+        }
+    }
+
     suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
         val response = api.getGoldPrices(location)
         if (response.success && response.data?.data != null) {

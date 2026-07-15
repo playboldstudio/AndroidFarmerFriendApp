@@ -46,6 +46,7 @@ data class Scheme(
     val title: String,
     val description: String,
     val category: String,
+    val sourceUrl: String = "",
     val iconRes: Int? = null
 )
 
@@ -61,6 +62,7 @@ data class Disease(
     val id: Int,
     val name: String,
     val cropAffected: String,
+    val sourceUrl: String = "",
     val imageUrl: String = ""
 )
 
@@ -69,6 +71,7 @@ data class CropNote(
     val cropName: String,
     val title: String,
     val content: String,
+    val sourceUrl: String = "",
     val season: String = ""
 )
 

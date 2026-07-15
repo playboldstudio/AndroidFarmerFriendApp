@@ -32,7 +32,6 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val isLoading by viewModel.isLoading.collectAsState()
     val error by viewModel.error.collectAsState()
     val context = LocalContext.current
-    var expandedNoteId by remember { mutableStateOf<Int?>(null) }
     var selectedCrop by remember { mutableStateOf("அனைத்து") }
     val crops = listOf("அனைத்து") + notes.map { it.cropName }.distinct()
 
@@ -65,15 +64,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("குறிப்புகளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = {
-                        WebSearchUtil.search(context, "விவசாய பயிர் குறிப்புகள் $searchQuery")
-                    }) {
-                        Icon(Icons.Default.OpenInBrowser, contentDescription = "இணையத்தில் தேட", tint = FarmerGreenPrimary)
-                    }
-                }
-            },
+            trailingIcon = {},
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
@@ -97,7 +88,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 val isSelected = crop == selectedCrop
                 FilterChip(
                     selected = isSelected,
-                    onClick = { selectedCrop = crop; expandedNoteId = null },
+                    onClick = { selectedCrop = crop },
                     label = {
                         Text(
                             crop,
@@ -112,16 +103,6 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                     )
                 )
             }
-        }
-
-        Button(
-            onClick = { WebSearchUtil.search(context, "விவசாய பயிர் குறிப்புகள் ${if (selectedCrop != "அனைத்து") selectedCrop else ""}") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)
-        ) {
-            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("இணையத்தில் தேடு")
         }
 
         if (error != null) {
@@ -156,13 +137,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(filteredNotes) { note ->
-                    val isExpanded = expandedNoteId == note.id
-                    CropNoteItem(
-                        note = note,
-                        isExpanded = isExpanded,
-                        onToggle = { expandedNoteId = if (isExpanded) null else note.id },
-                        onSearch = { query -> WebSearchUtil.search(context, query) }
-                    )
+                    CropNoteItem(note = note)
                 }
             }
         }
@@ -170,9 +145,14 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
 }
 
 @Composable
-fun CropNoteItem(note: CropNote, isExpanded: Boolean, onToggle: () -> Unit, onSearch: (String) -> Unit) {
+fun CropNoteItem(note: CropNote) {
+    val context = LocalContext.current
     FarmerCard(
-        modifier = Modifier.clickable { onToggle() }
+        modifier = Modifier.clickable {
+            if (note.sourceUrl.isNotBlank()) {
+                WebSearchUtil.openUrl(context, note.sourceUrl)
+            }
+        }
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -204,50 +184,20 @@ fun CropNoteItem(note: CropNote, isExpanded: Boolean, onToggle: () -> Unit, onSe
                         color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp
                     )
-                    Row {
-                        Text(
-                            text = note.cropName,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = FarmerGreenPrimary,
-                            fontWeight = FontWeight.Bold
-                        )
-                        if (note.season.isNotEmpty()) {
-                            Text(
-                                text = " · ${note.season}",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = GrayText
-                            )
-                        }
-                    }
+                    Text(
+                        text = note.cropName,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = FarmerGreenPrimary,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
 
                 Icon(
-                    if (isExpanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                    contentDescription = null,
-                    tint = GrayText,
+                    Icons.Default.OpenInNew,
+                    contentDescription = "திறக்க",
+                    tint = FarmerGreenPrimary,
                     modifier = Modifier.size(20.dp)
                 )
-            }
-
-            if (isExpanded) {
-                Spacer(modifier = Modifier.height(12.dp))
-                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.3f))
-                Spacer(modifier = Modifier.height(12.dp))
-                Text(
-                    text = note.content,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.8f),
-                    lineHeight = 22.sp
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                TextButton(
-                    onClick = { onSearch("பயிர் குறிப்பு ${note.cropName} ${note.title}") },
-                    modifier = Modifier.align(Alignment.End)
-                ) {
-                    Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("இணையத்தில் தேட", color = FarmerGreenPrimary, fontSize = 13.sp)
-                }
             }
         }
     }

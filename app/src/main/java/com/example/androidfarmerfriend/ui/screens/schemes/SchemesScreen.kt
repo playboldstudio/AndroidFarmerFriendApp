@@ -51,17 +51,9 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             value = searchQuery,
             onValueChange = { viewModel.onSearchQueryChanged(it) },
             modifier = Modifier.fillMaxWidth(),
-            placeholder = { Text("திட்டத்தைத் தேடவும் அல்லது இணையத்தில் தேட", color = GrayText, fontSize = 14.sp) },
+            placeholder = { Text("திட்டத்தைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = {
-                        WebSearchUtil.search(context, "விவசாய திட்டங்கள் $searchQuery")
-                    }) {
-                        Icon(Icons.Default.OpenInBrowser, contentDescription = "இணையத்தில் தேட", tint = FarmerGreenPrimary)
-                    }
-                }
-            },
+            trailingIcon = {},
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
@@ -97,16 +89,6 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             }
         }
 
-        Button(
-            onClick = { WebSearchUtil.search(context, "விவசாய அரசு திட்டங்கள் 2025") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)
-        ) {
-            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("இணையத்தில் தேடு")
-        }
-
         if (error != null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -139,9 +121,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(filteredSchemes) { scheme ->
-                    SchemeItem(scheme, onSearch = { query ->
-                        WebSearchUtil.search(context, query)
-                    })
+                    SchemeItem(scheme)
                 }
             }
         }
@@ -149,9 +129,14 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
 }
 
 @Composable
-fun SchemeItem(scheme: Scheme, onSearch: (String) -> Unit) {
+fun SchemeItem(scheme: Scheme) {
+    val context = LocalContext.current
     FarmerCard(
-        modifier = Modifier.clickable { onSearch(scheme.title) }
+        modifier = Modifier.clickable {
+            if (scheme.sourceUrl.isNotBlank()) {
+                WebSearchUtil.openUrl(context, scheme.sourceUrl)
+            }
+        }
     ) {
         Row(
             modifier = Modifier
@@ -186,14 +171,14 @@ fun SchemeItem(scheme: Scheme, onSearch: (String) -> Unit) {
                     maxLines = 2,
                     lineHeight = 16.sp
                 )
-                Text(
-                    text = "விவரங்கள்",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 4.dp)
-                )
             }
+
+            Icon(
+                Icons.Default.OpenInNew,
+                contentDescription = "திறக்க",
+                tint = FarmerGreenPrimary,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }

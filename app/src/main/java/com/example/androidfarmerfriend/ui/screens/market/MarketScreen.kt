@@ -68,7 +68,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         )
 
         FilterChipGroup(
-            filters = listOf("காய்கறிகள்", "பழங்கள்", "தங்கம்", "முட்டை"),
+            filters = listOf("காய்கறிகள்", "பழங்கள்", "இறைச்சி", "தங்கம்", "முட்டை"),
             selectedFilter = selectedCategory,
             onFilterSelected = { viewModel.onFilterSelected(it) }
         )

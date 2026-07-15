@@ -1,91 +1,117 @@
 package com.example.androidfarmerfriend.data.scraper
 
 import com.example.androidfarmerfriend.data.model.*
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
-import org.jsoup.Jsoup
-import org.jsoup.nodes.Document
+import okhttp3.OkHttpClient
+import okhttp3.Request
+import java.net.URLEncoder
+import java.util.concurrent.TimeUnit
 
 object WebDataScraper {
 
-    private const val TIMEOUT = 10000
-    private const val WIKI_BASE = "https://ta.wikipedia.org"
-    private const val USER_AGENT = "Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36"
+    private const val WIKI_API = "https://ta.wikipedia.org/api/rest_v1"
+
+    private val client = OkHttpClient.Builder()
+        .connectTimeout(10, TimeUnit.SECONDS)
+        .readTimeout(10, TimeUnit.SECONDS)
+        .build()
+
+    private val gson = Gson()
 
     suspend fun fetchCropNotes(): List<CropNote> = withContext(Dispatchers.IO) {
-        val doc = Jsoup.connect("$WIKI_BASE/wiki/%E0%AE%B5%E0%AE%BF%E0%AE%B5%E0%AE%9A%E0%AE%BE%E0%AE%AF%E0%AE%AE%E0%AF%8D")
-            .userAgent(USER_AGENT).timeout(TIMEOUT).get()
-        parseCropNotes(doc)
+        val results = searchWikipedia("விவசாயம்", 10)
+        if (results.isEmpty()) throw Exception("Wikipedia API returned no results")
+        results.mapIndexed { index, page ->
+            val title = page.title ?: "குறிப்பு ${index + 1}"
+            CropNote(
+                id = index + 1,
+                cropName = title,
+                title = title,
+                content = page.extract ?: page.description ?: "",
+                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+            )
+        }
     }
 
     suspend fun fetchDiseases(): List<Disease> = withContext(Dispatchers.IO) {
-        val doc = Jsoup.connect("$WIKI_BASE/wiki/%E0%AE%A4%E0%AE%BE%E0%AE%B5%E0%AE%B0_%E0%AE%A8%E0%AF%8B%E0%AE%AF%E0%AF%8D%E0%AE%95%E0%AE%B3%E0%AF%8D")
-            .userAgent(USER_AGENT).timeout(TIMEOUT).get()
-        parseDiseases(doc)
+        val results = searchWikipedia("தாவர நோய்", 10)
+        if (results.isEmpty()) throw Exception("Wikipedia API returned no results")
+        results.mapIndexed { index, page ->
+            Disease(
+                id = index + 1,
+                name = page.title ?: "நோய் ${index + 1}",
+                cropAffected = page.description ?: "பொது",
+                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+            )
+        }
     }
 
     suspend fun fetchSchemes(): List<Scheme> = withContext(Dispatchers.IO) {
-        val doc = Jsoup.connect("$WIKI_BASE/wiki/%E0%AE%87%E0%AE%A8%E0%AF%8D%E0%AE%A4%E0%AE%BF%E0%AE%AF_%E0%AE%B5%E0%AE%BF%E0%AE%B5%E0%AE%9A%E0%AE%BE%E0%AE%AF_%E0%AE%A4%E0%AE%BF%E0%AE%9F%E0%AF%8D%E0%AE%9F%E0%AE%99%E0%AF%8D%E0%AE%95%E0%AE%B3%E0%AF%8D")
-            .userAgent(USER_AGENT).timeout(TIMEOUT).get()
-        parseSchemes(doc)
+        val results = searchWikipedia("விவசாய திட்டம்", 10)
+        if (results.isEmpty()) throw Exception("Wikipedia API returned no results")
+        results.mapIndexed { index, page ->
+            Scheme(
+                id = index + 1,
+                title = page.title ?: "திட்டம் ${index + 1}",
+                description = page.extract ?: page.description ?: "",
+                category = "மத்திய அரசு",
+                sourceUrl = page.contentUrls?.desktop?.page ?: ""
+            )
+        }
     }
 
-    private fun parseCropNotes(doc: Document): List<CropNote> {
-        val notes = mutableListOf<CropNote>()
-        val sections = doc.select("div.mw-parser-output > h2, div.mw-parser-output > h3, div.mw-parser-output > p")
-        var currentTitle = "பயிர் குறிப்பு"
-        var currentCrop = "பொது"
-        for (el in sections) {
-            val tag = el.tagName()
-            when {
-                tag == "h2" || tag == "h3" -> {
-                    val text = el.text().trim()
-                    if (text.isNotBlank() && !text.contains("உசாத்துணை") && !text.contains("வெளி இணைப்புகள்")) {
-                        currentTitle = text
-                        currentCrop = text.split(" ").getOrElse(0) { "பொது" }
-                    }
-                }
-                tag == "p" -> {
-                    val text = el.text().trim()
-                    if (text.length > 30) {
-                        notes.add(CropNote(currentTitle.hashCode() + notes.size, currentCrop, currentTitle, text, ""))
-                    }
-                }
-            }
-            if (notes.size >= 10) break
+    suspend fun getPageSummary(title: String): WikipediaPage? = withContext(Dispatchers.IO) {
+        val encoded = URLEncoder.encode(title, "UTF-8")
+        val url = "$WIKI_API/page/summary/$encoded"
+        val request = Request.Builder().url(url).build()
+        val response = client.newCall(request).execute()
+        if (!response.isSuccessful) return@withContext null
+        val body = response.body?.string() ?: return@withContext null
+        try {
+            gson.fromJson(body, WikipediaPage::class.java)
+        } catch (e: Exception) {
+            null
         }
-        return notes
     }
 
-    private fun parseDiseases(doc: Document): List<Disease> {
-        val diseases = mutableListOf<Disease>()
-        val lis = doc.select("div.mw-parser-output ul li")
-        for (li in lis) {
-            val text = li.text().trim()
-            if (text.contains("நோய்") && text.length in 10..200) {
-                val parts = text.split(" - ", " – ", " : ", ":")
-                val name = parts.first().trim().take(60)
-                val crop = parts.getOrElse(1) { "" }.trim().take(40)
-                diseases.add(Disease(diseases.size + 1, name, crop.ifEmpty { "பொது" }))
-            }
-            if (diseases.size >= 12) break
+    private fun searchWikipedia(query: String, limit: Int): List<WikipediaPage> {
+        val encoded = URLEncoder.encode(query, "UTF-8")
+        val url = "$WIKI_API/search/title?q=$encoded&limit=$limit"
+        val request = Request.Builder().url(url).build()
+        val response = client.newCall(request).execute()
+        if (!response.isSuccessful) return emptyList()
+        val body = response.body?.string() ?: return emptyList()
+        return try {
+            val searchResult = gson.fromJson(body, WikipediaSearchResult::class.java)
+            searchResult.pages ?: emptyList()
+        } catch (e: Exception) {
+            emptyList()
         }
-        return diseases
-    }
-
-    private fun parseSchemes(doc: Document): List<Scheme> {
-        val schemes = mutableListOf<Scheme>()
-        val lis = doc.select("div.mw-parser-output ul li")
-        for (li in lis) {
-            val text = li.text().trim()
-            if (text.contains("திட்டம்") && text.length in 15..250) {
-                val parts = text.split(" - ", " – ", " : ", ":")
-                val title = parts.first().trim().take(60)
-                val desc = parts.getOrElse(1) { text }.trim().take(120)
-                schemes.add(Scheme(schemes.size + 1, title, desc, "மத்திய அரசு"))
-            }
-            if (schemes.size >= 10) break
-        }
-        return schemes
     }
 }
+
+data class WikipediaSearchResult(
+    val pages: List<WikipediaPage>? = null
+)
+
+data class WikipediaPage(
+    val id: Long? = null,
+    val key: String? = null,
+    val title: String? = null,
+    val description: String? = null,
+    val extract: String? = null,
+    @SerializedName("content_urls")
+    val contentUrls: WikipediaContentUrls? = null
+)
+
+data class WikipediaContentUrls(
+    val desktop: WikipediaPageUrl? = null,
+    val mobile: WikipediaPageUrl? = null
+)
+
+data class WikipediaPageUrl(
+    val page: String? = null
+)

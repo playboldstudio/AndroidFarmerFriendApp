@@ -50,15 +50,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             modifier = Modifier.fillMaxWidth(),
             placeholder = { Text("நோய் பெயரைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
             leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-            trailingIcon = {
-                if (searchQuery.isNotEmpty()) {
-                    IconButton(onClick = {
-                        WebSearchUtil.search(context, "விவசாய நோய்கள் $searchQuery")
-                    }) {
-                        Icon(Icons.Default.OpenInBrowser, contentDescription = "இணையத்தில் தேட", tint = FarmerGreenPrimary)
-                    }
-                }
-            },
+            trailingIcon = {},
             singleLine = true,
             shape = MaterialTheme.shapes.medium,
             colors = OutlinedTextFieldDefaults.colors(
@@ -94,16 +86,6 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             }
         }
 
-        Button(
-            onClick = { WebSearchUtil.search(context, "விவசாய பயிர் நோய்கள் மற்றும் தீர்வுகள்") },
-            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
-            colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)
-        ) {
-            Icon(Icons.Default.OpenInBrowser, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(modifier = Modifier.width(8.dp))
-            Text("இணையத்தில் தேடு")
-        }
-
         if (error != null) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -136,9 +118,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 contentPadding = PaddingValues(bottom = 16.dp)
             ) {
                 items(diseases) { disease ->
-                    DiseaseItem(disease, onSearch = { query ->
-                        WebSearchUtil.search(context, query)
-                    })
+                    DiseaseItem(disease)
                 }
             }
         }
@@ -146,9 +126,14 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
 }
 
 @Composable
-fun DiseaseItem(disease: Disease, onSearch: (String) -> Unit) {
+fun DiseaseItem(disease: Disease) {
+    val context = LocalContext.current
     FarmerCard(
-        modifier = Modifier.clickable { onSearch("${disease.name} ${disease.cropAffected} நோய் தீர்வு") }
+        modifier = Modifier.clickable {
+            if (disease.sourceUrl.isNotBlank()) {
+                WebSearchUtil.openUrl(context, disease.sourceUrl)
+            }
+        }
     ) {
         Row(
             modifier = Modifier
@@ -181,14 +166,14 @@ fun DiseaseItem(disease: Disease, onSearch: (String) -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = GrayText
                 )
-                Text(
-                    text = "விவரங்கள்",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier.padding(top = 2.dp)
-                )
             }
+
+            Icon(
+                Icons.Default.OpenInNew,
+                contentDescription = "திறக்க",
+                tint = FarmerGreenPrimary,
+                modifier = Modifier.size(20.dp)
+            )
         }
     }
 }
