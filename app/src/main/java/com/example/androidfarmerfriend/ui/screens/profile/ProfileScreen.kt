@@ -20,33 +20,50 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.GrayText
 import com.example.androidfarmerfriend.ui.theme.TrendRed
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen() {
+fun ProfileScreen(
+    onNavigate: (String) -> Unit = {},
+    viewModel: ProfileViewModel = viewModel()
+) {
+    val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val languagePrefs = remember { LanguagePrefs(context) }
     val location = remember { locationPrefs.selectedLocation }
-    var showLogoutDialog by remember { mutableStateOf(false) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
 
-    if (showLogoutDialog) {
+    val navEvent by viewModel.navigation.collectAsState()
+    LaunchedEffect(navEvent) {
+        navEvent?.let { route ->
+            onNavigate(route)
+            viewModel.onNavigated()
+        }
+    }
+
+    if (state.showLogoutDialog) {
         AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = { Text("வெளியேறு") },
-            text = { Text("நீங்கள் வெளியேற விரும்புகிறீர்களா?") },
+            onDismissRequest = { viewModel.onEvent(ProfileEvent.DismissLogoutDialog) },
+            title = { Text(strings.logoutTitle) },
+            text = { Text(strings.logoutMessage) },
             confirmButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("ஆம்", color = TrendRed)
+                TextButton(onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) }) {
+                    Text(strings.yes, color = TrendRed)
                 }
             },
             dismissButton = {
-                TextButton(onClick = { showLogoutDialog = false }) {
-                    Text("இல்லை")
+                TextButton(onClick = { viewModel.onEvent(ProfileEvent.DismissLogoutDialog) }) {
+                    Text(strings.no)
                 }
             }
         )
@@ -58,7 +75,7 @@ fun ProfileScreen() {
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        ScreenHeader(title = "புரோஃபைல்", showSearch = false)
+        ScreenHeader(title = strings.profileTitle, showSearch = false)
 
         Row(
             modifier = Modifier
@@ -77,8 +94,8 @@ fun ProfileScreen() {
             }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text(text = "விவசாயி", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
-                Text(text = "+91 98765 43210", style = MaterialTheme.typography.bodyMedium, color = GrayText)
+                Text(text = state.userName, style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold, fontSize = 20.sp, color = MaterialTheme.colorScheme.onBackground)
+                Text(text = state.userPhone, style = MaterialTheme.typography.bodyMedium, color = GrayText)
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(Icons.Default.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = GrayText)
                     Text(text = location.name, style = MaterialTheme.typography.bodySmall, color = GrayText)
@@ -89,18 +106,23 @@ fun ProfileScreen() {
         Spacer(modifier = Modifier.height(16.dp))
 
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-            ProfileMenuItem(title = "என் விவரம்", icon = Icons.Default.Person)
-            ProfileMenuItem(title = "என் நிலங்கள்", icon = Icons.Default.Landscape)
-            ProfileMenuItem(title = "மொழி", icon = Icons.Default.Language, trailingText = "தமிழ்")
-            ProfileMenuItem(title = "அறிவிப்புகள்", icon = Icons.Default.Notifications)
-            ProfileMenuItem(title = "தனியுரிமை & கொள்கை", icon = Icons.Default.PrivacyTip)
-            ProfileMenuItem(title = "அமைப்புகள்", icon = Icons.Default.Settings)
+            ProfileMenuItem(title = strings.myDetails, icon = Icons.Default.Person, onClick = { viewModel.onEvent(ProfileEvent.NavigateToDetails) })
+            ProfileMenuItem(title = strings.myLands, icon = Icons.Default.Landscape, onClick = { viewModel.onEvent(ProfileEvent.NavigateToLands) })
+            ProfileMenuItem(
+                title = strings.language,
+                icon = Icons.Default.Language,
+                trailingText = if (currentLang == Language.TAMIL) strings.tamil else strings.english,
+                onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
+            )
+            ProfileMenuItem(title = strings.notifications, icon = Icons.Default.Notifications, onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) })
+            ProfileMenuItem(title = strings.privacyPolicy, icon = Icons.Default.PrivacyTip, onClick = { viewModel.onEvent(ProfileEvent.NavigateToPrivacy) })
+            ProfileMenuItem(title = strings.settings, icon = Icons.Default.Settings, onClick = { viewModel.onEvent(ProfileEvent.NavigateToSettings) })
         }
 
         Spacer(modifier = Modifier.weight(1f))
 
         OutlinedButton(
-            onClick = { showLogoutDialog = true },
+            onClick = { viewModel.onEvent(ProfileEvent.ShowLogoutDialog) },
             modifier = Modifier.fillMaxWidth(),
             colors = ButtonDefaults.outlinedButtonColors(contentColor = TrendRed),
             border = BorderStroke(1.dp, TrendRed),
@@ -108,7 +130,7 @@ fun ProfileScreen() {
         ) {
             Icon(Icons.AutoMirrored.Filled.Logout, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(modifier = Modifier.width(8.dp))
-            Text("வெளியேறு", fontWeight = FontWeight.Bold)
+            Text(strings.logout, fontWeight = FontWeight.Bold)
         }
 
         Spacer(modifier = Modifier.height(16.dp))
@@ -116,9 +138,9 @@ fun ProfileScreen() {
 }
 
 @Composable
-fun ProfileMenuItem(title: String, icon: ImageVector, trailingText: String? = null) {
+fun ProfileMenuItem(title: String, icon: ImageVector, trailingText: String? = null, onClick: () -> Unit) {
     Surface(
-        onClick = { },
+        onClick = onClick,
         color = Color.Transparent,
         modifier = Modifier.fillMaxWidth()
     ) {

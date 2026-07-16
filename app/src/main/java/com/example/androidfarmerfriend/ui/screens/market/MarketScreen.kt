@@ -18,6 +18,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
@@ -35,6 +38,9 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
@@ -65,7 +71,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         ScreenHeader(
-            title = "மார்க்கெட் விலை",
+            title = strings.marketTitle,
             subtitle = selectedLocation.name,
             isSearchActive = showSearchBar,
             onSearchClick = {
@@ -82,7 +88,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 value = state.searchQuery,
                 onValueChange = { viewModel.onEvent(MarketEvent.Search(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("பொருளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                placeholder = { Text(strings.searchHint, color = GrayText, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
                 trailingIcon = {
                     if (state.searchQuery.isNotEmpty()) {
@@ -105,14 +111,18 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         }
 
         FilterChipGroup(
-            filters = listOf("காய்கறிகள்", "பழங்கள்", "இறைச்சி", "தங்கம்", "முட்டை"),
-            selectedFilter = state.selectedFilter,
-            onFilterSelected = { viewModel.onEvent(MarketEvent.SelectFilter(it)) }
+            filters = FilterType.entries.map { it.displayKey(strings) },
+            selectedFilter = state.selectedFilter.displayKey(strings),
+            onFilterSelected = { display ->
+                FilterType.entries.find { it.displayKey(strings) == display }?.let {
+                    viewModel.onEvent(MarketEvent.SelectFilter(it))
+                }
+            }
         )
 
         if (state.fetchDate.isNotEmpty()) {
             Text(
-                text = "புதுப்பிக்கப்பட்டது: ${state.fetchDate}",
+                text = "${strings.updatedAt}: ${state.fetchDate}",
                 style = MaterialTheme.typography.labelSmall,
                 color = GrayText,
                 modifier = Modifier.fillMaxWidth(),
@@ -130,12 +140,12 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Text(strings.loadError, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(cropsState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.onEvent(MarketEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
+                        Text(strings.retry)
                     }
                 }
             }
@@ -145,7 +155,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("தரவுகள் ஏதுமில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                            Text(strings.noData, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 } else {

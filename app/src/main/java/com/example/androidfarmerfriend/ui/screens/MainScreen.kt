@@ -5,11 +5,11 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -19,6 +19,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.screens.home.HomeScreen
 import com.example.androidfarmerfriend.ui.screens.market.MarketScreen
@@ -28,20 +31,26 @@ import com.example.androidfarmerfriend.ui.screens.profile.ProfileScreen
 import com.example.androidfarmerfriend.ui.screens.disease.DiseaseScreen
 import com.example.androidfarmerfriend.ui.screens.schemes.SchemesScreen
 import com.example.androidfarmerfriend.ui.screens.cropnotes.CropNotesScreen
+import com.example.androidfarmerfriend.ui.screens.language.LanguageScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.GrayText
 
-sealed class BottomNavItem(val screen: Screen, val icon: ImageVector, val label: String) {
-    object Home : BottomNavItem(Screen.Home, Icons.Default.Home, "முகப்பு")
-    object Market : BottomNavItem(Screen.Market, Icons.Default.BarChart, "மார்க்கெட்")
-    object Weather : BottomNavItem(Screen.Weather, Icons.Default.WbCloudy, "வானிலை")
-    object Alerts : BottomNavItem(Screen.Alerts, Icons.Default.Notifications, "அலர்ட்கள்")
-    object Profile : BottomNavItem(Screen.Profile, Icons.Default.Person, "புரோஃபைல்")
+sealed class BottomNavItem(val screen: Screen, val icon: ImageVector, val labelKey: (AppStrings) -> String) {
+    object Home : BottomNavItem(Screen.Home, Icons.Default.Home, { it.navHome })
+    object Market : BottomNavItem(Screen.Market, Icons.Default.BarChart, { it.navMarket })
+    object Weather : BottomNavItem(Screen.Weather, Icons.Default.WbCloudy, { it.navWeather })
+    object Alerts : BottomNavItem(Screen.Alerts, Icons.Default.Notifications, { it.navAlerts })
+    object Profile : BottomNavItem(Screen.Profile, Icons.Default.Person, { it.navProfile })
 }
 
 @Composable
-fun MainScreen() {
+fun MainScreen(onRestart: () -> Unit = {}) {
     val navController = rememberNavController()
+    val context = LocalContext.current
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Market,
@@ -62,19 +71,19 @@ fun MainScreen() {
                 items.forEach { item ->
                     val isSelected = currentDestination?.hierarchy?.any { it.route == item.screen.route } == true
                     NavigationBarItem(
-                        icon = { 
+                        icon = {
                             Icon(
-                                item.icon, 
-                                contentDescription = item.label,
+                                item.icon,
+                                contentDescription = item.labelKey(strings),
                                 modifier = Modifier.size(24.dp)
-                            ) 
+                            )
                         },
-                        label = { 
+                        label = {
                             Text(
-                                item.label, 
+                                item.labelKey(strings),
                                 fontSize = 10.sp,
                                 color = if (isSelected) MaterialTheme.colorScheme.primary else GrayText
-                            ) 
+                            )
                         },
                         selected = isSelected,
                         onClick = {
@@ -119,10 +128,25 @@ fun MainScreen() {
             composable(Screen.Market.route) { MarketScreen() }
             composable(Screen.Weather.route) { WeatherScreen() }
             composable(Screen.Alerts.route) { AlertsScreen() }
-            composable(Screen.Profile.route) { ProfileScreen() }
+            composable(Screen.Profile.route) {
+                ProfileScreen(
+                    onNavigate = { route ->
+                        when (route) {
+                            "language" -> navController.navigate(Screen.Language.route)
+                            else -> {}
+                        }
+                    }
+                )
+            }
             composable(Screen.Disease.route) { DiseaseScreen() }
             composable(Screen.Schemes.route) { SchemesScreen() }
             composable(Screen.CropNotes.route) { CropNotesScreen() }
+            composable(Screen.Language.route) {
+                LanguageScreen(
+                    onLanguageChanged = onRestart,
+                    onBack = { navController.popBackStack() }
+                )
+            }
         }
     }
 }

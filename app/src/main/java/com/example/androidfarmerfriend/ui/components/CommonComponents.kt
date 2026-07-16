@@ -95,7 +95,7 @@ fun ScreenHeader(
                         else Modifier
                     )
             ) {
-                if (isHome || title == "வானிலை" || title == "மார்க்கெட் விலை") {
+                if (isHome) {
                     Icon(
                         Icons.Default.LocationOn,
                         contentDescription = null,

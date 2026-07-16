@@ -14,6 +14,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -25,11 +26,19 @@ import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FilterChipGroup
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.ui.theme.*
 
 @Composable
 fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
+
+    val context = LocalContext.current
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
 
     Column(
         modifier = Modifier
@@ -37,7 +46,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        ScreenHeader(title = "அலர்ட்கள்")
+        ScreenHeader(title = strings.alertsTitle)
 
         FilterChipGroup(
             filters = listOf("அனைத்து", "விலை அலர்ட்", "வானிலை", "பயிர்"),

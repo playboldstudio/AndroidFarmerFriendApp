@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.market
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
@@ -13,8 +14,20 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class FilterType(val id: String, val displayKey: (AppStrings) -> String) {
+    VEGETABLES("vegetables", { it.vegetables }),
+    FRUITS("fruits", { it.fruits }),
+    NONVEG("nonveg", { it.nonVeg }),
+    GOLD("gold", { it.gold }),
+    EGG("egg", { it.egg });
+
+    companion object {
+        fun fromId(id: String): FilterType = entries.find { it.id == id } ?: VEGETABLES
+    }
+}
+
 sealed interface MarketEvent {
-    data class SelectFilter(val filter: String) : MarketEvent
+    data class SelectFilter(val filter: FilterType) : MarketEvent
     data class Search(val query: String) : MarketEvent
     data class ChangeLocation(val marketName: String) : MarketEvent
     data object Retry : MarketEvent
@@ -22,7 +35,7 @@ sealed interface MarketEvent {
 
 data class MarketState(
     val cropsState: UiState<List<Crop>> = UiState.Loading,
-    val selectedFilter: String = "காய்கறிகள்",
+    val selectedFilter: FilterType = FilterType.VEGETABLES,
     val searchQuery: String = "",
     val locationName: String = "Namakkal",
     val fetchDate: String = ""
@@ -56,18 +69,17 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
         }
     }
 
-    private fun loadData(filter: String) {
+    private fun loadData(filter: FilterType) {
         _state.value = _state.value.copy(selectedFilter = filter, cropsState = UiState.Loading, searchQuery = "")
         viewModelScope.launch {
             try {
                 val location = _state.value.locationName.lowercase()
                 val crops = when (filter) {
-                    "காய்கறிகள்" -> repository.getVegetablePrices(location)
-                    "பழங்கள்" -> repository.getFruitPrices(location)
-                    "இறைச்சி" -> repository.getNonVegPrices(location)
-                    "தங்கம்" -> repository.getGoldPrices(location)
-                    "முட்டை" -> repository.getEggPrices(location)
-                    else -> repository.getVegetablePrices(location)
+                    FilterType.VEGETABLES -> repository.getVegetablePrices(location)
+                    FilterType.FRUITS -> repository.getFruitPrices(location)
+                    FilterType.NONVEG -> repository.getNonVegPrices(location)
+                    FilterType.GOLD -> repository.getGoldPrices(location)
+                    FilterType.EGG -> repository.getEggPrices(location)
                 }
                 val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale("ta", "IN")).format(Date())
                 _state.value = _state.value.copy(

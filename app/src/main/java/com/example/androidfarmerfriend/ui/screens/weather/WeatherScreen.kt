@@ -23,6 +23,9 @@ import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.ui.theme.*
 
 @Composable
@@ -31,6 +34,9 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
 
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
@@ -61,7 +67,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         ScreenHeader(
-            title = "வானிலை",
+            title = strings.weatherTitle,
             subtitle = selectedLocation.name,
             showSearch = false,
             onLocationClick = { showLocationPicker = true }
@@ -77,12 +83,12 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(56.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("வானிலை தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Text(strings.loadError, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(weatherState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.onEvent(WeatherEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
+                        Text(strings.retry)
                     }
                 }
             }

@@ -25,6 +25,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.R
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
@@ -45,6 +48,9 @@ fun HomeScreen(
 
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
@@ -74,12 +80,12 @@ fun HomeScreen(
             .background(MaterialTheme.colorScheme.background)
             .padding(16.dp)
     ) {
-        FarmerFriendLogo()
+        FarmerFriendLogo(strings = strings)
 
         Spacer(modifier = Modifier.height(12.dp))
 
         ScreenHeader(
-            title = "வணக்கம், விவசாயி! 👋",
+            title = strings.homeGreeting,
             subtitle = selectedLocation.name,
             isHome = true,
             showSearch = false,
@@ -96,28 +102,28 @@ fun HomeScreen(
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(24.dp))
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("வானிலை தரவு இல்லை", color = GrayText, style = MaterialTheme.typography.bodySmall)
+                    Text(strings.weatherNoData, color = GrayText, style = MaterialTheme.typography.bodySmall)
                 }
             }
-            is UiState.Success -> WeatherSummaryCard(weatherState.data)
+            is UiState.Success -> WeatherSummaryCard(weather = weatherState.data, strings = strings)
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Text(
-            text = "விரைவு அணுகல்",
+            text = strings.quickAccess,
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = 16.dp),
             color = MaterialTheme.colorScheme.onBackground
         )
 
-        QuickAccessGrid(onNavigate = onNavigate)
+        QuickAccessGrid(onNavigate = onNavigate, strings = strings)
     }
 }
 
 @Composable
-fun FarmerFriendLogo() {
+fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -139,7 +145,7 @@ fun FarmerFriendLogo() {
                 color = FarmerGreenPrimary
             )
             Text(
-                text = "விவசாயி நண்பன்",
+                text = strings.farmerFriendTamil,
                 style = MaterialTheme.typography.bodySmall,
                 color = GrayText
             )
@@ -148,7 +154,7 @@ fun FarmerFriendLogo() {
 }
 
 @Composable
-fun WeatherSummaryCard(weather: WeatherInfo) {
+fun WeatherSummaryCard(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
     FarmerCard {
         Column(modifier = Modifier.padding(16.dp)) {
             Row(
@@ -181,7 +187,7 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                     }
                     if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
                         Text(
-                            text = "குறைந்தபட்சம் ${weather.todayLow} | அதிகபட்சம் ${weather.todayHigh}",
+                            text = java.lang.String.format(strings.lowHigh, weather.todayLow, weather.todayHigh),
                             style = MaterialTheme.typography.bodySmall,
                             color = GrayText
                         )
@@ -195,9 +201,9 @@ fun WeatherSummaryCard(weather: WeatherInfo) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceAround
             ) {
-                WeatherStatItem(label = "மழை", value = weather.rainChance, icon = Icons.Default.WaterDrop)
-                WeatherStatItem(label = "ஈரப்பதம்", value = weather.humidity, icon = Icons.Default.Opacity)
-                WeatherStatItem(label = "காற்று", value = weather.windSpeed, icon = Icons.Default.Air)
+                WeatherStatItem(label = strings.rain, value = weather.rainChance, icon = Icons.Default.WaterDrop)
+                WeatherStatItem(label = strings.humidity, value = weather.humidity, icon = Icons.Default.Opacity)
+                WeatherStatItem(label = strings.wind, value = weather.windSpeed, icon = Icons.Default.Air)
             }
         }
     }
@@ -215,14 +221,14 @@ fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
 data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val route: String)
 
 @Composable
-fun QuickAccessGrid(onNavigate: (String) -> Unit = {}) {
+fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.Tamil) {
     val items = listOf(
-        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, FarmerGreenSecondary, Screen.Market.route),
-        QuickActionItem("வானிலை", Icons.Default.WbCloudy, WeatherBlue, Screen.Weather.route),
-        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, SchemeLightGreen, Screen.Schemes.route),
-        QuickActionItem("நோய்கள்", Icons.Default.BugReport, DiseaseOrange, Screen.Disease.route),
-        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, AlertPurple, Screen.Alerts.route),
-        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, CropNotesBrown, Screen.CropNotes.route)
+        QuickActionItem(strings.navMarket, Icons.Default.BarChart, FarmerGreenSecondary, Screen.Market.route),
+        QuickActionItem(strings.weatherTitle, Icons.Default.WbCloudy, WeatherBlue, Screen.Weather.route),
+        QuickActionItem(strings.schemesTitle, Icons.Default.LibraryBooks, SchemeLightGreen, Screen.Schemes.route),
+        QuickActionItem(strings.diseaseTitle, Icons.Default.BugReport, DiseaseOrange, Screen.Disease.route),
+        QuickActionItem(strings.alertsTitle, Icons.Default.Notifications, AlertPurple, Screen.Alerts.route),
+        QuickActionItem(strings.cropNotesTitle, Icons.Default.MenuBook, CropNotesBrown, Screen.CropNotes.route)
     )
 
     LazyVerticalGrid(
