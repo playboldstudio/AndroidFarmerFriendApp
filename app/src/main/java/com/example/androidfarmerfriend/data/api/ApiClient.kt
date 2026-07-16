@@ -44,6 +44,22 @@ object ApiClient {
             .build()
     }
 
+    private val vegetableMarketRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ApiConfig.VEGETABLE_MARKET_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    private val eggRatesRetrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl(ApiConfig.EGG_RATES_BASE_URL)
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
     val api: FarmerApi by lazy {
         retrofit.create(FarmerApi::class.java)
     }
@@ -54,5 +70,13 @@ object ApiClient {
 
     val geocodingApi: GeocodingApi by lazy {
         geocodingRetrofit.create(GeocodingApi::class.java)
+    }
+
+    val vegetableMarketApi: VegetableMarketApi by lazy {
+        vegetableMarketRetrofit.create(VegetableMarketApi::class.java)
+    }
+
+    val eggRatesApi: EggRatesApi by lazy {
+        eggRatesRetrofit.create(EggRatesApi::class.java)
     }
 }

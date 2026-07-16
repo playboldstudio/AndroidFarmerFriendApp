@@ -67,7 +67,7 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                     "இறைச்சி" -> repository.getNonVegPrices(location)
                     "தங்கம்" -> repository.getGoldPrices(location)
                     "முட்டை" -> repository.getEggPrices(location)
-                    else -> repository.getMarketPrices(location)
+                    else -> repository.getVegetablePrices(location)
                 }
                 val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale("ta", "IN")).format(Date())
                 _state.value = _state.value.copy(

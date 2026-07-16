@@ -165,6 +165,15 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
 @Composable
 fun MarketCropItem(crop: Crop) {
+    val locationLabel = when (crop.category) {
+        "vegetable" -> "கோயம்பேடு சந்தை"
+        "fruit" -> "கோயம்பேடு சந்தை"
+        "nonveg" -> "தமிழ்நாடு"
+        "gold" -> "சென்னை"
+        "egg" -> "சென்னை"
+        else -> ""
+    }
+
     FarmerCard {
         Row(
             modifier = Modifier
@@ -197,48 +206,22 @@ fun MarketCropItem(crop: Crop) {
                     fontSize = 16.sp,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    text = crop.price,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrayText
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = crop.price,
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = GrayText
+                    )
+                    if (locationLabel.isNotEmpty()) {
+                        Text(
+                            text = " • $locationLabel",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = GrayText.copy(alpha = 0.7f)
+                        )
+                    }
+                }
             }
-
-            MarketTrendIndicator(crop.trend)
         }
-    }
-}
-
-@Composable
-fun MarketTrendIndicator(trend: Double) {
-    if (trend == 0.0) {
-        Text(
-            text = "0%",
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold,
-            color = GrayText
-        )
-        return
-    }
-    val isPositive = trend > 0
-    val color = if (isPositive) TrendGreen else TrendRed
-    val icon = if (isPositive) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward
-    val sign = if (isPositive) "+" else ""
-
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(14.dp)
-        )
-        Spacer(modifier = Modifier.width(2.dp))
-        Text(
-            text = "$sign$trend%",
-            color = color,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold
-        )
     }
 }
 
