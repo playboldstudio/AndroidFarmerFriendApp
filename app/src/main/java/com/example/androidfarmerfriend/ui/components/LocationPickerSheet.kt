@@ -17,6 +17,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.Locations
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
@@ -49,6 +52,11 @@ fun LocationPickerSheet(
         isSearching = false
     }
 
+    val contextForLang = androidx.compose.ui.platform.LocalContext.current
+    val langPrefs = remember { LanguagePrefs(contextForLang) }
+    val currentLang = remember { langPrefs.selectedLanguage }
+    val locStrings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+
     val displayLocations = if (searchQuery.length >= 2) {
         searchResults
     } else {
@@ -65,7 +73,7 @@ fun LocationPickerSheet(
                 .padding(bottom = 32.dp)
         ) {
             Text(
-                text = "இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்",
+                text = locStrings.selectLocation,
                 style = MaterialTheme.typography.titleLarge,
                 fontWeight = FontWeight.Bold,
                 modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
@@ -78,7 +86,7 @@ fun LocationPickerSheet(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 24.dp, vertical = 8.dp),
-                placeholder = { Text("நகரம் அல்லது பகுதியைத் தேடவும்...", color = GrayText, fontSize = 14.sp) },
+                placeholder = { Text(locStrings.searchLocationHint, color = GrayText, fontSize = 14.sp) },
                 leadingIcon = {
                     if (isSearching) {
                         CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
@@ -154,7 +162,7 @@ fun LocationPickerSheet(
                 if (searchQuery.length >= 2 && !isSearching && searchResults.isEmpty()) {
                     item {
                         Text(
-                            text = "முடிவுகள் எதுவும் இல்லை",
+                            text = locStrings.noResults,
                             style = MaterialTheme.typography.bodyMedium,
                             color = GrayText,
                             modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)

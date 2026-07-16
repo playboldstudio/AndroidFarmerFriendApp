@@ -19,6 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
@@ -26,10 +29,15 @@ import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
+private const val ALL_CROPS = "__all__"
+
 @Composable
 fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var showSearchBar by remember { mutableStateOf(false) }
 
     Column(
@@ -39,8 +47,8 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         ScreenHeader(
-            title = "பயிர் குறிப்புகள்",
-            subtitle = "விவசாய குறிப்புகள் மற்றும் தகவல்கள்",
+            title = strings.cropNotesTitle,
+            subtitle = strings.cropNotesSubtitle,
             isSearchActive = showSearchBar,
             onSearchClick = {
                 showSearchBar = !showSearchBar
@@ -55,7 +63,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 value = state.searchQuery,
                 onValueChange = { viewModel.onEvent(CropNoteEvent.Search(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("குறிப்புகளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                placeholder = { Text(strings.searchNotes, color = GrayText, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
                 trailingIcon = {
                     if (state.searchQuery.isNotEmpty()) {
@@ -85,12 +93,13 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 .padding(vertical = 8.dp)
         ) {
             state.crops.forEach { crop ->
+                val displayName = if (crop == ALL_CROPS) strings.filterAll else crop
                 val isSelected = crop == state.selectedCrop
                 FilterChip(
                     selected = isSelected,
                     onClick = { viewModel.onEvent(CropNoteEvent.SelectCrop(crop)) },
                     label = {
-                        Text(crop, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
+                        Text(displayName, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal)
                     },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = MaterialTheme.colorScheme.surface,
@@ -110,12 +119,12 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("குறிப்புகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Text(strings.notesLoadError, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(notesState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.onEvent(CropNoteEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
+                        Text(strings.retry)
                     }
                 }
             }
@@ -125,7 +134,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("குறிப்புகள் எதுவும் இல்லை", color = GrayText)
+                            Text(strings.noNotes, color = GrayText)
                         }
                     }
                 } else {
@@ -193,7 +202,7 @@ fun CropNoteItem(note: CropNote) {
 
                 Icon(
                     Icons.Default.OpenInNew,
-                    contentDescription = "திறக்க",
+                    contentDescription = null,
                     tint = FarmerGreenPrimary,
                     modifier = Modifier.size(20.dp)
                 )

@@ -20,15 +20,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FilterChipGroup
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.ui.theme.*
 
 @Composable
@@ -49,9 +49,13 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
         ScreenHeader(title = strings.alertsTitle)
 
         FilterChipGroup(
-            filters = listOf("அனைத்து", "விலை அலர்ட்", "வானிலை", "பயிர்"),
-            selectedFilter = state.selectedFilter,
-            onFilterSelected = { viewModel.onEvent(AlertEvent.SelectFilter(it)) }
+            filters = AlertFilterType.entries.map { it.displayKey(strings) },
+            selectedFilter = state.selectedFilter.displayKey(strings),
+            onFilterSelected = { display ->
+                AlertFilterType.entries.find { it.displayKey(strings) == display }?.let {
+                    viewModel.onEvent(AlertEvent.SelectFilter(it))
+                }
+            }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -61,7 +65,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
                 CircularProgressIndicator(color = FarmerGreenPrimary)
             }
             is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Text("அலர்ட்களை ஏற்ற முடியவில்லை", color = GrayText)
+                Text(strings.alertsLoadError, color = GrayText)
             }
             is UiState.Success -> {
                 if (state.filteredAlerts.isEmpty()) {
@@ -69,7 +73,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.Notifications, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("அலர்ட்கள் எதுவும் இல்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                            Text(strings.noAlerts, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                         }
                     }
                 } else {
@@ -78,7 +82,7 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
                         items(state.filteredAlerts) { alert ->
-                            AlertItem(alert)
+                            AlertItem(alert = alert, strings = strings)
                         }
                     }
                 }
@@ -88,11 +92,11 @@ fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
 }
 
 @Composable
-fun AlertItem(alert: Alert) {
+fun AlertItem(alert: Alert, strings: AppStrings) {
     val (icon, color, label) = when (alert.type) {
-        AlertType.PRICE -> Triple(Icons.Default.TrendingUp, AlertRed, "விலை அலர்ட்")
-        AlertType.WEATHER -> Triple(Icons.Default.WbCloudy, AlertBlue, "வானிலை அலர்ட்")
-        AlertType.CROP -> Triple(Icons.Default.Notifications, AlertGreen, "பயிர் அலர்ட்")
+        AlertType.PRICE -> Triple(Icons.Default.TrendingUp, AlertRed, strings.priceAlertLabel)
+        AlertType.WEATHER -> Triple(Icons.Default.WbCloudy, AlertBlue, strings.weatherAlertLabel)
+        AlertType.CROP -> Triple(Icons.Default.Notifications, AlertGreen, strings.cropAlertLabel)
     }
 
     FarmerCard {

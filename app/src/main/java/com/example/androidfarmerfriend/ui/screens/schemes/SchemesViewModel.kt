@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.schemes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
@@ -10,22 +11,32 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+enum class SchemeFilterType(val id: String, val displayKey: (AppStrings) -> String) {
+    ALL("all", { it.filterAll }),
+    CENTRAL("central", { it.filterCentral }),
+    STATE("state", { it.filterState });
+
+    companion object {
+        fun fromId(id: String): SchemeFilterType = entries.find { it.id == id } ?: ALL
+    }
+}
+
 sealed interface SchemeEvent {
-    data class SelectFilter(val filter: String) : SchemeEvent
+    data class SelectFilter(val filter: SchemeFilterType) : SchemeEvent
     data class Search(val query: String) : SchemeEvent
     data object Retry : SchemeEvent
 }
 
 data class SchemesState(
     val schemesState: UiState<List<Scheme>> = UiState.Loading,
-    val selectedFilter: String = "அனைத்து",
+    val selectedFilter: SchemeFilterType = SchemeFilterType.ALL,
     val searchQuery: String = ""
 ) {
     val filteredSchemes: List<Scheme>
         get() {
             val data = (schemesState as? UiState.Success)?.data ?: return emptyList()
-            val categoryFiltered = if (selectedFilter == "அனைத்து") data
-            else data.filter { it.category == selectedFilter }
+            val categoryFiltered = if (selectedFilter == SchemeFilterType.ALL) data
+            else data.filter { it.category == selectedFilter.id }
             val query = searchQuery.trim().lowercase()
             return if (query.isEmpty()) categoryFiltered
             else categoryFiltered.filter {
@@ -63,7 +74,7 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
                 _state.value = _state.value.copy(schemesState = UiState.Success(schemes))
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
-                    schemesState = UiState.Error(e.message ?: "திட்டங்களை ஏற்ற முடியவில்லை")
+                    schemesState = UiState.Error(e.message ?: "Failed to load schemes")
                 )
             }
         }

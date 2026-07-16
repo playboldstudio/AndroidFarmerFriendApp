@@ -92,13 +92,13 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
                     }
                 }
             }
-            is UiState.Success -> WeatherDetailedView(weatherState.data)
+            is UiState.Success -> WeatherDetailedView(weather = weatherState.data, strings = strings)
         }
     }
 }
 
 @Composable
-fun WeatherDetailedView(weather: WeatherInfo) {
+fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
     Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
         Icon(
             weatherIconFor(weather.weatherCode),
@@ -120,7 +120,7 @@ fun WeatherDetailedView(weather: WeatherInfo) {
         )
         if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
             Text(
-                text = "குறைந்தபட்சம் ${weather.todayLow} | அதிகபட்சம் ${weather.todayHigh}",
+                text = java.lang.String.format(strings.lowHigh, weather.todayLow, weather.todayHigh),
                 style = MaterialTheme.typography.bodyMedium,
                 color = GrayText
             )
@@ -133,7 +133,7 @@ fun WeatherDetailedView(weather: WeatherInfo) {
             Spacer(modifier = Modifier.height(32.dp))
         }
 
-        WeatherDetailsList(weather)
+        WeatherDetailsList(weather = weather, strings = strings)
     }
 }
 
@@ -166,12 +166,12 @@ fun WeatherForecastRow(forecast: List<ForecastDay>) {
 }
 
 @Composable
-fun WeatherDetailsList(weather: WeatherInfo) {
+fun WeatherDetailsList(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        WeatherDetailRow(icon = Icons.Default.WaterDrop, label = "மழை வாய்ப்பு", value = weather.rainChance)
-        WeatherDetailRow(icon = Icons.Default.Opacity, label = "ஈரப்பதம்", value = weather.humidity)
-        WeatherDetailRow(icon = Icons.Default.Air, label = "காற்றின் வேகம்", value = weather.windSpeed)
-        WeatherDetailRow(icon = Icons.Default.Explore, label = "காற்றின் திசை", value = weather.windDirection)
+        WeatherDetailRow(icon = Icons.Default.WaterDrop, label = strings.rainChance, value = weather.rainChance)
+        WeatherDetailRow(icon = Icons.Default.Opacity, label = strings.humidity, value = weather.humidity)
+        WeatherDetailRow(icon = Icons.Default.Air, label = strings.windSpeed, value = weather.windSpeed)
+        WeatherDetailRow(icon = Icons.Default.Explore, label = strings.windDirection, value = weather.windDirection)
     }
 }
 

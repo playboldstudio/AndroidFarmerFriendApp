@@ -42,11 +42,11 @@ class HomeViewModel(private val repository: FarmerRepository = FarmerRepository(
                 val weather = repository.getWeather(location.lat, location.lon, location.name)
                 _state.value = _state.value.copy(
                     weatherState = if (weather != null) UiState.Success(weather)
-                    else UiState.Error("வானிலை தரவு கிடைக்கவில்லை")
+                    else UiState.Error("Weather data unavailable")
                 )
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
-                    weatherState = UiState.Error(e.message ?: "வானிலை தரவுகளை ஏற்ற முடியவில்லை")
+                    weatherState = UiState.Error(e.message ?: "Unable to load weather data")
                 )
             }
         }

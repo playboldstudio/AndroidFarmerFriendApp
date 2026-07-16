@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.ui.screens.alerts
 
 import androidx.lifecycle.ViewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
@@ -9,25 +10,26 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 
+enum class AlertFilterType(val id: String, val displayKey: (AppStrings) -> String, val alertType: AlertType?) {
+    ALL("all", { it.filterAll }, null),
+    PRICE("price", { it.filterPriceAlert }, AlertType.PRICE),
+    WEATHER("weather", { it.filterWeather }, AlertType.WEATHER),
+    CROP("crop", { it.filterCrop }, AlertType.CROP);
+}
+
 sealed interface AlertEvent {
-    data class SelectFilter(val filter: String) : AlertEvent
+    data class SelectFilter(val filter: AlertFilterType) : AlertEvent
 }
 
 data class AlertsState(
     val alertsState: UiState<List<Alert>> = UiState.Loading,
-    val selectedFilter: String = "அனைத்து"
+    val selectedFilter: AlertFilterType = AlertFilterType.ALL
 ) {
     val filteredAlerts: List<Alert>
         get() {
             val data = (alertsState as? UiState.Success)?.data ?: return emptyList()
-            if (selectedFilter == "அனைத்து") return data
-            val type = when (selectedFilter) {
-                "விலை அலர்ட்" -> AlertType.PRICE
-                "வானிலை" -> AlertType.WEATHER
-                "பயிர்" -> AlertType.CROP
-                else -> return data
-            }
-            return data.filter { it.type == type }
+            if (selectedFilter == AlertFilterType.ALL) return data
+            return data.filter { it.type == selectedFilter.alertType }
         }
 }
 

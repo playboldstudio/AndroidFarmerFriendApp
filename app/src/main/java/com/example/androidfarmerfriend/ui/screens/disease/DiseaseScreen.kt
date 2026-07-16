@@ -19,6 +19,9 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
@@ -30,6 +33,9 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
+    val languagePrefs = remember { LanguagePrefs(context) }
+    val currentLang = remember { languagePrefs.selectedLanguage }
+    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var showSearchBar by remember { mutableStateOf(false) }
 
     Column(
@@ -39,7 +45,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             .padding(16.dp)
     ) {
         ScreenHeader(
-            title = "நோய் கண்டறிதல்",
+            title = strings.diseaseDetectionTitle,
             isSearchActive = showSearchBar,
             onSearchClick = {
                 showSearchBar = !showSearchBar
@@ -54,7 +60,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 value = state.searchQuery,
                 onValueChange = { viewModel.onEvent(DiseaseEvent.Search(it)) },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("நோய் பெயரைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
+                placeholder = { Text(strings.searchDiseases, color = GrayText, fontSize = 14.sp) },
                 leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
                 trailingIcon = {
                     if (state.searchQuery.isNotEmpty()) {
@@ -83,12 +89,12 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 .horizontalScroll(rememberScrollState())
                 .padding(vertical = 8.dp)
         ) {
-            listOf("அனைத்து", "இலை நோய்கள்", "பழ நோய்கள்").forEach { filter ->
+            DiseaseFilterType.entries.forEach { filter ->
                 val isSelected = filter == state.selectedFilter
                 FilterChip(
                     selected = isSelected,
                     onClick = { viewModel.onEvent(DiseaseEvent.SelectFilter(filter)) },
-                    label = { Text(filter, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
+                    label = { Text(filter.displayKey(strings), fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
                     colors = FilterChipDefaults.filterChipColors(
                         containerColor = MaterialTheme.colorScheme.surface,
                         selectedContainerColor = FarmerGreenPrimary,
@@ -107,12 +113,12 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
                     Spacer(modifier = Modifier.height(12.dp))
-                    Text("நோய் தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                    Text(strings.diseaseLoadError, color = GrayText, style = MaterialTheme.typography.bodyLarge)
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(diseaseState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
                     Spacer(modifier = Modifier.height(16.dp))
                     Button(onClick = { viewModel.onEvent(DiseaseEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
+                        Text(strings.retry)
                     }
                 }
             }
@@ -122,7 +128,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text("நோய்கள் எதுவும் இல்லை", color = GrayText)
+                            Text(strings.noDiseases, color = GrayText)
                         }
                     }
                 } else {
@@ -185,7 +191,7 @@ fun DiseaseItem(disease: Disease) {
 
             Icon(
                 Icons.Default.OpenInNew,
-                contentDescription = "திறக்க",
+                contentDescription = null,
                 tint = FarmerGreenPrimary,
                 modifier = Modifier.size(20.dp)
             )

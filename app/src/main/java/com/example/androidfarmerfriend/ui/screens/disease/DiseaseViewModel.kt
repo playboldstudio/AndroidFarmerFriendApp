@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.disease
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
@@ -10,15 +11,21 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
+enum class DiseaseFilterType(val id: String, val displayKey: (AppStrings) -> String) {
+    ALL("all", { it.filterAll }),
+    LEAF("leaf", { it.filterLeafDiseases }),
+    FRUIT("fruit", { it.filterFruitDiseases });
+}
+
 sealed interface DiseaseEvent {
-    data class SelectFilter(val filter: String) : DiseaseEvent
+    data class SelectFilter(val filter: DiseaseFilterType) : DiseaseEvent
     data class Search(val query: String) : DiseaseEvent
     data object Retry : DiseaseEvent
 }
 
 data class DiseaseState(
     val diseasesState: UiState<List<Disease>> = UiState.Loading,
-    val selectedFilter: String = "அனைத்து",
+    val selectedFilter: DiseaseFilterType = DiseaseFilterType.ALL,
     val searchQuery: String = ""
 ) {
     val filteredDiseases: List<Disease>
@@ -26,9 +33,9 @@ data class DiseaseState(
             val data = (diseasesState as? UiState.Success)?.data ?: return emptyList()
             val query = searchQuery.trim().lowercase()
             return data.filter { disease ->
-                val matchesFilter = selectedFilter == "அனைத்தు" || selectedFilter == "அனைத்து" ||
-                    disease.name.contains(selectedFilter, ignoreCase = true) ||
-                    disease.cropAffected.contains(selectedFilter, ignoreCase = true)
+                val matchesFilter = selectedFilter == DiseaseFilterType.ALL ||
+                    disease.name.contains(selectedFilter.id, ignoreCase = true) ||
+                    disease.cropAffected.contains(selectedFilter.id, ignoreCase = true)
                 val matchesSearch = query.isEmpty() ||
                     disease.name.lowercase().contains(query) ||
                     disease.cropAffected.lowercase().contains(query)
@@ -65,7 +72,7 @@ class DiseaseViewModel(private val repository: FarmerRepository = FarmerReposito
                 _state.value = _state.value.copy(diseasesState = UiState.Success(diseases))
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
-                    diseasesState = UiState.Error(e.message ?: "நோய் தரவுகளை ஏற்ற முடியவில்லை")
+                    diseasesState = UiState.Error(e.message ?: "Failed to load diseases")
                 )
             }
         }
