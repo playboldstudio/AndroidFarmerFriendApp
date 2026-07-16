@@ -21,8 +21,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.util.UiState
@@ -35,10 +34,7 @@ import com.example.androidfarmerfriend.ui.theme.*
 fun AlertsScreen(viewModel: AlertsViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
-    val context = LocalContext.current
-    val languagePrefs = remember { LanguagePrefs(context) }
-    val currentLang = remember { languagePrefs.selectedLanguage }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+    val strings = LocalAppStrings.current
 
     Column(
         modifier = Modifier

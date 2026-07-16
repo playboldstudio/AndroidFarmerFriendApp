@@ -20,8 +20,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
@@ -31,11 +30,9 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @Composable
 fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
+    val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    val languagePrefs = remember { LanguagePrefs(context) }
-    val currentLang = remember { languagePrefs.selectedLanguage }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var showSearchBar by remember { mutableStateOf(false) }
 
     Column(

@@ -18,8 +18,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.Locations
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
@@ -52,10 +51,7 @@ fun LocationPickerSheet(
         isSearching = false
     }
 
-    val contextForLang = androidx.compose.ui.platform.LocalContext.current
-    val langPrefs = remember { LanguagePrefs(contextForLang) }
-    val currentLang = remember { langPrefs.selectedLanguage }
-    val locStrings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+    val locStrings = LocalAppStrings.current
 
     val displayLocations = if (searchQuery.length >= 2) {
         searchResults

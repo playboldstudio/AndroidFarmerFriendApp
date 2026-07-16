@@ -22,6 +22,7 @@ import androidx.navigation.compose.rememberNavController
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.screens.home.HomeScreen
 import com.example.androidfarmerfriend.ui.screens.market.MarketScreen
@@ -51,6 +52,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
     val currentLang = remember { languagePrefs.selectedLanguage }
     val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
 
+    CompositionLocalProvider(LocalAppStrings provides strings) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Market,
@@ -148,6 +150,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                 )
             }
         }
+    }
     }
 }
 

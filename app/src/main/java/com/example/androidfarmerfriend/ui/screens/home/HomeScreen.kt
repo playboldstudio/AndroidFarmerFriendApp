@@ -26,8 +26,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
@@ -46,11 +45,9 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    val strings = LocalAppStrings.current
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
-    val languagePrefs = remember { LanguagePrefs(context) }
-    val currentLang = remember { languagePrefs.selectedLanguage }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 

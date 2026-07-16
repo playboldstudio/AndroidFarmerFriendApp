@@ -239,5 +239,5 @@ data class AppStrings(
             weatherAlertLabel = "Weather Alert",
             cropAlertLabel = "Crop Alert",
         )
-    }
+}
 }

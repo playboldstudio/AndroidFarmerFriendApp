@@ -24,6 +24,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
@@ -35,13 +36,12 @@ fun ProfileScreen(
     onNavigate: (String) -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
+    val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
-    val languagePrefs = remember { LanguagePrefs(context) }
     val location = remember { locationPrefs.selectedLocation }
-    val currentLang = remember { languagePrefs.selectedLanguage }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+    val currentLang = remember { LanguagePrefs(context).selectedLanguage }
 
     val navEvent by viewModel.navigation.collectAsState()
     LaunchedEffect(navEvent) {

@@ -24,19 +24,16 @@ import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.theme.*
 
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
+    val strings = LocalAppStrings.current
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
-    val languagePrefs = remember { LanguagePrefs(context) }
-    val currentLang = remember { languagePrefs.selectedLanguage }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
