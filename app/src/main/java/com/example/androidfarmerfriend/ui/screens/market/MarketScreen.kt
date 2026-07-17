@@ -172,12 +172,13 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
 @Composable
 fun MarketCropItem(crop: Crop) {
+    val strings = LocalAppStrings.current
     val locationLabel = when (crop.category) {
-        "vegetable" -> "கோயம்பேடு சந்தை"
-        "fruit" -> "கோயம்பேடு சந்தை"
-        "nonveg" -> "தமிழ்நாடு"
-        "gold" -> "சென்னை"
-        "egg" -> "சென்னை"
+        "vegetable" -> strings.marketKoyambedu
+        "fruit" -> strings.marketKoyambedu
+        "nonveg" -> strings.tamilNadu
+        "gold" -> strings.chennai
+        "egg" -> strings.chennai
         else -> ""
     }
 

@@ -1,5 +1,6 @@
 package com.example.androidfarmerfriend.data.api
 
+import com.example.androidfarmerfriend.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -14,7 +15,7 @@ object ApiClient {
             .writeTimeout(15, TimeUnit.SECONDS)
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
-                    level = HttpLoggingInterceptor.Level.BODY
+                    level = if (BuildConfig.DEBUG) HttpLoggingInterceptor.Level.BODY else HttpLoggingInterceptor.Level.NONE
                 }
             )
             .build()

@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "987526791127",
+    "project_id": "android-farmer-friend",
+    "storage_bucket": "android-farmer-friend.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:987526791127:android:f36f32b2d0e28afec19592",
+        "android_client_info": {
+          "package_name": "com.example.androidfarmerfriend"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBh44zG9btmGacj5tzIh2BU9khm7-Nwm8s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

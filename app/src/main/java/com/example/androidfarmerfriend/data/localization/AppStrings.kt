@@ -78,6 +78,10 @@ data class AppStrings(
     val priceAlertLabel: String,
     val weatherAlertLabel: String,
     val cropAlertLabel: String,
+    val appName: String,
+    val marketKoyambedu: String,
+    val tamilNadu: String,
+    val chennai: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -158,6 +162,10 @@ data class AppStrings(
             priceAlertLabel = "விலை அலர்ட்",
             weatherAlertLabel = "வானிலை அலர்ட்",
             cropAlertLabel = "பயிர் அலர்ட்",
+            appName = "விவசாயி நண்பன்",
+            marketKoyambedu = "கோயம்பேடு சந்தை",
+            tamilNadu = "தமிழ்நாடு",
+            chennai = "சென்னை",
         )
 
         val English = AppStrings(
@@ -238,6 +246,10 @@ data class AppStrings(
             priceAlertLabel = "Price Alert",
             weatherAlertLabel = "Weather Alert",
             cropAlertLabel = "Crop Alert",
+            appName = "Farmer Friend",
+            marketKoyambedu = "Koyambedu Market",
+            tamilNadu = "Tamil Nadu",
+            chennai = "Chennai",
         )
 }
 }

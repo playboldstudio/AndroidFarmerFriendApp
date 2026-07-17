@@ -49,7 +49,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
     val navController = rememberNavController()
     val context = LocalContext.current
     val languagePrefs = remember { LanguagePrefs(context) }
-    val currentLang = remember { languagePrefs.selectedLanguage }
+    var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
     val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
 
     CompositionLocalProvider(LocalAppStrings provides strings) {
@@ -145,7 +145,9 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             composable(Screen.CropNotes.route) { CropNotesScreen() }
             composable(Screen.Language.route) {
                 LanguageScreen(
-                    onLanguageChanged = onRestart,
+                    onLanguageChanged = { lang ->
+                        currentLang = lang
+                    },
                     onBack = { navController.popBackStack() }
                 )
             }

@@ -5,6 +5,7 @@ import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.model.*
 import com.example.androidfarmerfriend.data.scraper.WebDataScraper
 import com.example.androidfarmerfriend.util.WeatherCodeMapper
+import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -15,47 +16,53 @@ class FarmerRepository {
     private val weatherApi = ApiClient.weatherApi
     private val vegetableMarketApi = ApiClient.vegetableMarketApi
     private val eggRatesApi = ApiClient.eggRatesApi
+    private val crashlytics = FirebaseCrashlytics.getInstance()
 
     private fun todayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
     suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu"): WeatherInfo? = withContext(Dispatchers.IO) {
-        val response = weatherApi.getForecast(latitude = lat, longitude = lon)
-        val current = response.current ?: throw Exception("Failed to load weather data")
-        val daily = response.daily
+        try {
+            val response = weatherApi.getForecast(latitude = lat, longitude = lon)
+            val current = response.current ?: throw Exception("Failed to load weather data")
+            val daily = response.daily
 
-        val forecast = buildList {
-            val times = daily?.time ?: emptyList()
-            times.forEachIndexed { index, date ->
-                add(
-                    ForecastDay(
-                        day = WeatherCodeMapper.dayLabelTamil(date, index),
-                        maxTemp = "${daily?.tempMax?.getOrNull(index)?.toInt() ?: 0}°",
-                        minTemp = "${daily?.tempMin?.getOrNull(index)?.toInt() ?: 0}°",
-                        weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0
+            val forecast = buildList {
+                val times = daily?.time ?: emptyList()
+                times.forEachIndexed { index, date ->
+                    add(
+                        ForecastDay(
+                            day = WeatherCodeMapper.dayLabelTamil(date, index),
+                            maxTemp = "${daily?.tempMax?.getOrNull(index)?.toInt() ?: 0}°",
+                            minTemp = "${daily?.tempMin?.getOrNull(index)?.toInt() ?: 0}°",
+                            weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0
+                        )
                     )
-                )
+                }
             }
+
+            val code = current.weatherCode ?: 0
+            val todayHigh = daily?.tempMax?.getOrNull(0)?.toInt()
+            val todayLow = daily?.tempMin?.getOrNull(0)?.toInt()
+            val rainProb = daily?.precipitationProbabilityMax?.getOrNull(0)
+
+            WeatherInfo(
+                temperature = "${current.temperature?.toInt() ?: 0}°C",
+                condition = WeatherCodeMapper.conditionTamil(code),
+                humidity = "${current.humidity?.toInt() ?: 0}%",
+                windSpeed = "${current.windSpeed?.toInt() ?: 0} km/h",
+                windDirection = WeatherCodeMapper.windDirection(current.windDirection ?: 0.0),
+                rainChance = "${rainProb ?: 0}%",
+                location = locationName,
+                feelsLike = "${current.feelsLike?.toInt() ?: 0}°C",
+                todayHigh = todayHigh?.let { "$it°" } ?: "",
+                todayLow = todayLow?.let { "$it°" } ?: "",
+                weatherCode = code,
+                forecast = forecast
+            )
+        } catch (e: Exception) {
+            crashlytics.recordException(e)
+            null
         }
-
-        val code = current.weatherCode ?: 0
-        val todayHigh = daily?.tempMax?.getOrNull(0)?.toInt()
-        val todayLow = daily?.tempMin?.getOrNull(0)?.toInt()
-        val rainProb = daily?.precipitationProbabilityMax?.getOrNull(0)
-
-        WeatherInfo(
-            temperature = "${current.temperature?.toInt() ?: 0}°C",
-            condition = WeatherCodeMapper.conditionTamil(code),
-            humidity = "${current.humidity?.toInt() ?: 0}%",
-            windSpeed = "${current.windSpeed?.toInt() ?: 0} km/h",
-            windDirection = WeatherCodeMapper.windDirection(current.windDirection ?: 0.0),
-            rainChance = "${rainProb ?: 0}%",
-            location = locationName,
-            feelsLike = "${current.feelsLike?.toInt() ?: 0}°C",
-            todayHigh = todayHigh?.let { "$it°" } ?: "",
-            todayLow = todayLow?.let { "$it°" } ?: "",
-            weatherCode = code,
-            forecast = forecast
-        )
     }
 
     suspend fun getVegetablePrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
@@ -63,6 +70,7 @@ class FarmerRepository {
             val response = vegetableMarketApi.getVegetablePrices(todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }
@@ -72,6 +80,7 @@ class FarmerRepository {
             val response = vegetableMarketApi.getFruitPrices(todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }
@@ -81,6 +90,7 @@ class FarmerRepository {
             val response = vegetableMarketApi.getNonVegPrices(todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }
@@ -90,6 +100,7 @@ class FarmerRepository {
             val response = vegetableMarketApi.getGoldPrices(todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }
@@ -106,6 +117,7 @@ class FarmerRepository {
                 ?: response.firstOrNull()
             eggData?.let { listOf(it.toCrop()) } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }
@@ -126,6 +138,7 @@ class FarmerRepository {
                 )
             } ?: emptyList()
         } catch (e: Exception) {
+            crashlytics.recordException(e)
             emptyList()
         }
     }

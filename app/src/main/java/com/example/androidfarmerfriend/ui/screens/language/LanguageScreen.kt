@@ -19,18 +19,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
-import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.ui.theme.GrayText
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LanguageScreen(
-    onLanguageChanged: () -> Unit = {},
-    onBack: () -> Unit = {}
+    onLanguageChanged: (Language) -> Unit = {},
+    onBack: () -> Unit = {},
+    viewModel: LanguageViewModel = viewModel()
 ) {
-    val context = LocalContext.current
-    val languagePrefs = remember { LanguagePrefs(context) }
-    var selectedLanguage by remember { mutableStateOf(languagePrefs.selectedLanguage) }
+    val state by viewModel.state.collectAsState()
+    val selectedLanguage = state.selectedLanguage
     val strings = if (selectedLanguage == Language.TAMIL) AppStrings.Tamil else AppStrings.English
 
     Column(
@@ -62,8 +62,8 @@ fun LanguageScreen(
 
                 Surface(
                     onClick = {
-                        selectedLanguage = language
-                        languagePrefs.selectedLanguage = language
+                        viewModel.onEvent(LanguageEvent.SelectLanguage(language))
+                        onLanguageChanged(language)
                     },
                     color = Color.Transparent,
                     modifier = Modifier.fillMaxWidth()
@@ -77,8 +77,8 @@ fun LanguageScreen(
                         RadioButton(
                             selected = isSelected,
                             onClick = {
-                                selectedLanguage = language
-                                languagePrefs.selectedLanguage = language
+                                viewModel.onEvent(LanguageEvent.SelectLanguage(language))
+                                onLanguageChanged(language)
                             },
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = MaterialTheme.colorScheme.primary
@@ -108,7 +108,7 @@ fun LanguageScreen(
             Spacer(modifier = Modifier.height(24.dp))
 
             Text(
-                text = if (selectedLanguage == Language.TAMIL) "மொழியை மாற்ற பயன்பாட்டை மீண்டும் திறக்கவும்" else "Restart the app to apply language change",
+                text = if (selectedLanguage == Language.TAMIL) "மொழி உடனடியாக மாற்றப்படும்" else "Language will be applied immediately",
                 style = MaterialTheme.typography.bodySmall,
                 color = GrayText,
                 modifier = Modifier.fillMaxWidth()

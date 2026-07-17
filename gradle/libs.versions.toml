@@ -14,6 +14,9 @@ okhttp = "4.12.0"
 gson = "2.11.0"
 browser = "1.8.0"
 jsoup = "1.18.3"
+googleServices = "4.5.0"
+firebaseCrashlyticsPlugin = "3.0.7"
+firebaseBom = "34.16.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -40,8 +43,13 @@ okhttp-logging = { group = "com.squareup.okhttp3", name = "logging-interceptor",
 gson = { group = "com.google.code.gson", name = "gson", version.ref = "gson" }
 androidx-browser = { group = "androidx.browser", name = "browser", version.ref = "browser" }
 jsoup = { group = "org.jsoup", name = "jsoup", version.ref = "jsoup" }
+firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.ref = "firebaseBom" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebase-analytics = { group = "com.google.firebase", name = "firebase-analytics" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
 kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
+google-services = { id = "com.google.gms.google-services", version.ref = "googleServices" }
+firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebaseCrashlyticsPlugin" }
 

@@ -136,7 +136,7 @@ fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
         Spacer(modifier = Modifier.width(12.dp))
         Column {
             Text(
-                text = "Farmer Friend",
+                text = strings.appName,
                 style = MaterialTheme.typography.headlineSmall,
                 fontWeight = FontWeight.Bold,
                 color = FarmerGreenPrimary
