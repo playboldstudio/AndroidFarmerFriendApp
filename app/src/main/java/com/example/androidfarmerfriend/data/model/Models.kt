@@ -12,7 +12,8 @@ data class Crop(
     val imageUrl: String = "",
     val prevPrice: Double? = null,
     val priceDiff: Double? = null,
-    val priceDiffPercent: Double? = null
+    val priceDiffPercent: Double? = null,
+    val retailPrice: String = ""
 )
 
 data class WeatherInfo(

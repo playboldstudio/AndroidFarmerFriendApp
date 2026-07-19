@@ -111,7 +111,7 @@ fun ScreenHeader(
                     color = GrayText
                 )
                 
-                if (isHome) {
+                if (isHome || onLocationClick != null) {
                     Spacer(modifier = Modifier.width(2.dp))
                     Icon(
                         Icons.Default.KeyboardArrowDown,

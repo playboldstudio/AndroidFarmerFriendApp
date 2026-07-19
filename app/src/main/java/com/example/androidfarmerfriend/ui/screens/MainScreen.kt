@@ -50,7 +50,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
     val context = LocalContext.current
     val languagePrefs = remember { LanguagePrefs(context) }
     var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
-    val strings = if (currentLang == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+    val strings = currentLang.strings()
 
     CompositionLocalProvider(LocalAppStrings provides strings) {
     val items = listOf(

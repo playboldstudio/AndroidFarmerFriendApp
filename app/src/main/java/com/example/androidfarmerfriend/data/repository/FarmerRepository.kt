@@ -65,9 +65,9 @@ class FarmerRepository {
         }
     }
 
-    suspend fun getVegetablePrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+    suspend fun getVegetablePrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
         try {
-            val response = vegetableMarketApi.getVegetablePrices(todayDate())
+            val response = vegetableMarketApi.getVegetablePrices(location, todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
             crashlytics.recordException(e)
@@ -75,9 +75,9 @@ class FarmerRepository {
         }
     }
 
-    suspend fun getFruitPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+    suspend fun getFruitPrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
         try {
-            val response = vegetableMarketApi.getFruitPrices(todayDate())
+            val response = vegetableMarketApi.getFruitPrices(location, todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
             crashlytics.recordException(e)
@@ -85,9 +85,9 @@ class FarmerRepository {
         }
     }
 
-    suspend fun getNonVegPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
+    suspend fun getNonVegPrices(location: String = "bangalore"): List<Crop> = withContext(Dispatchers.IO) {
         try {
-            val response = vegetableMarketApi.getNonVegPrices(todayDate())
+            val response = vegetableMarketApi.getNonVegPrices(location, todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
             crashlytics.recordException(e)
@@ -97,7 +97,7 @@ class FarmerRepository {
 
     suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
         try {
-            val response = vegetableMarketApi.getGoldPrices(todayDate())
+            val response = vegetableMarketApi.getGoldPrices(location, todayDate())
             response.data?.mapNotNull { it.toCrop() } ?: emptyList()
         } catch (e: Exception) {
             crashlytics.recordException(e)
@@ -172,6 +172,7 @@ class FarmerRepository {
             is Number -> p.toDouble()
             else -> 0.0
         }
+        val retail = retailprice?.toString() ?: ""
         return Crop(
             id = id?.hashCode() ?: nameEng.hashCode(),
             name = name,
@@ -180,7 +181,8 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "vegetable",
-            units = units ?: "kg"
+            units = units ?: "kg",
+            retailPrice = retail
         )
     }
 
@@ -195,6 +197,7 @@ class FarmerRepository {
             is Number -> p.toDouble()
             else -> 0.0
         }
+        val retail = retailprice?.toString() ?: ""
         return Crop(
             id = id?.hashCode() ?: nameEng.hashCode(),
             name = name,
@@ -203,7 +206,8 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "fruit",
-            units = units ?: "kg"
+            units = units ?: "kg",
+            retailPrice = retail
         )
     }
 

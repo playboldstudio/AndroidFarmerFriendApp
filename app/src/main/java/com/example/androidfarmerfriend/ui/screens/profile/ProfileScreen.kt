@@ -193,7 +193,7 @@ fun ProfileScreen(
                 ProfileMenuItem(
                     title = strings.language,
                     icon = Icons.Default.Language,
-                    trailingText = if (currentLang == Language.TAMIL) strings.tamil else strings.english,
+                    trailingText = currentLang.displayEnglish,
                     onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
                 )
                 ProfileMenuItem(title = strings.notifications, icon = Icons.Default.Notifications, onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) })

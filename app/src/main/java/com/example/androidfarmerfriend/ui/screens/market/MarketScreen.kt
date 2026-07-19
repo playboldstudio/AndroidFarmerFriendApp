@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.ui.screens.market
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -11,22 +12,19 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.data.location.LocationPrefs
+import com.example.androidfarmerfriend.data.model.MarketData
 import com.example.androidfarmerfriend.data.model.Crop
-import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FilterChipGroup
-import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
+import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 
@@ -34,30 +32,25 @@ import com.example.androidfarmerfriend.ui.theme.*
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     var showSearchBar by remember { mutableStateOf(false) }
+    var showMarketPicker by remember { mutableStateOf(false) }
 
     val strings = LocalAppStrings.current
-    val context = LocalContext.current
-    val locationPrefs = remember { LocationPrefs(context) }
-    var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
-    var showLocationPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(MarketEvent.ChangeLocation(locationPrefs.selectedLocation.marketName))
+        viewModel.loadInitialData()
     }
 
-    val repository = remember { FarmerRepository() }
-
-    if (showLocationPicker) {
-        LocationPickerSheet(
-            currentLocation = selectedLocation,
-            onLocationSelected = { loc ->
-                selectedLocation = loc
-                locationPrefs.selectedLocation = loc
-                showLocationPicker = false
-                viewModel.onEvent(MarketEvent.ChangeLocation(loc.marketName))
+    // Market picker sheet
+    if (showMarketPicker) {
+        val marketsForFilter = MarketData.marketsForCategory(state.selectedFilter)
+        MarketPickerSheet(
+            markets = marketsForFilter,
+            selectedMarket = state.selectedMarket,
+            onMarketSelected = { market ->
+                viewModel.onEvent(MarketEvent.ChangeMarket(market))
+                showMarketPicker = false
             },
-            onSearch = { query -> repository.searchLocations(query) },
-            onDismiss = { showLocationPicker = false }
+            onDismiss = { showMarketPicker = false }
         )
     }
 
@@ -69,13 +62,13 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     ) {
         ScreenHeader(
             title = strings.marketTitle,
-            subtitle = selectedLocation.name,
+            subtitle = state.selectedMarket.displayName,
             isSearchActive = showSearchBar,
             onSearchClick = {
                 showSearchBar = !showSearchBar
                 if (!showSearchBar) viewModel.onEvent(MarketEvent.Search(""))
             },
-            onLocationClick = { showLocationPicker = true }
+            onLocationClick = { showMarketPicker = true }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
@@ -161,7 +154,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
                         items(state.filteredCrops) { crop ->
-                            MarketCropItem(crop)
+                            MarketCropItem(crop, state.selectedMarket.displayName)
                         }
                     }
                 }
@@ -171,16 +164,8 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 }
 
 @Composable
-fun MarketCropItem(crop: Crop) {
+fun MarketCropItem(crop: Crop, marketName: String = "") {
     val strings = LocalAppStrings.current
-    val locationLabel = when (crop.category) {
-        "vegetable" -> strings.marketKoyambedu
-        "fruit" -> strings.marketKoyambedu
-        "nonveg" -> strings.tamilNadu
-        "gold" -> strings.chennai
-        "egg" -> strings.chennai
-        else -> ""
-    }
 
     FarmerCard {
         Row(
@@ -220,13 +205,21 @@ fun MarketCropItem(crop: Crop) {
                         style = MaterialTheme.typography.bodyMedium,
                         color = GrayText
                     )
-                    if (locationLabel.isNotEmpty()) {
+                    if (crop.retailPrice.isNotEmpty()) {
                         Text(
-                            text = " • $locationLabel",
+                            text = " • ${strings.retailPriceLabel}: ${crop.retailPrice}",
                             style = MaterialTheme.typography.bodySmall,
                             color = GrayText.copy(alpha = 0.7f)
                         )
                     }
+                }
+                if (marketName.isNotEmpty()) {
+                    Text(
+                        text = "📍 $marketName",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = GrayText.copy(alpha = 0.6f),
+                        fontSize = 11.sp
+                    )
                 }
             }
         }

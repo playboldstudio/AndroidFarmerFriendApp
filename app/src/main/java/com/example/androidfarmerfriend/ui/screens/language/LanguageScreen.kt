@@ -1,9 +1,7 @@
 package com.example.androidfarmerfriend.ui.screens.language
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -11,14 +9,12 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.theme.GrayText
 import androidx.lifecycle.viewmodel.compose.viewModel
 
@@ -31,7 +27,7 @@ fun LanguageScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val selectedLanguage = state.selectedLanguage
-    val strings = if (selectedLanguage == Language.TAMIL) AppStrings.Tamil else AppStrings.English
+    val strings = LocalAppStrings.current
 
     Column(
         modifier = Modifier
@@ -76,10 +72,7 @@ fun LanguageScreen(
                     ) {
                         RadioButton(
                             selected = isSelected,
-                            onClick = {
-                                viewModel.onEvent(LanguageEvent.SelectLanguage(language))
-                                onLanguageChanged(language)
-                            },
+                            onClick = null, // Surface handles click — prevents double-dispatch
                             colors = RadioButtonDefaults.colors(
                                 selectedColor = MaterialTheme.colorScheme.primary
                             )
@@ -89,7 +82,7 @@ fun LanguageScreen(
                             text = displayName,
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onBackground,
+                            color = MaterialTheme.colorScheme.onSurface,
                             modifier = Modifier.weight(1f)
                         )
                         if (isSelected) {
