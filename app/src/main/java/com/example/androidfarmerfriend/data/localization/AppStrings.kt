@@ -89,6 +89,11 @@ data class AppStrings(
     val searchMarkets: String,
     val noMarketData: String,
     val retailPriceLabel: String,
+    val nameField: String,
+    val phoneField: String,
+    val comingSoon: String,
+    val appTagline: String,
+    val noInternet: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -180,6 +185,11 @@ data class AppStrings(
             searchMarkets = "சந்தைகளைத் தேடவும்...",
             noMarketData = "இந்த சந்தைக்கு விலைகள் இல்லை",
             retailPriceLabel = "சில்லறை விலை",
+            nameField = "பெயர்",
+            phoneField = "தொலைபேசி",
+            comingSoon = "இந்த அம்சம் விரைவில் வரும்",
+            appTagline = "இந்திய விவசாயிகளுக்காக உருவாக்கப்பட்டது",
+            noInternet = "இணைய இணைப்பு இல்லை",
         )
 
         val English = AppStrings(
@@ -271,6 +281,11 @@ data class AppStrings(
             searchMarkets = "Search markets...",
             noMarketData = "No prices available for this market",
             retailPriceLabel = "Retail",
+            nameField = "Name",
+            phoneField = "Phone",
+            comingSoon = "This feature is coming soon",
+            appTagline = "Made for Indian Farmers",
+            noInternet = "No internet connection",
         )
 
         val Hindi = AppStrings(
@@ -362,6 +377,11 @@ data class AppStrings(
             searchMarkets = "बाज़ार खोजें...",
             noMarketData = "इस बाज़ार के लिए मूल्य उपलब्ध नहीं",
             retailPriceLabel = "खुदरा मूल्य",
+            nameField = "नाम",
+            phoneField = "फ़ोन",
+            comingSoon = "यह सुविधा जल्द आ रही है",
+            appTagline = "भारतीय किसानों के लिए बनाया गया",
+            noInternet = "इंटरनेट कनेक्शन नहीं",
         )
 
         val Telugu = AppStrings(
@@ -453,6 +473,11 @@ data class AppStrings(
             searchMarkets = "మార్కెట్లు శోధించండి...",
             noMarketData = "ఈ మార్కెట్‌కు ధరలు అందుబాటులో లేవు",
             retailPriceLabel = "చిల్లర ధర",
+            nameField = "పేరు",
+            phoneField = "ఫోన్",
+            comingSoon = "ఈ ఫీచర్ త్వరలో వస్తుంది",
+            appTagline = "భారతీయ రైతుల కోసం రూపొందించబడింది",
+            noInternet = "ఇంటర్నెట్ కనెక్షన్ లేదు",
         )
 
         val Malayalam = AppStrings(
@@ -544,6 +569,11 @@ data class AppStrings(
             searchMarkets = "മാർക്കറ്റുകൾ തിരയുക...",
             noMarketData = "ഈ മാർക്കറ്റിന് വിലകൾ ലഭ്യമല്ല",
             retailPriceLabel = "ചില്ലറ വില",
+            nameField = "പേര്",
+            phoneField = "ഫോൺ",
+            comingSoon = "ഈ ഫീച്ചർ ഉടൻ വരും",
+            appTagline = "ഇന്ത്യൻ കർഷകർക്കായി നിർമ്മിച്ചത്",
+            noInternet = "ഇന്റർനെറ്റ് കണക്ഷൻ ഇല്ല",
         )
 
         val Kannada = AppStrings(
@@ -635,6 +665,11 @@ data class AppStrings(
             searchMarkets = "ಮಾರುಕಟ್ಟೆಗಳು ಹುಡುಕಿ...",
             noMarketData = "ಈ ಮಾರುಕಟ್ಟೆಗೆ ಬೆಲೆಗಳು ಲಭ್ಯವಿಲ್ಲ",
             retailPriceLabel = "ಚಿಲ್ಲರೆ ಬೆಲೆ",
+            nameField = "ಹೆಸರು",
+            phoneField = "ಫೋನ್",
+            comingSoon = "ಈ ವೈಶಿಷ್ಟ್ಯ ಶೀಘ್ರದಲ್ಲಿ ಬರುತ್ತದೆ",
+            appTagline = "ಭಾರತೀಯ ರೈತರಿಗಾಗಿ ರಚಿಸಲಾಗಿದೆ",
+            noInternet = "ಇಂಟರ್ನೆಟ್ ಸಂಪರ್ಕ ಇಲ್ಲ",
         )
 
         val Marathi = AppStrings(
@@ -726,6 +761,11 @@ data class AppStrings(
             searchMarkets = "बाजार शोधा...",
             noMarketData = "या बाजारासाठी भाव उपलब्ध नाहीत",
             retailPriceLabel = "किंमत",
+            nameField = "नाव",
+            phoneField = "फोन",
+            comingSoon = "हे वैशिष्ट्य लवकरच येणार आहे",
+            appTagline = "भारतीय शेतकऱ्यांसाठी बनवले",
+            noInternet = "इंटरनेट कनेक्शन नाही",
         )
 
         val Bengali = AppStrings(
@@ -817,6 +857,11 @@ data class AppStrings(
             searchMarkets = "বাজার খুঁজুন...",
             noMarketData = "এই বাজারের জন্য মূল্য পাওয়া যায়নি",
             retailPriceLabel = "খুচরা মূল্য",
+            nameField = "নাম",
+            phoneField = "ফোন",
+            comingSoon = "এই বৈশিষ্ট্য শীঘ্রই আসছে",
+            appTagline = "ভারতীয় কৃষকদের জন্য তৈরি",
+            noInternet = "ইন্টারনেট সংযোগ নেই",
         )
 
         val Punjabi = AppStrings(
@@ -908,6 +953,11 @@ data class AppStrings(
             searchMarkets = "ਬਾਜ਼ਾਰ ਲੱਭੋ...",
             noMarketData = "ਇਸ ਬਾਜ਼ਾਰ ਲਈ ਕੀਮਤਾਂ ਉਪਲਬਧ ਨਹੀਂ",
             retailPriceLabel = "ਖੁਦਰਾ ਕੀਮਤ",
+            nameField = "ਨਾਮ",
+            phoneField = "ਫੋਨ",
+            comingSoon = "ਇਹ ਵਿਸ਼ੇਸ਼ਤਾ ਜਲਦੀ ਆ ਰਹੀ ਹੈ",
+            appTagline = "ਭਾਰਤੀ ਕਿਸਾਨਾਂ ਲਈ ਬਣਾਇਆ ਗਿਆ",
+            noInternet = "ਇੰਟਰਨੈੱਟ ਕਨੈਕਸ਼ਨ ਨਹੀਂ",
         )
 
         val Gujarati = AppStrings(
@@ -999,6 +1049,11 @@ data class AppStrings(
             searchMarkets = "બજારો શોધો...",
             noMarketData = "આ બજાર માટે ભાવ ઉપલબ્ધ નથી",
             retailPriceLabel = "છૂટક ભાવ",
+            nameField = "નામ",
+            phoneField = "ફોન",
+            comingSoon = "આ સુવિધા ટૂંક સમયમાં આવી રહી છે",
+            appTagline = "ભારતીય ખેડૂતો માટે બનાવેલ",
+            noInternet = "ઇન્ટરનેટ કનેક્શન નથી",
         )
 
         val Odia = AppStrings(
@@ -1090,6 +1145,11 @@ data class AppStrings(
             searchMarkets = "ବଜାର ଖୋଜନ୍ତୁ...",
             noMarketData = "ଏହି ବଜାର ପାଇଁ ମୂଲ୍ୟ ଉପଲବ୍ଧ ନାହିଁ",
             retailPriceLabel = "ଖୁଚରା ମୂଲ୍ୟ",
+            nameField = "ନାମ",
+            phoneField = "ଫୋନ",
+            comingSoon = "ଏହି ବୈଶିଷ୍ଟ୍ୟ ଶୀଘ୍ର ଆସୁଛି",
+            appTagline = "ଭାରତୀୟ ଚାଷୀଙ୍କ ପାଇଁ ତିଆରି",
+            noInternet = "ଇଣ୍ଟରନେଟ୍ ସଂଯୋଗ ନାହିଁ",
         )
 }
 }

@@ -33,9 +33,8 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileEvent.NavigateToNotifications,
             is ProfileEvent.NavigateToPrivacy,
             is ProfileEvent.NavigateToSettings -> {
-                val isTamil = _state.value.selectedLanguage == com.example.androidfarmerfriend.data.localization.Language.TAMIL
                 _state.value = _state.value.copy(
-                    message = if (isTamil) "இந்த அம்சம் விரைவில் வரும்" else "This feature is coming soon"
+                    message = _state.value.selectedLanguage.strings().comingSoon
                 )
             }
             

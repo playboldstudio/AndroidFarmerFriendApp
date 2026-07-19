@@ -2,11 +2,9 @@ package com.example.androidfarmerfriend.ui.screens.schemes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -19,7 +17,6 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.util.UiState
@@ -28,12 +25,30 @@ import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var showSearchBar by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val languagePrefs = remember {
+        com.example.androidfarmerfriend.data.localization.LanguagePrefs(context)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadData(languagePrefs.selectedLanguage)
+    }
+
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.loadData()
+            isRefreshing = false
+        }
+    ) {
 
     Column(
         modifier = Modifier
@@ -79,29 +94,6 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             )
         }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp)
-        ) {
-            SchemeFilterType.entries.forEach { filter ->
-                val isSelected = filter == state.selectedFilter
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { viewModel.onEvent(SchemeEvent.SelectFilter(filter)) },
-                    label = { Text(filter.displayKey(strings), fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        selectedContainerColor = FarmerGreenPrimary,
-                        labelColor = MaterialTheme.colorScheme.onSurface,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                    )
-                )
-            }
-        }
-
         when (val schemeState = state.schemesState) {
             is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator(color = FarmerGreenPrimary)
@@ -141,6 +133,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             }
         }
     }
+    }
 }
 
 @Composable
@@ -160,12 +153,12 @@ fun SchemeItem(scheme: Scheme) {
             verticalAlignment = Alignment.CenterVertically
         ) {
             Surface(
-                modifier = Modifier.size(52.dp),
+                modifier = Modifier.size(56.dp),
                 color = MaterialTheme.colorScheme.surfaceVariant,
                 shape = MaterialTheme.shapes.medium
             ) {
                 Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.AccountBalance, contentDescription = null, tint = FarmerGreenPrimary, modifier = Modifier.size(26.dp))
+                    Icon(Icons.Default.AccountBalance, contentDescription = null, tint = SchemeLightGreen, modifier = Modifier.size(28.dp))
                 }
             }
 
@@ -176,15 +169,15 @@ fun SchemeItem(scheme: Scheme) {
                     text = scheme.title,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp,
+                    fontSize = 16.sp,
+                    maxLines = 2,
                     color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     text = scheme.description,
                     style = MaterialTheme.typography.bodySmall,
                     color = GrayText,
-                    maxLines = 2,
-                    lineHeight = 16.sp
+                    maxLines = 2
                 )
             }
 

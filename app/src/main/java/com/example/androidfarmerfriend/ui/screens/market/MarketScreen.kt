@@ -28,17 +28,28 @@ import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     var showSearchBar by remember { mutableStateOf(false) }
     var showMarketPicker by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     val strings = LocalAppStrings.current
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData()
     }
+
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.onEvent(MarketEvent.Retry)
+            isRefreshing = false
+        }
+    ) {
 
     // Market picker sheet
     if (showMarketPicker) {
@@ -160,6 +171,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 }
             }
         }
+    }
     }
 }
 

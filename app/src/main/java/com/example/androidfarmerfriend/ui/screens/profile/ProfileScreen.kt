@@ -112,7 +112,7 @@ fun ProfileScreen(
                             OutlinedTextField(
                                 value = state.tempName,
                                 onValueChange = { viewModel.onEvent(ProfileEvent.UpdateTempName(it)) },
-                                label = { Text(if (currentLang == Language.TAMIL) "பெயர்" else "Name", fontSize = 12.sp) },
+                                label = { Text(strings.nameField, fontSize = 12.sp) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium
@@ -121,7 +121,7 @@ fun ProfileScreen(
                             OutlinedTextField(
                                 value = state.tempPhone,
                                 onValueChange = { viewModel.onEvent(ProfileEvent.UpdateTempPhone(it)) },
-                                label = { Text(if (currentLang == Language.TAMIL) "தொலைபேசி" else "Phone", fontSize = 12.sp) },
+                                label = { Text(strings.phoneField, fontSize = 12.sp) },
                                 modifier = Modifier.fillMaxWidth(),
                                 singleLine = true,
                                 shape = MaterialTheme.shapes.medium
@@ -209,12 +209,12 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "Farmer Friend v1.0.0",
+                    text = "${strings.appName} v1.0.0",
                     style = MaterialTheme.typography.labelSmall,
                     color = GrayText.copy(alpha = 0.5f)
                 )
                 Text(
-                    text = "Made for Indian Farmers",
+                    text = strings.appTagline,
                     style = MaterialTheme.typography.labelSmall,
                     color = GrayText.copy(alpha = 0.3f),
                     fontSize = 8.sp

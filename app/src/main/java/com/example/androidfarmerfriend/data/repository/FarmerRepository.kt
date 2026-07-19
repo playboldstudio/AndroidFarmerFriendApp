@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.model.*
 import com.example.androidfarmerfriend.data.scraper.WebDataScraper
@@ -66,43 +67,23 @@ class FarmerRepository {
     }
 
     suspend fun getVegetablePrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        try {
-            val response = vegetableMarketApi.getVegetablePrices(location, todayDate())
-            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
-        } catch (e: Exception) {
-            crashlytics.recordException(e)
-            emptyList()
-        }
+        val response = vegetableMarketApi.getVegetablePrices(location, todayDate())
+        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
     suspend fun getFruitPrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        try {
-            val response = vegetableMarketApi.getFruitPrices(location, todayDate())
-            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
-        } catch (e: Exception) {
-            crashlytics.recordException(e)
-            emptyList()
-        }
+        val response = vegetableMarketApi.getFruitPrices(location, todayDate())
+        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
     suspend fun getNonVegPrices(location: String = "bangalore"): List<Crop> = withContext(Dispatchers.IO) {
-        try {
-            val response = vegetableMarketApi.getNonVegPrices(location, todayDate())
-            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
-        } catch (e: Exception) {
-            crashlytics.recordException(e)
-            emptyList()
-        }
+        val response = vegetableMarketApi.getNonVegPrices(location, todayDate())
+        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
     suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
-        try {
-            val response = vegetableMarketApi.getGoldPrices(location, todayDate())
-            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
-        } catch (e: Exception) {
-            crashlytics.recordException(e)
-            emptyList()
-        }
+        val response = vegetableMarketApi.getGoldPrices(location, todayDate())
+        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
     suspend fun getEggPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
@@ -149,16 +130,16 @@ class FarmerRepository {
         Alert(3, "பயிர் அலர்ட்", "இலை கருகல் நோய் பரவ வாய்ப்பு - தக்காளி பயிரில் கவனம் தேவை", "2 மணி நேரத்திற்கு முன்", AlertType.CROP)
     )
 
-    suspend fun getSchemes(): List<Scheme> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchSchemes()
+    suspend fun getSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
+        WebDataScraper.fetchSchemes(language)
     }
 
-    suspend fun getCropNotes(): List<CropNote> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchCropNotes()
+    suspend fun getCropNotes(language: Language = Language.TAMIL): List<CropNote> = withContext(Dispatchers.IO) {
+        WebDataScraper.fetchCropNotes(language)
     }
 
-    suspend fun getDiseases(): List<Disease> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchDiseases()
+    suspend fun getDiseases(language: Language = Language.TAMIL): List<Disease> = withContext(Dispatchers.IO) {
+        WebDataScraper.fetchDiseases(language)
     }
 
     private fun com.example.androidfarmerfriend.data.api.VegetableItem.toCrop(): Crop? {

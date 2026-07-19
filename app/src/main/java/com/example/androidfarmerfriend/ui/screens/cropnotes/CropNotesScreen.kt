@@ -30,12 +30,30 @@ import com.example.androidfarmerfriend.util.WebSearchUtil
 
 private const val ALL_CROPS = "__all__"
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var showSearchBar by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val languagePrefs = remember {
+        com.example.androidfarmerfriend.data.localization.LanguagePrefs(context)
+    }
+
+    LaunchedEffect(Unit) {
+        viewModel.loadData(languagePrefs.selectedLanguage)
+    }
+
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.loadData()
+            isRefreshing = false
+        }
+    ) {
 
     Column(
         modifier = Modifier
@@ -146,6 +164,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 }
             }
         }
+    }
     }
 }
 

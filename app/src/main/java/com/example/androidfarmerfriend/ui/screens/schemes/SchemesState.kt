@@ -5,9 +5,7 @@ import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.util.UiState
 
 enum class SchemeFilterType(val id: String, val displayKey: (AppStrings) -> String) {
-    ALL("all", { it.filterAll }),
-    CENTRAL("central", { it.filterCentral }),
-    STATE("state", { it.filterState });
+    ALL("all", { it.filterAll });
 
     companion object {
         fun fromId(id: String): SchemeFilterType = entries.find { it.id == id } ?: ALL
@@ -22,11 +20,9 @@ data class SchemesState(
     val filteredSchemes: List<Scheme>
         get() {
             val data = (schemesState as? UiState.Success)?.data ?: return emptyList()
-            val categoryFiltered = if (selectedFilter == SchemeFilterType.ALL) data
-            else data.filter { it.category == selectedFilter.id }
             val query = searchQuery.trim().lowercase()
-            return if (query.isEmpty()) categoryFiltered
-            else categoryFiltered.filter {
+            return if (query.isEmpty()) data
+            else data.filter {
                 it.title.lowercase().contains(query) ||
                 it.description.lowercase().contains(query)
             }

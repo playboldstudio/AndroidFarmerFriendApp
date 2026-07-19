@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.schemes
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -13,8 +14,21 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _state = MutableStateFlow(SchemesState())
     val state: StateFlow<SchemesState> = _state.asStateFlow()
 
-    init {
-        loadData()
+    private var currentLanguage: Language = Language.TAMIL
+
+    fun loadData(language: Language = currentLanguage) {
+        currentLanguage = language
+        _state.value = _state.value.copy(schemesState = UiState.Loading, searchQuery = "")
+        viewModelScope.launch {
+            try {
+                val schemes = repository.getSchemes(language)
+                _state.value = _state.value.copy(schemesState = UiState.Success(schemes))
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    schemesState = UiState.Error(e.message ?: "Failed to load schemes")
+                )
+            }
+        }
     }
 
     fun onEvent(event: SchemeEvent) {
@@ -26,20 +40,6 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
                 _state.value = _state.value.copy(searchQuery = event.query)
             }
             is SchemeEvent.Retry -> loadData()
-        }
-    }
-
-    private fun loadData() {
-        _state.value = _state.value.copy(schemesState = UiState.Loading)
-        viewModelScope.launch {
-            try {
-                val schemes = repository.getSchemes()
-                _state.value = _state.value.copy(schemesState = UiState.Success(schemes))
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    schemesState = UiState.Error(e.message ?: "Failed to load schemes")
-                )
-            }
         }
     }
 }

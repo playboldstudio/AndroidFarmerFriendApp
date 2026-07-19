@@ -5,9 +5,7 @@ import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
 
 enum class DiseaseFilterType(val id: String, val displayKey: (AppStrings) -> String) {
-    ALL("all", { it.filterAll }),
-    LEAF("leaf", { it.filterLeafDiseases }),
-    FRUIT("fruit", { it.filterFruitDiseases });
+    ALL("all", { it.filterAll });
 }
 
 data class DiseaseState(
@@ -19,14 +17,10 @@ data class DiseaseState(
         get() {
             val data = (diseasesState as? UiState.Success)?.data ?: return emptyList()
             val query = searchQuery.trim().lowercase()
-            return data.filter { disease ->
-                val matchesFilter = selectedFilter == DiseaseFilterType.ALL ||
-                    disease.name.contains(selectedFilter.id, ignoreCase = true) ||
-                    disease.cropAffected.contains(selectedFilter.id, ignoreCase = true)
-                val matchesSearch = query.isEmpty() ||
-                    disease.name.lowercase().contains(query) ||
+            return if (query.isEmpty()) data
+            else data.filter { disease ->
+                disease.name.lowercase().contains(query) ||
                     disease.cropAffected.lowercase().contains(query)
-                matchesFilter && matchesSearch
             }
         }
 }
