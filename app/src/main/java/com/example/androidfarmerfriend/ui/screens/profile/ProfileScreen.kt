@@ -45,7 +45,12 @@ fun ProfileScreen(
     val snackbarHostState = remember { SnackbarHostState() }
     val locationPrefs = remember { LocationPrefs(context) }
     val location = remember { locationPrefs.selectedLocation }
-    val currentLang = state.selectedLanguage
+    val languagePrefs = remember { LanguagePrefs(context) }
+    var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
+
+    LaunchedEffect(Unit) {
+        currentLang = languagePrefs.selectedLanguage
+    }
 
     val navEvent by viewModel.navigation.collectAsState()
     LaunchedEffect(navEvent) {
