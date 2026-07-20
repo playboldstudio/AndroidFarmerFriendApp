@@ -1,24 +1,26 @@
 package com.example.androidfarmerfriend.util
 
+import com.example.androidfarmerfriend.data.localization.AppStrings
+
 object WeatherCodeMapper {
 
-    fun conditionTamil(code: Int): String = when (code) {
-        0 -> "தெளிவான வானம்"
-        1 -> "பெரும்பாலும் தெளிவு"
-        2 -> "ஓரளவு மேகமூட்டம்"
-        3 -> "மேகமூட்டம்"
-        45, 48 -> "மூடுபனி"
-        51, 53, 55 -> "தூறல்"
-        56, 57 -> "உறை தூறல்"
-        61, 63, 65 -> "மழை"
-        66, 67 -> "உறை மழை"
-        71, 73, 75 -> "பனிப்பொழிவு"
-        77 -> "பனித்துகள்"
-        80, 81, 82 -> "மழை பொழிவு"
-        85, 86 -> "பனி பொழிவு"
-        95 -> "இடி மழை"
-        96, 99 -> "ஆலங்கட்டி மழை"
-        else -> "வானிலை"
+    fun condition(code: Int, strings: AppStrings): String = when (code) {
+        0 -> strings.clearSky
+        1 -> strings.mostlyClear
+        2 -> strings.partlyCloudy
+        3 -> strings.overcast
+        45, 48 -> strings.wFog
+        51, 53, 55 -> strings.wDrizzle
+        56, 57 -> strings.freezingDrizzle
+        61, 63, 65 -> strings.wRain
+        66, 67 -> strings.freezingRain
+        71, 73, 75 -> strings.snowfall
+        77 -> strings.snowGrains
+        80, 81, 82 -> strings.rainShowers
+        85, 86 -> strings.snowShowers
+        95 -> strings.thunderstorm
+        96, 99 -> strings.hailstorm
+        else -> strings.wWeather
     }
 
     fun windDirection(degrees: Double): String {
@@ -27,16 +29,18 @@ object WeatherCodeMapper {
         return dirs[index]
     }
 
-    fun dayLabelTamil(date: String, index: Int): String {
-        if (index == 0) return "இன்று"
-        if (index == 1) return "நாளை"
+    fun dayLabel(date: String, index: Int, strings: AppStrings): String {
+        if (index == 0) return strings.today
+        if (index == 1) return strings.tomorrow
         return try {
             val parts = date.split("-")
             val day = parts.getOrNull(2)?.toIntOrNull() ?: return date
             val month = parts.getOrNull(1)?.toIntOrNull() ?: return date
             val months = listOf(
-                "ஜன", "பிப்", "மார்", "ஏப்", "மே", "ஜூன்",
-                "ஜூலை", "ஆக", "செப்", "அக்", "நவ", "டிச"
+                strings.monthJan, strings.monthFeb, strings.monthMar,
+                strings.monthApr, strings.monthMay, strings.monthJun,
+                strings.monthJul, strings.monthAug, strings.monthSep,
+                strings.monthOct, strings.monthNov, strings.monthDec
             )
             "$day ${months.getOrElse(month - 1) { "" }}"
         } catch (e: Exception) {

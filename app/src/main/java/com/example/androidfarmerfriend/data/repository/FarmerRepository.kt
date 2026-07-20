@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.model.*
@@ -21,7 +22,7 @@ class FarmerRepository {
 
     private fun todayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
-    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu"): WeatherInfo? = withContext(Dispatchers.IO) {
+    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu", strings: AppStrings = AppStrings.Tamil): WeatherInfo? = withContext(Dispatchers.IO) {
         try {
             val response = weatherApi.getForecast(latitude = lat, longitude = lon)
             val current = response.current ?: throw Exception("Failed to load weather data")
@@ -32,7 +33,7 @@ class FarmerRepository {
                 times.forEachIndexed { index, date ->
                     add(
                         ForecastDay(
-                            day = WeatherCodeMapper.dayLabelTamil(date, index),
+                            day = WeatherCodeMapper.dayLabel(date, index, strings),
                             maxTemp = "${daily?.tempMax?.getOrNull(index)?.toInt() ?: 0}°",
                             minTemp = "${daily?.tempMin?.getOrNull(index)?.toInt() ?: 0}°",
                             weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0
@@ -48,7 +49,7 @@ class FarmerRepository {
 
             WeatherInfo(
                 temperature = "${current.temperature?.toInt() ?: 0}°C",
-                condition = WeatherCodeMapper.conditionTamil(code),
+                condition = WeatherCodeMapper.condition(code, strings),
                 humidity = "${current.humidity?.toInt() ?: 0}%",
                 windSpeed = "${current.windSpeed?.toInt() ?: 0} km/h",
                 windDirection = WeatherCodeMapper.windDirection(current.windDirection ?: 0.0),

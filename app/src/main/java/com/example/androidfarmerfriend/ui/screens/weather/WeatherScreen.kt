@@ -38,7 +38,12 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     var showLocationPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        viewModel.setStrings(strings)
         viewModel.onEvent(WeatherEvent.LoadLocation(selectedLocation))
+    }
+
+    LaunchedEffect(strings) {
+        viewModel.setStrings(strings)
     }
 
     val repository = remember { FarmerRepository() }

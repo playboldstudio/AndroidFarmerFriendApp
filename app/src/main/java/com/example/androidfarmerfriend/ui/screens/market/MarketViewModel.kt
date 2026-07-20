@@ -69,7 +69,7 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                 )
             } catch (e: Exception) {
                 _state.value = _state.value.copy(
-                    cropsState = UiState.Error(e.message ?: "தரவுகளை ஏற்ற முடியவில்லை")
+                    cropsState = UiState.Error(e.message ?: "Failed to load data")
                 )
             }
         }
