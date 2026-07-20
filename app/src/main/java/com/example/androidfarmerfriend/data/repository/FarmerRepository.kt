@@ -126,9 +126,9 @@ class FarmerRepository {
     }
 
     fun getAlerts(): List<Alert> = listOf(
-        Alert(1, "விலை அலர்ட்", "தக்காளி விலை ₹30/kg ஆக உயர்ந்துள்ளது", "2 மணி நேரத்திற்கு முன்", AlertType.PRICE),
-        Alert(2, "வானிலை அலர்ட்", "நாளை கனமழைக்கு வாய்ப்பு - Namakkal மாவட்டத்தில்", "1 மணி நேரத்திற்கு முன்", AlertType.WEATHER),
-        Alert(3, "பயிர் அலர்ட்", "இலை கருகல் நோய் பரவ வாய்ப்பு - தக்காளி பயிரில் கவனம் தேவை", "2 மணி நேரத்திற்கு முன்", AlertType.CROP)
+        Alert(id = "1", title = "Price Alert", message = "Tomato price rose to ₹30/kg", time = "2h ago", type = AlertType.PRICE),
+        Alert(id = "2", title = "Weather Alert", message = "Heavy rain expected tomorrow", time = "1h ago", type = AlertType.WEATHER),
+        Alert(id = "3", title = "Crop Alert", message = "Leaf blight risk in tomato crops", time = "2h ago", type = AlertType.CROP)
     )
 
     suspend fun getSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
