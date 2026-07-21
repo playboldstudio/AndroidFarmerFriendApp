@@ -126,6 +126,11 @@ data class AppStrings(
     val monthOct: String,
     val monthNov: String,
     val monthDec: String,
+    // Time formatting
+    val timeJustNow: String,
+    val timeMinutesAgo: String,
+    val timeHoursAgo: String,
+    val timeDaysAgo: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -252,6 +257,10 @@ data class AppStrings(
             monthOct = "அக்",
             monthNov = "நவ",
             monthDec = "டிச",
+            timeJustNow = "இப்போது",
+            timeMinutesAgo = "%d நிமிடத்திற்கு முன்",
+            timeHoursAgo = "%d மணிநேரத்திற்கு முன்",
+            timeDaysAgo = "%d நாட்களுக்கு முன்",
         )
 
         val English = AppStrings(
@@ -378,6 +387,10 @@ data class AppStrings(
             monthOct = "Oct",
             monthNov = "Nov",
             monthDec = "Dec",
+            timeJustNow = "Just now",
+            timeMinutesAgo = "%dm ago",
+            timeHoursAgo = "%dh ago",
+            timeDaysAgo = "%dd ago",
         )
 
         val Hindi = AppStrings(
@@ -504,6 +517,10 @@ data class AppStrings(
             monthOct = "अक्टू",
             monthNov = "नवं",
             monthDec = "दिसं",
+            timeJustNow = "अभी",
+            timeMinutesAgo = "%d मिनट पहले",
+            timeHoursAgo = "%d घंटे पहले",
+            timeDaysAgo = "%d दिन पहले",
         )
 
         val Telugu = AppStrings(
@@ -630,6 +647,10 @@ data class AppStrings(
             monthOct = "అక్టో",
             monthNov = "నవం",
             monthDec = "డిసెం",
+            timeJustNow = "ఇప్పుడే",
+            timeMinutesAgo = "%d నిమిషాల క్రితం",
+            timeHoursAgo = "%d గంటల క్రితం",
+            timeDaysAgo = "%d రోజుల క్రితం",
         )
 
         val Malayalam = AppStrings(
@@ -756,6 +777,10 @@ data class AppStrings(
             monthOct = "ഒക്ടോ",
             monthNov = "നവം",
             monthDec = "ഡിസം",
+            timeJustNow = "ഇപ്പോൾ",
+            timeMinutesAgo = "%d മിനിറ്റ് മുമ്പ്",
+            timeHoursAgo = "%d മണിക്കൂർ മുമ്പ്",
+            timeDaysAgo = "%d ദിവസം മുമ്പ്",
         )
 
         val Kannada = AppStrings(
@@ -882,6 +907,10 @@ data class AppStrings(
             monthOct = "ಅಕ್ಟೋ",
             monthNov = "ನವಂ",
             monthDec = "ಡಿಸೆಂ",
+            timeJustNow = "ಈಗಷ್ಟೇ",
+            timeMinutesAgo = "%d ನಿಮಿಷಗಳ ಹಿಂದೆ",
+            timeHoursAgo = "%d ಗಂಟೆಗಳ ಹಿಂದೆ",
+            timeDaysAgo = "%d ದಿನಗಳ ಹಿಂದೆ",
         )
 
         val Marathi = AppStrings(
@@ -1008,6 +1037,10 @@ data class AppStrings(
             monthOct = "ऑक्टो",
             monthNov = "नोव्हें",
             monthDec = "डिसें",
+            timeJustNow = "आत्ताच",
+            timeMinutesAgo = "%d मिनिटांपूर्वी",
+            timeHoursAgo = "%d तासांपूर्वी",
+            timeDaysAgo = "%d दिवसांपूर्वी",
         )
 
         val Bengali = AppStrings(
@@ -1134,6 +1167,10 @@ data class AppStrings(
             monthOct = "অক্টো",
             monthNov = "নভে",
             monthDec = "ডিসে",
+            timeJustNow = "এইমাত্র",
+            timeMinutesAgo = "%d মিনিট আগে",
+            timeHoursAgo = "%d ঘণ্টা আগে",
+            timeDaysAgo = "%d দিন আগে",
         )
 
         val Punjabi = AppStrings(
@@ -1260,6 +1297,10 @@ data class AppStrings(
             monthOct = "ਅਕਤੂ",
             monthNov = "ਨਵੰ",
             monthDec = "ਦਿਸੰ",
+            timeJustNow = "ਹੁਣੇ",
+            timeMinutesAgo = "%d ਮਿੰਟ ਪਹਿਲਾਂ",
+            timeHoursAgo = "%d ਘੰਟੇ ਪਹਿਲਾਂ",
+            timeDaysAgo = "%d ਦਿਨ ਪਹਿਲਾਂ",
         )
 
         val Gujarati = AppStrings(
@@ -1386,6 +1427,10 @@ data class AppStrings(
             monthOct = "ઓક્ટો",
             monthNov = "નવે",
             monthDec = "ડિસે",
+            timeJustNow = "હમણાં",
+            timeMinutesAgo = "%d મિનિટ પહેલાં",
+            timeHoursAgo = "%d કલાક પહેલાં",
+            timeDaysAgo = "%d દિવસ પહેલાં",
         )
 
         val Odia = AppStrings(
@@ -1512,6 +1557,10 @@ data class AppStrings(
             monthOct = "ଅକ୍ଟୋ",
             monthNov = "ନଭେ",
             monthDec = "ଡିସେ",
+            timeJustNow = "ଏବେ",
+            timeMinutesAgo = "%d ମିନିଟ ପୂର୍ବେ",
+            timeHoursAgo = "%d ଘଣ୍ଟା ପୂର୍ବେ",
+            timeDaysAgo = "%d ଦିନ ପୂର୍ବେ",
         )
 }
 }

@@ -203,7 +203,7 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text(
-                        text = formatTimestamp(alert.timestamp),
+                        text = formatTimestamp(alert.timestamp, strings),
                         style = MaterialTheme.typography.labelSmall,
                         color = GrayText
                     )
@@ -220,7 +220,7 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
     }
 }
 
-private fun formatTimestamp(timestamp: Long): String {
+private fun formatTimestamp(timestamp: Long, strings: AppStrings): String {
     val now = System.currentTimeMillis()
     val diff = now - timestamp
     val minutes = diff / 60000
@@ -228,10 +228,10 @@ private fun formatTimestamp(timestamp: Long): String {
     val days = diff / 86400000
 
     return when {
-        minutes < 1 -> "Just now"
-        minutes < 60 -> "${minutes}m ago"
-        hours < 24 -> "${hours}h ago"
-        days < 7 -> "${days}d ago"
+        minutes < 1 -> strings.timeJustNow
+        minutes < 60 -> strings.timeMinutesAgo.format(minutes)
+        hours < 24 -> strings.timeHoursAgo.format(hours)
+        days < 7 -> strings.timeDaysAgo.format(days)
         else -> {
             val sdf = SimpleDateFormat("dd MMM", Locale.getDefault())
             sdf.format(Date(timestamp))
