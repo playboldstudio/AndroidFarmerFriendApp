@@ -12,7 +12,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.example.androidfarmerfriend" // TODO: Change to "com.playboldstudio.farmerfriend" after registering in Firebase Console and updating google-services.json
+        applicationId = "com.playboldstudio.farmerfriend"
         minSdk = 24
         targetSdk = 37
         versionCode = 1
@@ -24,9 +24,9 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file("release-keystore.jks")
-            storePassword = System.getenv("RELEASE_STORE_PASSWORD") ?: ""
-            keyAlias = System.getenv("RELEASE_KEY_ALIAS") ?: "farmerfriend"
-            keyPassword = System.getenv("RELEASE_KEY_PASSWORD") ?: ""
+            storePassword = "FarmerFriend123"
+            keyAlias = "farmerfriend"
+            keyPassword = "FarmerFriend123"
         }
     }
 
