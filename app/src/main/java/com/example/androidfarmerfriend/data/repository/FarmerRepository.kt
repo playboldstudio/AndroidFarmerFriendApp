@@ -125,11 +125,7 @@ class FarmerRepository {
         }
     }
 
-    fun getAlerts(): List<Alert> = listOf(
-        Alert(id = "1", title = "Price Alert", message = "Tomato price rose to ₹30/kg", time = "2h ago", type = AlertType.PRICE),
-        Alert(id = "2", title = "Weather Alert", message = "Heavy rain expected tomorrow", time = "1h ago", type = AlertType.WEATHER),
-        Alert(id = "3", title = "Crop Alert", message = "Leaf blight risk in tomato crops", time = "2h ago", type = AlertType.CROP)
-    )
+    fun getAlerts(): List<Alert> = emptyList()
 
     suspend fun getSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchSchemes(language)
@@ -250,7 +246,7 @@ class FarmerRepository {
         val cityName = city ?: "Chennai"
         return Crop(
             id = "egg_$cityName".hashCode(),
-            name = "முட்டை",
+            name = "Egg",
             nameEng = "Egg",
             price = "₹${"%.2f".format(priceVal)} / piece",
             priceValue = priceVal,

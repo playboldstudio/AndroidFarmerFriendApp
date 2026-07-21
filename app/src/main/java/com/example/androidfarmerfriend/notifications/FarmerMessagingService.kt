@@ -16,13 +16,11 @@ class FarmerMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
-        Log.d(TAG, "New FCM token: $token")
         saveToken(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
-        Log.d(TAG, "Message received: ${message.data}")
 
         val title = message.notification?.title ?: message.data["title"] ?: "Farmer Friend"
         val body = message.notification?.body ?: message.data["body"] ?: ""

@@ -1,5 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.profile
 
+import com.example.androidfarmerfriend.BuildConfig
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -214,7 +215,7 @@ fun ProfileScreen(
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
-                    text = "${strings.appName} v1.0.0",
+                    text = "${strings.appName} v${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.labelSmall,
                     color = GrayText.copy(alpha = 0.5f)
                 )

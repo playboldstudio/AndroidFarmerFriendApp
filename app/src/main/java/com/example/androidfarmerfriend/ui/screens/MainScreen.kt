@@ -135,6 +135,13 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                     onNavigate = { route ->
                         when (route) {
                             "language" -> navController.navigate(Screen.Language.route)
+                            "privacy_policy" -> {
+                                val intent = android.content.Intent(
+                                    android.content.Intent.ACTION_VIEW,
+                                    android.net.Uri.parse("https://playboldstudio.github.io/farmerfriend-privacy/")
+                                )
+                                context.startActivity(intent)
+                            }
                             else -> {}
                         }
                     }

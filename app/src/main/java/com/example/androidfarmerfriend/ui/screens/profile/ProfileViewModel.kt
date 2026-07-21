@@ -27,11 +27,11 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     fun onEvent(event: ProfileEvent) {
         when (event) {
             is ProfileEvent.NavigateToLanguage -> _navigation.value = "language"
-            
+            is ProfileEvent.NavigateToPrivacy -> _navigation.value = "privacy_policy"
+
             is ProfileEvent.NavigateToDetails,
             is ProfileEvent.NavigateToLands,
             is ProfileEvent.NavigateToNotifications,
-            is ProfileEvent.NavigateToPrivacy,
             is ProfileEvent.NavigateToSettings -> {
                 _state.value = _state.value.copy(
                     message = _state.value.selectedLanguage.strings().comingSoon

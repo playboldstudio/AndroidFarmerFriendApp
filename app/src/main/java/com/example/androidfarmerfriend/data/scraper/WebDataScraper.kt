@@ -139,7 +139,7 @@ object WebDataScraper {
             val url = "$host/w/rest.php/v1/search/page?q=$encoded&limit=$limit"
             val request = Request.Builder()
                 .url(url)
-                .header("User-Agent", "AndroidFarmerFriend/1.0 (contact: app@farmerfriend.example)")
+                .header("User-Agent", "AndroidFarmerFriend/${com.example.androidfarmerfriend.BuildConfig.VERSION_NAME}")
                 .build()
             val response = client.newCall(request).execute()
             response.use {
