@@ -29,6 +29,7 @@ import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FilterChipGroup
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 import java.text.SimpleDateFormat
@@ -74,9 +75,7 @@ fun AlertsScreen(
             }
         ) {
             when (val alertState = state.alertsState) {
-                is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = FarmerGreenPrimary)
-                }
+                is UiState.Loading -> FullScreenLoading()
                 is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Icon(Icons.Default.Notifications, contentDescription = null, tint = TrendRed, modifier = Modifier.size(48.dp))

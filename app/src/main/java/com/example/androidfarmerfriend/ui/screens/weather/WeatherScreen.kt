@@ -22,6 +22,7 @@ import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
@@ -78,9 +79,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
         Spacer(modifier = Modifier.height(8.dp))
 
         when (val weatherState = state.weatherState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
+            is UiState.Loading -> FullScreenLoading()
             is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(56.dp))

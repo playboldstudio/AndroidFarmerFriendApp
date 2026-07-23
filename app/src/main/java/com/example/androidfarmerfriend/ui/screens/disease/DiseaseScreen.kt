@@ -22,6 +22,7 @@ import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
 import com.example.androidfarmerfriend.util.WebSearchUtil
@@ -96,9 +97,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
         }
 
         when (val diseaseState = state.diseasesState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
+            is UiState.Loading -> FullScreenLoading()
             is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))

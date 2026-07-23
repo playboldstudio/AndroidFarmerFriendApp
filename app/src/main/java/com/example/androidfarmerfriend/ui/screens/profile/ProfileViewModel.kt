@@ -1,16 +1,24 @@
 package com.example.androidfarmerfriend.ui.screens.profile
 
 import android.app.Application
+import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.util.UserPrefs
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val userPrefs = UserPrefs(application)
     private val languagePrefs = LanguagePrefs(application)
+    private val firestore = FirebaseFirestore.getInstance()
+
+    private val fcmPrefs: SharedPreferences =
+        application.getSharedPreferences("fcm_prefs", Application.MODE_PRIVATE)
 
     private val _state = MutableStateFlow(
         ProfileState(
@@ -37,7 +45,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     message = _state.value.selectedLanguage.strings().comingSoon
                 )
             }
-            
+
             is ProfileEvent.StartEditing -> {
                 _state.value = _state.value.copy(
                     isEditing = true,
@@ -57,6 +65,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                         userName = _state.value.tempName,
                         userPhone = _state.value.tempPhone
                     )
+                    saveUserToFirestore(_state.value.tempName, _state.value.tempPhone)
                 }
             }
             is ProfileEvent.UpdateTempName -> {
@@ -68,6 +77,21 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileEvent.DismissMessage -> {
                 _state.value = _state.value.copy(message = null)
             }
+        }
+    }
+
+    private fun saveUserToFirestore(name: String, phone: String) {
+        val token = fcmPrefs.getString("fcm_token", null) ?: return
+        viewModelScope.launch {
+            val userData = hashMapOf(
+                "name" to name,
+                "phone" to phone,
+                "fcmToken" to token,
+                "lastUpdated" to System.currentTimeMillis()
+            )
+            firestore.collection("users")
+                .document(token)
+                .set(userData)
         }
     }
 

@@ -24,6 +24,7 @@ import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FilterChipGroup
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
 import com.example.androidfarmerfriend.ui.components.ScreenHeader
 import com.example.androidfarmerfriend.ui.theme.*
@@ -134,9 +135,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         Spacer(modifier = Modifier.height(8.dp))
 
         when (val cropsState = state.cropsState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
+            is UiState.Loading -> FullScreenLoading()
             is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Column(horizontalAlignment = Alignment.CenterHorizontally) {
                     Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))

@@ -3,6 +3,7 @@ package com.example.androidfarmerfriend.ui.components
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -25,6 +26,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
 import com.example.androidfarmerfriend.ui.theme.GrayText
 
 fun weatherIconFor(code: Int): ImageVector = when (code) {
@@ -188,6 +190,33 @@ fun FilterChipGroup(
                     borderColor = MaterialTheme.colorScheme.outlineVariant,
                     selectedBorderColor = MaterialTheme.colorScheme.primary
                 )
+            )
+        }
+    }
+}
+
+@Composable
+fun FullScreenLoading(modifier: Modifier = Modifier) {
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(MaterialTheme.colorScheme.background),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            CircularProgressIndicator(
+                color = FarmerGreenPrimary,
+                modifier = Modifier.size(48.dp),
+                strokeWidth = 4.dp
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+                text = "Loading...",
+                style = MaterialTheme.typography.bodyMedium,
+                color = GrayText
             )
         }
     }
