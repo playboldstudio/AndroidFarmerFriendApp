@@ -18,6 +18,12 @@ class AlertsViewModel : ViewModel() {
 
     init {
         loadAlerts()
+        startRealtimeListener()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        repository.stopListening()
     }
 
     fun onEvent(event: AlertEvent) {
@@ -39,6 +45,14 @@ class AlertsViewModel : ViewModel() {
                     )
                 }
             }
+        }
+    }
+
+    private fun startRealtimeListener() {
+        repository.listenForAlerts(limit = 30) { alerts ->
+            _state.value = _state.value.copy(
+                alertsState = UiState.Success(alerts)
+            )
         }
     }
 
