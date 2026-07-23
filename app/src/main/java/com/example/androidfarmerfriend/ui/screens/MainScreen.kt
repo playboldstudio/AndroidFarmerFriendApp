@@ -33,6 +33,7 @@ import com.example.androidfarmerfriend.ui.screens.disease.DiseaseScreen
 import com.example.androidfarmerfriend.ui.screens.schemes.SchemesScreen
 import com.example.androidfarmerfriend.ui.screens.cropnotes.CropNotesScreen
 import com.example.androidfarmerfriend.ui.screens.language.LanguageScreen
+import com.example.androidfarmerfriend.ui.screens.privacy.PrivacyPolicyScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.GrayText
 
@@ -135,13 +136,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                     onNavigate = { route ->
                         when (route) {
                             "language" -> navController.navigate(Screen.Language.route)
-                            "privacy_policy" -> {
-                                val intent = android.content.Intent(
-                                    android.content.Intent.ACTION_VIEW,
-                                    android.net.Uri.parse("https://playboldstudio.github.io/farmerfriend-privacy/")
-                                )
-                                context.startActivity(intent)
-                            }
+                            "privacy_policy" -> navController.navigate(Screen.PrivacyPolicy.route)
                             else -> {}
                         }
                     }
@@ -155,6 +150,11 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                     onLanguageChanged = { lang ->
                         currentLang = lang
                     },
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.PrivacyPolicy.route) {
+                PrivacyPolicyScreen(
                     onBack = { navController.popBackStack() }
                 )
             }
