@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.home
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
@@ -13,6 +14,12 @@ import kotlinx.coroutines.launch
 class HomeViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
+
+    private var strings: AppStrings = AppStrings.Tamil
+
+    fun setStrings(strings: AppStrings) {
+        this.strings = strings
+    }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
@@ -28,7 +35,7 @@ class HomeViewModel(private val repository: FarmerRepository = FarmerRepository(
         _state.value = _state.value.copy(selectedLocation = location, weatherState = UiState.Loading)
         viewModelScope.launch {
             try {
-                val weather = repository.getWeather(location.lat, location.lon, location.name)
+                val weather = repository.getWeather(location.lat, location.lon, location.name, strings)
                 _state.value = _state.value.copy(
                     weatherState = if (weather != null) UiState.Success(weather)
                     else UiState.Error("Weather data unavailable")

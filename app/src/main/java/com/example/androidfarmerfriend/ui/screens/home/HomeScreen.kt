@@ -53,7 +53,12 @@ fun HomeScreen(
     var showLocationPicker by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
+        viewModel.setStrings(strings)
         viewModel.onEvent(HomeEvent.LoadLocation(selectedLocation))
+    }
+
+    LaunchedEffect(strings) {
+        viewModel.setStrings(strings)
     }
 
     val repository = remember { FarmerRepository() }
