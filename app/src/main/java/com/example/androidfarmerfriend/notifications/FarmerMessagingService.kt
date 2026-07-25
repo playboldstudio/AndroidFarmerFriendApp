@@ -1,10 +1,10 @@
 package com.example.androidfarmerfriend.notifications
 
 import android.content.SharedPreferences
+import android.util.Log
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.messaging.FirebaseMessagingService
 import com.google.firebase.messaging.RemoteMessage
-import com.google.firebase.firestore.FirebaseFirestore
-import android.util.Log
 
 class FarmerMessagingService : FirebaseMessagingService() {
 
@@ -16,11 +16,13 @@ class FarmerMessagingService : FirebaseMessagingService() {
 
     override fun onNewToken(token: String) {
         super.onNewToken(token)
+        Log.d(TAG, "New FCM token received")
         saveToken(token)
     }
 
     override fun onMessageReceived(message: RemoteMessage) {
         super.onMessageReceived(message)
+        Log.d(TAG, "Message received - has notification: ${message.notification != null}, has data: ${message.data.isNotEmpty()}")
 
         val title = message.notification?.title ?: message.data["title"] ?: "Farmer Friend"
         val body = message.notification?.body ?: message.data["body"] ?: ""
@@ -28,6 +30,8 @@ class FarmerMessagingService : FirebaseMessagingService() {
         val alertType = message.data["type"] ?: "PRICE"
         val location = message.data["location"] ?: ""
         val actionRoute = message.data["actionRoute"] ?: ""
+
+        Log.d(TAG, "Alert: title=$title, type=$alertType, location=$location")
 
         // Save to Firestore so it appears in AlertsScreen
         saveAlertToFirestore(title, body, alertType, location, actionRoute)
@@ -55,14 +59,21 @@ class FarmerMessagingService : FirebaseMessagingService() {
             "timestamp" to System.currentTimeMillis(),
             "location" to location,
             "isRead" to false,
-            "actionRoute" to actionRoute
+            "actionRoute" to actionRoute,
+            "time" to "Just now"
         )
+
+        Log.d(TAG, "Saving alert to Firestore: $alertData")
 
         FirebaseFirestore.getInstance()
             .collection("alerts")
             .add(alertData)
-            .addOnSuccessListener { Log.d(TAG, "Alert saved to Firestore") }
-            .addOnFailureListener { e -> Log.e(TAG, "Failed to save alert", e) }
+            .addOnSuccessListener { docRef ->
+                Log.d(TAG, "Alert saved successfully with id: ${docRef.id}")
+            }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Failed to save alert to Firestore", e)
+            }
     }
 
     private fun saveToken(token: String) {

@@ -18,6 +18,12 @@ class FarmerFriendApp : Application(), Configuration.Provider {
 
         NotificationHelper.createChannels(this)
         WorkManagerScheduler.scheduleDailyDigest(this)
+        WorkManagerScheduler.scheduleWeatherAlerts(this)
+
+        // Debug: send test alerts every 1 hour
+        if (BuildConfig.DEBUG) {
+            WorkManagerScheduler.scheduleTestNotifications(this)
+        }
     }
 
     override val workManagerConfiguration: Configuration
