@@ -47,7 +47,6 @@ object WorkManagerScheduler {
     /**
      * Checks weather every 3 hours via Open-Meteo API.
      * Creates alerts + notifications for severe conditions.
-     * Runs in background via WorkManager — works even when app is killed.
      */
     fun scheduleWeatherAlerts(context: Context) {
         Log.d(TAG, "Scheduling weather alerts (every 3 hours)")
@@ -74,26 +73,41 @@ object WorkManagerScheduler {
     }
 
     /**
-     * Starts the test notification chain. The worker schedules itself
-     * again after each run, creating a 1-minute loop.
+     * Sends daily market price summary at 7:15am.
      */
-    fun scheduleTestNotifications(context: Context) {
-        Log.d(TAG, "Starting test notification chain (1 hour interval)")
-        val request = OneTimeWorkRequestBuilder<TestNotificationWorker>()
-            .setInitialDelay(30, TimeUnit.SECONDS)
+    fun schedulePriceAlerts(context: Context) {
+        Log.d(TAG, "Scheduling daily price alerts (7:15am)")
+
+        val now = Calendar.getInstance()
+        val target = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 7)
+            set(Calendar.MINUTE, 15)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            if (before(now)) add(Calendar.DAY_OF_MONTH, 1)
+        }
+
+        val delay = target.timeInMillis - now.timeInMillis
+
+        val request = PeriodicWorkRequestBuilder<PriceAlertWorker>(
+            1, TimeUnit.DAYS
+        )
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
             .setConstraints(
                 Constraints.Builder()
                     .setRequiredNetworkType(NetworkType.CONNECTED)
                     .build()
             )
-            .addTag(TestNotificationWorker.TAG)
             .build()
 
-        WorkManager.getInstance(context).enqueue(request)
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            PriceAlertWorker.WORK_NAME,
+            ExistingPeriodicWorkPolicy.KEEP,
+            request
+        )
     }
 
-    fun cancelTestNotifications(context: Context) {
-        Log.d(TAG, "Cancelling test notifications")
-        WorkManager.getInstance(context).cancelAllWorkByTag(TestNotificationWorker.TAG)
+    fun cancelPriceAlerts(context: Context) {
+        WorkManager.getInstance(context).cancelUniqueWork(PriceAlertWorker.WORK_NAME)
     }
 }
