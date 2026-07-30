@@ -16,8 +16,8 @@ data class MarketOption(
         FilterType.VEGETABLES -> supportsVegetables
         FilterType.FRUITS -> supportsFruits
         FilterType.NONVEG -> supportsNonVeg
-        FilterType.GOLD -> true
-        FilterType.EGG -> true
+        FilterType.GOLD -> apiSlug == "chennai"     // Gold data is Chennai-only
+        FilterType.EGG -> group == MarketGroup.MAJOR_MARKETS  // Egg data is city-based
     }
 }
 
@@ -553,8 +553,8 @@ object MarketData {
             FilterType.VEGETABLES -> allMarkets.filter { it.supportsVegetables }
             FilterType.FRUITS -> allMarkets.filter { it.supportsFruits }
             FilterType.NONVEG -> allMarkets.filter { it.supportsNonVeg }
-            FilterType.GOLD -> allMarkets // Gold available everywhere via this API
-            FilterType.EGG -> allMarkets // Egg has its own API
+            FilterType.GOLD -> allMarkets.filter { it.supportsCategory(filter) } // Only Chennai
+            FilterType.EGG -> allMarkets.filter { it.supportsCategory(filter) } // Major markets only
         }
     }
 

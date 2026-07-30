@@ -51,28 +51,66 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     isEditing = true,
                     tempName = _state.value.userName,
                     tempPhone = _state.value.userPhone
+                        .replace("+91", "")
+                        .replace("91", "")
+                        .replace(" ", "")
+                        .filter { it.isDigit() }
                 )
             }
             is ProfileEvent.CancelEditing -> {
                 _state.value = _state.value.copy(isEditing = false)
             }
             is ProfileEvent.SaveProfile -> {
-                if (_state.value.tempName.isNotBlank() && _state.value.tempPhone.isNotBlank()) {
-                    userPrefs.userName = _state.value.tempName
-                    userPrefs.userPhone = _state.value.tempPhone
+                val rawPhone = _state.value.tempPhone.trim()
+                    .removePrefix("+91").removePrefix("91")
+                    .replace("\\s".toRegex(), "")
+                val isValidPhone = rawPhone.length == 10 && rawPhone.all { it.isDigit() }
+
+                if (_state.value.tempName.isBlank()) {
                     _state.value = _state.value.copy(
-                        isEditing = false,
-                        userName = _state.value.tempName,
-                        userPhone = _state.value.tempPhone
+                        message = "Name cannot be empty"
                     )
-                    saveUserToFirestore(_state.value.tempName, _state.value.tempPhone)
+                    return
                 }
+                if (rawPhone.isBlank()) {
+                    _state.value = _state.value.copy(
+                        phoneError = "Phone number is required"
+                    )
+                    return
+                }
+                if (!isValidPhone) {
+                    _state.value = _state.value.copy(
+                        phoneError = "Enter a valid 10-digit mobile number"
+                    )
+                    return
+                }
+
+                val cleanPhone = rawPhone
+                userPrefs.userName = _state.value.tempName
+                userPrefs.userPhone = cleanPhone
+                _state.value = _state.value.copy(
+                    isEditing = false,
+                    userName = _state.value.tempName,
+                    userPhone = cleanPhone,
+                    phoneError = null
+                )
+                saveUserToFirestore(_state.value.tempName, cleanPhone)
             }
             is ProfileEvent.UpdateTempName -> {
                 _state.value = _state.value.copy(tempName = event.name)
             }
             is ProfileEvent.UpdateTempPhone -> {
-                _state.value = _state.value.copy(tempPhone = event.phone)
+                // Auto-strip +91 or 91 prefix, spaces, and limit to 10 digits
+                val cleaned = event.phone
+                    .replace("+91", "")
+                    .replace("91", "")
+                    .replace(" ", "")
+                    .filter { it.isDigit() }
+                    .take(10)
+                _state.value = _state.value.copy(
+                    tempPhone = cleaned,
+                    phoneError = null
+                )
             }
             is ProfileEvent.DismissMessage -> {
                 _state.value = _state.value.copy(message = null)

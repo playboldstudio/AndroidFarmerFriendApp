@@ -23,6 +23,7 @@ import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.MarketGroup
 import com.example.androidfarmerfriend.data.model.MarketOption
+import com.example.androidfarmerfriend.ui.screens.market.FilterType
 import com.example.androidfarmerfriend.ui.theme.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -252,6 +253,8 @@ private fun MarketItem(
                     if (market.supportsVegetables) add("Veg")
                     if (market.supportsFruits) add("Fruit")
                     if (market.supportsNonVeg) add("Non-Veg")
+                    if (market.supportsCategory(FilterType.GOLD)) add("Gold")
+                    if (market.supportsCategory(FilterType.EGG)) add("Egg")
                 }
                 if (categories.isNotEmpty()) {
                     Text(

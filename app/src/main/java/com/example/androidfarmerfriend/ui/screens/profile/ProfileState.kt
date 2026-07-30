@@ -8,6 +8,7 @@ data class ProfileState(
     val isEditing: Boolean = false,
     val tempName: String = "",
     val tempPhone: String = "",
+    val phoneError: String? = null,
     val selectedLanguage: Language = Language.TAMIL,
     val message: String? = null
 )

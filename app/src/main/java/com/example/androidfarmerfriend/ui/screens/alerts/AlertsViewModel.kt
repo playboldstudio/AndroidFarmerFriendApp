@@ -17,7 +17,8 @@ class AlertsViewModel : ViewModel() {
     private val repository = FirestoreAlertRepository.getInstance()
 
     init {
-        loadAlerts()
+        // Use only the realtime listener — it fires immediately with current data
+        // and on every subsequent update, avoiding the duplicate load race condition
         startRealtimeListener()
     }
 
@@ -32,7 +33,9 @@ class AlertsViewModel : ViewModel() {
                 _state.value = _state.value.copy(selectedFilter = event.filter)
             }
             is AlertEvent.Refresh -> {
-                loadAlerts()
+                // Restart the realtime listener to get fresh data
+                repository.stopListening()
+                startRealtimeListener()
             }
             is AlertEvent.MarkRead -> {
                 viewModelScope.launch {
@@ -48,8 +51,18 @@ class AlertsViewModel : ViewModel() {
         }
     }
 
+    private var hasSeeded = false
+
     private fun startRealtimeListener() {
         repository.listenForAlerts(limit = 30) { alerts ->
+            if (alerts.isEmpty() && !hasSeeded) {
+                hasSeeded = true
+                viewModelScope.launch {
+                    try {
+                        AlertSeedData.seedAlerts()
+                    } catch (_: Exception) {}
+                }
+            }
             _state.value = _state.value.copy(
                 alertsState = UiState.Success(alerts)
             )

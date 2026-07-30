@@ -122,6 +122,19 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
             }
         )
 
+        // Show Chennai-only hint for Gold filter
+        if (state.selectedFilter == FilterType.GOLD) {
+            Text(
+                text = "${strings.gold} • Chennai only",
+                style = MaterialTheme.typography.labelSmall,
+                color = GrayText.copy(alpha = 0.7f),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 4.dp),
+                textAlign = TextAlign.Center
+            )
+        }
+
         if (state.fetchDate.isNotEmpty()) {
             Text(
                 text = "${strings.updatedAt}: ${state.fetchDate}",
@@ -155,7 +168,23 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                         Column(horizontalAlignment = Alignment.CenterHorizontally) {
                             Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
                             Spacer(modifier = Modifier.height(8.dp))
-                            Text(strings.noData, color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                            if (state.searchQuery.isNotEmpty()) {
+                                Text(strings.noData, color = GrayText, style = MaterialTheme.typography.bodyLarge)
+                            } else {
+                                Text(
+                                    text = strings.noData,
+                                    color = GrayText,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                                Spacer(modifier = Modifier.height(4.dp))
+                                Text(
+                                    text = "${state.selectedFilter.displayKey(strings)} data not available for ${state.selectedMarket.displayName}.\nTry a different location.",
+                                    color = GrayText.copy(alpha = 0.7f),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    textAlign = TextAlign.Center,
+                                    modifier = Modifier.padding(horizontal = 32.dp)
+                                )
+                            }
                         }
                     }
                 } else {

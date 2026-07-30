@@ -211,9 +211,24 @@ private fun ProfileCard(
                             modifier = Modifier.fillMaxWidth(),
                             singleLine = true,
                             shape = RoundedCornerShape(12.dp),
+                            prefix = {
+                                Text(
+                                    text = "+91 ",
+                                    style = MaterialTheme.typography.bodyLarge,
+                                    color = GrayText
+                                )
+                            },
+                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone,
+                                imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                            ),
+                            isError = state.phoneError != null,
+                            supportingText = state.phoneError?.let { err ->
+                                { Text(err, color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }
+                            },
                             colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = FarmerGreenPrimary,
-                                unfocusedBorderColor = GrayText.copy(alpha = 0.3f)
+                                focusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else FarmerGreenPrimary,
+                                unfocusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else GrayText.copy(alpha = 0.3f)
                             ),
                             textStyle = MaterialTheme.typography.bodyLarge
                         )
@@ -226,7 +241,7 @@ private fun ProfileCard(
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
-                            text = state.userPhone,
+                            text = if (state.userPhone.startsWith("+91")) state.userPhone else "+91 ${state.userPhone}",
                             style = MaterialTheme.typography.bodyMedium,
                             color = GrayText
                         )

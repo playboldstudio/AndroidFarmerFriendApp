@@ -31,6 +31,7 @@ import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
@@ -49,8 +50,30 @@ fun HomeScreen(
     val strings = LocalAppStrings.current
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val userPrefs = remember { UserPrefs(context) }
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
+
+    val greeting = remember(userPrefs.userName, strings) {
+        val name = userPrefs.userName
+        val defaultFarmerNames = setOf(
+            "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
+            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
+        )
+        if (name.isNotBlank() && name !in defaultFarmerNames) {
+            // Replace the farmer name in the greeting with the actual username
+            // e.g. "Hello, Farmer! 👋" -> "Hello, Raj! 👋"
+            val greetingWithoutEmoji = strings.homeGreeting.replace(" 👋", "")
+            val parts = greetingWithoutEmoji.split(",").map { it.trim() }
+            if (parts.size >= 2) {
+                "${parts[0]}, $name! 👋"
+            } else {
+                strings.homeGreeting
+            }
+        } else {
+            strings.homeGreeting
+        }
+    }
 
     LaunchedEffect(Unit) {
         viewModel.setStrings(strings)
@@ -88,7 +111,7 @@ fun HomeScreen(
         Spacer(modifier = Modifier.height(12.dp))
 
         ScreenHeader(
-            title = strings.homeGreeting,
+            title = greeting,
             subtitle = selectedLocation.name,
             isHome = true,
             showSearch = false,

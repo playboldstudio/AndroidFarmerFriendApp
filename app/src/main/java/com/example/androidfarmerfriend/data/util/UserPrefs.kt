@@ -12,7 +12,7 @@ class UserPrefs(context: Context) {
         set(value) = prefs.edit().putString(KEY_NAME, value).apply()
 
     var userPhone: String
-        get() = prefs.getString(KEY_PHONE, "+91 98765 43210") ?: "+91 98765 43210"
+        get() = prefs.getString(KEY_PHONE, "9876543210") ?: "9876543210"
         set(value) = prefs.edit().putString(KEY_PHONE, value).apply()
 
     companion object {
