@@ -156,7 +156,7 @@ fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
         horizontalArrangement = Arrangement.Center
     ) {
         Image(
-            painter = painterResource(R.mipmap.ic_launcher),
+            painter = painterResource(R.mipmap.ic_launcher_foreground),
             contentDescription = "Farmer Friend Logo",
             modifier = Modifier.size(48.dp)
         )
