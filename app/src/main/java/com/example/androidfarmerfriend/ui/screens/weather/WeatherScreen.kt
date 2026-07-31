@@ -1,32 +1,41 @@
 package com.example.androidfarmerfriend.ui.screens.weather
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.ForecastDay
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
-import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
-import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.components.DayPill
+import com.example.androidfarmerfriend.ui.components.EmptyState
+import com.example.androidfarmerfriend.ui.components.ErrorState
+import com.example.androidfarmerfriend.ui.components.FarmTipCard
 import com.example.androidfarmerfriend.ui.components.FullScreenLoading
-import com.example.androidfarmerfriend.ui.components.weatherIconFor
-import com.example.androidfarmerfriend.data.localization.AppStrings
-import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
+import com.example.androidfarmerfriend.ui.components.LocPill
+import com.example.androidfarmerfriend.ui.components.MenuRow
+import com.example.androidfarmerfriend.ui.components.SectionTitle
+import com.example.androidfarmerfriend.ui.components.WeatherHeroCard
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
@@ -66,142 +75,145 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .background(FarmerTheme.colors.background)
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        ScreenHeader(
-            title = strings.weatherTitle,
-            subtitle = selectedLocation.name,
-            showSearch = false,
-            onLocationClick = { showLocationPicker = true }
-        )
+        Spacer(modifier = Modifier.height(16.dp))
+
+        HeroTitle(text = strings.weatherTitle)
 
         Spacer(modifier = Modifier.height(8.dp))
 
+        LocPill(
+            text = selectedLocation.name,
+            onClick = { showLocationPicker = true }
+        )
+
         when (val weatherState = state.weatherState) {
-            is UiState.Loading -> FullScreenLoading()
-            is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(56.dp))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text(strings.loadError, color = GrayText, style = MaterialTheme.typography.bodyLarge)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(weatherState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.onEvent(WeatherEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text(strings.retry)
-                    }
-                }
-            }
+            is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
+            is UiState.Error -> ErrorState(
+                message = weatherState.message.ifBlank { strings.weatherLoadError },
+                onRetry = { viewModel.onEvent(WeatherEvent.Retry) },
+                modifier = Modifier.padding(top = 32.dp)
+            )
             is UiState.Success -> WeatherDetailedView(weather = weatherState.data, strings = strings)
         }
+
+        Spacer(modifier = Modifier.height(24.dp))
     }
 }
 
 @Composable
 fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
-        Icon(
-            weatherIconFor(weather.weatherCode),
-            contentDescription = null,
-            modifier = Modifier.size(80.dp),
-            tint = WeatherYellow
-        )
-        Text(
-            text = weather.temperature,
-            style = MaterialTheme.typography.displayMedium,
-            fontWeight = FontWeight.Bold,
-            fontSize = 48.sp,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        Text(
-            text = weather.condition,
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onBackground
-        )
-        if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
-            Text(
-                text = java.lang.String.format(strings.lowHigh, weather.todayLow, weather.todayHigh),
-                style = MaterialTheme.typography.bodyMedium,
-                color = GrayText
-            )
-        }
+    val colors = FarmerTheme.colors
 
-        Spacer(modifier = Modifier.height(32.dp))
+    WeatherHeroCard(
+        weather = weather,
+        strings = strings,
+        centered = true,
+        modifier = Modifier.padding(top = 16.dp)
+    )
 
-        if (weather.forecast.isNotEmpty()) {
-            WeatherForecastRow(weather.forecast)
-            Spacer(modifier = Modifier.height(32.dp))
-        }
-
-        WeatherDetailsList(weather = weather, strings = strings)
-    }
-}
-
-@Composable
-fun WeatherForecastRow(forecast: List<ForecastDay>) {
-    Row(
-        horizontalArrangement = Arrangement.SpaceBetween,
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        forecast.forEach { item ->
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(text = item.day, style = MaterialTheme.typography.labelMedium, color = GrayText)
-                Spacer(modifier = Modifier.height(8.dp))
-                Icon(
-                    weatherIconFor(item.weatherCode),
-                    contentDescription = null,
-                    tint = WeatherBlue,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "${item.minTemp}/${item.maxTemp}",
-                    style = MaterialTheme.typography.labelLarge,
-                    fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onBackground
+    if (weather.forecast.isNotEmpty()) {
+        SectionTitle(title = strings.today)
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(rememberScrollState()),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            weather.forecast.forEachIndexed { index, day ->
+                DayPill(
+                    day = day.day,
+                    weatherCode = day.weatherCode,
+                    temp = day.maxTemp,
+                    selected = index == 0
                 )
             }
         }
     }
-}
 
-@Composable
-fun WeatherDetailsList(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
-    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        WeatherDetailRow(icon = Icons.Default.WaterDrop, label = strings.rainChance, value = weather.rainChance)
-        WeatherDetailRow(icon = Icons.Default.Opacity, label = strings.humidity, value = weather.humidity)
-        WeatherDetailRow(icon = Icons.Default.Air, label = strings.windSpeed, value = weather.windSpeed)
-        WeatherDetailRow(icon = Icons.Default.Explore, label = strings.windDirection, value = weather.windDirection)
+    SectionTitle(title = "Details")
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
+    ) {
+        Column(modifier = Modifier.padding(horizontal = 18.dp)) {
+            WeatherDetailRow(
+                icon = Icons.Default.WaterDrop,
+                iconContainer = colors.softBlue,
+                iconTint = colors.weatherBlue,
+                label = strings.rainChance,
+                value = weather.rainChance
+            )
+            WeatherDetailRow(
+                icon = Icons.Default.Opacity,
+                iconContainer = colors.softMint,
+                iconTint = colors.primary,
+                label = strings.humidity,
+                value = weather.humidity
+            )
+            WeatherDetailRow(
+                icon = Icons.Default.Air,
+                iconContainer = colors.softLavender,
+                iconTint = colors.alertPurple,
+                label = strings.windSpeed,
+                value = weather.windSpeed
+            )
+            WeatherDetailRow(
+                icon = Icons.Default.Explore,
+                iconContainer = colors.softOrange,
+                iconTint = colors.diseaseOrange,
+                label = strings.windDirection,
+                value = weather.windDirection
+            )
+        }
     }
+
+    Spacer(modifier = Modifier.height(14.dp))
+
+    FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
 }
 
 @Composable
-fun WeatherDetailRow(icon: ImageVector, label: String, value: String) {
+fun WeatherDetailRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconContainer: androidx.compose.ui.graphics.Color,
+    iconTint: androidx.compose.ui.graphics.Color,
+    label: String,
+    value: String
+) {
+    val colors = FarmerTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 8.dp),
+            .padding(vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Icon(
-            icon,
-            contentDescription = null,
-            modifier = Modifier.size(24.dp),
-            tint = WeatherBlue.copy(alpha = 0.6f)
-        )
-        Spacer(modifier = Modifier.width(16.dp))
+        androidx.compose.material3.Surface(
+            modifier = Modifier.size(36.dp),
+            shape = RoundedCornerShape(12.dp),
+            color = iconContainer
+        ) {
+            Box(contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = iconTint, modifier = Modifier.size(18.dp))
+            }
+        }
+        Spacer(modifier = Modifier.width(12.dp))
         Text(
             text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = MaterialTheme.colorScheme.onBackground,
+            color = colors.textSecondary,
+            fontSize = 14.sp,
             modifier = Modifier.weight(1f)
         )
         Text(
             text = value,
-            style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Bold,
-            color = MaterialTheme.colorScheme.onBackground
+            color = colors.textPrimary,
+            fontSize = 14.sp,
+            fontWeight = androidx.compose.ui.text.font.FontWeight.Bold
         )
     }
 }
@@ -209,7 +221,7 @@ fun WeatherDetailRow(icon: ImageVector, label: String, value: String) {
 @Preview(showBackground = true)
 @Composable
 fun WeatherScreenPreview() {
-    AndroidFarmerFriendTheme {
+    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
         WeatherScreen()
     }
 }

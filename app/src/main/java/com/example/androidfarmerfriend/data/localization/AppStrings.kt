@@ -131,6 +131,13 @@ data class AppStrings(
     val timeMinutesAgo: String,
     val timeHoursAgo: String,
     val timeDaysAgo: String,
+    // Redesigned UI
+    val marketTrendToday: String,
+    val trendRising: String,
+    val trendFalling: String,
+    val trendStable: String,
+    val farmTipTitle: String,
+    val farmTipGeneric: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -261,6 +268,12 @@ data class AppStrings(
             timeMinutesAgo = "%d நிமிடத்திற்கு முன்",
             timeHoursAgo = "%d மணிநேரத்திற்கு முன்",
             timeDaysAgo = "%d நாட்களுக்கு முன்",
+            marketTrendToday = "இன்றைய சந்தை போக்கு",
+            trendRising = "விலைகள் உயர்ந்து வருகின்றன",
+            trendFalling = "விலைகள் குறைந்து வருகின்றன",
+            trendStable = "விலைகள் நிலையாக உள்ளன",
+            farmTipTitle = "பண்ணை உதவிக்குறிப்பு",
+            farmTipGeneric = "வானிலை மற்றும் சந்தை விலைகளை தினமும் சரிபார்த்து உங்கள் வேலைகளைத் திட்டமிடுங்கள்.",
         )
 
         val English = AppStrings(
@@ -391,6 +404,12 @@ data class AppStrings(
             timeMinutesAgo = "%dm ago",
             timeHoursAgo = "%dh ago",
             timeDaysAgo = "%dd ago",
+            marketTrendToday = "MARKET TREND TODAY",
+            trendRising = "Prices are rising",
+            trendFalling = "Prices are falling",
+            trendStable = "Prices holding steady",
+            farmTipTitle = "Farm tip",
+            farmTipGeneric = "Stay updated with daily weather and market prices to plan your farm work.",
         )
 
         val Hindi = AppStrings(
@@ -521,6 +540,12 @@ data class AppStrings(
             timeMinutesAgo = "%d मिनट पहले",
             timeHoursAgo = "%d घंटे पहले",
             timeDaysAgo = "%d दिन पहले",
+            marketTrendToday = "आज का बाज़ार रुझान",
+            trendRising = "कीमतें बढ़ रही हैं",
+            trendFalling = "कीमतें गिर रही हैं",
+            trendStable = "कीमतें स्थिर हैं",
+            farmTipTitle = "खेत की टिप",
+            farmTipGeneric = "दैनिक मौसम और बाज़ार मूल्य से अपडेट रहकर अपने खेत के काम की योजना बनाएं.",
         )
 
         val Telugu = AppStrings(
@@ -651,6 +676,12 @@ data class AppStrings(
             timeMinutesAgo = "%d నిమిషాల క్రితం",
             timeHoursAgo = "%d గంటల క్రితం",
             timeDaysAgo = "%d రోజుల క్రితం",
+            marketTrendToday = "నేటి మార్కెట్ ట్రెండ్",
+            trendRising = "ధరలు పెరుగుతున్నాయి",
+            trendFalling = "ధరలు తగ్గుతున్నాయి",
+            trendStable = "ధరలు స్థిరంగా ఉన్నాయి",
+            farmTipTitle = "పొలం చిట్కా",
+            farmTipGeneric = "రోజువారీ వాతావరణం మరియు మార్కెట్ ధరలతో తాజాగా ఉండి మీ పొలం పనులను ప్లాన్ చేయండి.",
         )
 
         val Malayalam = AppStrings(
@@ -781,6 +812,12 @@ data class AppStrings(
             timeMinutesAgo = "%d മിനിറ്റ് മുമ്പ്",
             timeHoursAgo = "%d മണിക്കൂർ മുമ്പ്",
             timeDaysAgo = "%d ദിവസം മുമ്പ്",
+            marketTrendToday = "ഇന്നത്തെ മാർക്കറ്റ് ട്രെൻഡ്",
+            trendRising = "വിലകൾ ഉയരുന്നു",
+            trendFalling = "വിലകൾ ഇടിയുന്നു",
+            trendStable = "വിലകൾ സ്ഥിരമാണ്",
+            farmTipTitle = "ഫാം ടിപ്പ്",
+            farmTipGeneric = "ദിവസേനയുള്ള കാലാവസ്ഥയും മാർക്കറ്റ് വിലയും അറിഞ്ഞ് നിങ്ങളുടെ കൃഷിപ്പണികൾ ആസൂത്രണം ചെയ്യുക.",
         )
 
         val Kannada = AppStrings(
@@ -911,6 +948,12 @@ data class AppStrings(
             timeMinutesAgo = "%d ನಿಮಿಷಗಳ ಹಿಂದೆ",
             timeHoursAgo = "%d ಗಂಟೆಗಳ ಹಿಂದೆ",
             timeDaysAgo = "%d ದಿನಗಳ ಹಿಂದೆ",
+            marketTrendToday = "ಇಂದಿನ ಮಾರುಕಟ್ಟೆ ಪ್ರವೃತ್ತಿ",
+            trendRising = "ಬೆಲೆಗಳು ಏರುತ್ತಿವೆ",
+            trendFalling = "ಬೆಲೆಗಳು ಇಳಿಯುತ್ತಿವೆ",
+            trendStable = "ಬೆಲೆಗಳು ಸ್ಥಿರವಾಗಿವೆ",
+            farmTipTitle = "ಕೃಷಿ ಸಲಹೆ",
+            farmTipGeneric = "ದೈನಂದಿನ ಹವಾಮಾನ ಮತ್ತು ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳೊಂದಿಗೆ ಅಪ್‌ಡೇಟ್ ಆಗಿರಿ ಮತ್ತು ನಿಮ್ಮ ಕೃಷಿ ಕೆಲಸವನ್ನು ಯೋಜಿಸಿ.",
         )
 
         val Marathi = AppStrings(
@@ -1041,6 +1084,12 @@ data class AppStrings(
             timeMinutesAgo = "%d मिनिटांपूर्वी",
             timeHoursAgo = "%d तासांपूर्वी",
             timeDaysAgo = "%d दिवसांपूर्वी",
+            marketTrendToday = "आजचा बाजार कल",
+            trendRising = "भाव वाढत आहेत",
+            trendFalling = "भाव घसरत आहेत",
+            trendStable = "भाव स्थिर आहेत",
+            farmTipTitle = "शेत टीप",
+            farmTipGeneric = "रोजच्या हवामान आणि बाजार भावांवर अपडेट राहून आपल्या शेतीचे नियोजन करा.",
         )
 
         val Bengali = AppStrings(
@@ -1171,6 +1220,12 @@ data class AppStrings(
             timeMinutesAgo = "%d মিনিট আগে",
             timeHoursAgo = "%d ঘণ্টা আগে",
             timeDaysAgo = "%d দিন আগে",
+            marketTrendToday = "আজকের বাজার প্রবণতা",
+            trendRising = "দাম বাড়ছে",
+            trendFalling = "দাম কমছে",
+            trendStable = "দাম স্থির আছে",
+            farmTipTitle = "খামারের টিপ",
+            farmTipGeneric = "দৈনিক আবহাওয়া ও বাজার মূল্য দিয়ে আপডেট থাকুন এবং আপনার খামারের কাজের পরিকল্পনা করুন.",
         )
 
         val Punjabi = AppStrings(
@@ -1301,6 +1356,12 @@ data class AppStrings(
             timeMinutesAgo = "%d ਮਿੰਟ ਪਹਿਲਾਂ",
             timeHoursAgo = "%d ਘੰਟੇ ਪਹਿਲਾਂ",
             timeDaysAgo = "%d ਦਿਨ ਪਹਿਲਾਂ",
+            marketTrendToday = "ਅੱਜ ਦਾ ਮਾਰਕੀਟ ਰੁਝਾਨ",
+            trendRising = "ਕੀਮਤਾਂ ਵਧ ਰਹੀਆਂ ਹਨ",
+            trendFalling = "ਕੀਮਤਾਂ ਘਟ ਰਹੀਆਂ ਹਨ",
+            trendStable = "ਕੀਮਤਾਂ ਸਥਿਰ ਹਨ",
+            farmTipTitle = "ਖੇਤ ਦੀ ਟਿਪ",
+            farmTipGeneric = "ਰੋਜ਼ਾਨਾ ਮੌਸਮ ਅਤੇ ਮਾਰਕੀਟ ਕੀਮਤਾਂ ਨਾਲ ਅਪਡੇਟ ਰਹੋ ਅਤੇ ਆਪਣੇ ਖੇਤੀ ਕੰਮ ਦੀ ਯੋਜਨਾ ਬਣਾਓ.",
         )
 
         val Gujarati = AppStrings(
@@ -1431,6 +1492,12 @@ data class AppStrings(
             timeMinutesAgo = "%d મિનિટ પહેલાં",
             timeHoursAgo = "%d કલાક પહેલાં",
             timeDaysAgo = "%d દિવસ પહેલાં",
+            marketTrendToday = "આજનો બજાર વલણ",
+            trendRising = "કિંમતો વધી રહી છે",
+            trendFalling = "કિંમતો ઘટી રહી છે",
+            trendStable = "કિંમતો સ્થિર છે",
+            farmTipTitle = "ફાર્મ ટિપ",
+            farmTipGeneric = "રોજિંદા હવામાન અને બજાર ભાવ સાથે અપડેટ રહો અને તમારા ખેતરના કામનું આયોજન કરો.",
         )
 
         val Odia = AppStrings(
@@ -1561,6 +1628,12 @@ data class AppStrings(
             timeMinutesAgo = "%d ମିନିଟ ପୂର୍ବେ",
             timeHoursAgo = "%d ଘଣ୍ଟା ପୂର୍ବେ",
             timeDaysAgo = "%d ଦିନ ପୂର୍ବେ",
+            marketTrendToday = "ଆଜିର ବଜାର ଧାରା",
+            trendRising = "ଦର ବଢ଼ୁଛି",
+            trendFalling = "ଦର ହ୍ରାସ ପାଉଛି",
+            trendStable = "ଦର ସ୍ଥିର ଅଛି",
+            farmTipTitle = "କ୍ଷେତ ଟିପ୍ସ",
+            farmTipGeneric = "ଦୈନିକ ପାଗ ଏବଂ ବଜାର ମୂଲ୍ୟ ସହିତ ଅପଡେଟ୍ ରୁହନ୍ତୁ ଏବଂ ଆପଣଙ୍କ କୃଷି କାର୍ଯ୍ୟ ଯୋଜନା କରନ୍ତୁ.",
         )
 }
 }

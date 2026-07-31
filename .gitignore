@@ -17,3 +17,7 @@ local.properties
 *.jks
 *.keystore
 google-services.json
+
+# UI mockups (HTML/PNG design references) — not part of the app source
+uiflow/
+uiflow$name.png

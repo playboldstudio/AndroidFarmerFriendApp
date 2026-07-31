@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.ui.theme.GrayText
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,7 +32,7 @@ fun LanguageScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
+            .background(FarmerTheme.colors.background)
     ) {
         TopAppBar(
             title = { Text(strings.selectLanguage, fontWeight = FontWeight.Bold) },
@@ -43,7 +43,7 @@ fun LanguageScreen(
             },
             colors = TopAppBarDefaults.topAppBarColors(
                 containerColor = Color.Transparent,
-                titleContentColor = MaterialTheme.colorScheme.onBackground
+                titleContentColor = FarmerTheme.colors.textPrimary
             )
         )
 
@@ -82,7 +82,7 @@ fun LanguageScreen(
                             text = displayName,
                             style = MaterialTheme.typography.bodyLarge,
                             fontSize = 16.sp,
-                            color = MaterialTheme.colorScheme.onSurface,
+                            color = FarmerTheme.colors.textPrimary,
                             modifier = Modifier.weight(1f)
                         )
                         if (isSelected) {
@@ -103,7 +103,7 @@ fun LanguageScreen(
             Text(
                 text = if (selectedLanguage == Language.TAMIL) "மொழி உடனடியாக மாற்றப்படும்" else "Language will be applied immediately",
                 style = MaterialTheme.typography.bodySmall,
-                color = GrayText,
+                color = FarmerTheme.colors.textSecondary,
                 modifier = Modifier.fillMaxWidth()
             )
         }

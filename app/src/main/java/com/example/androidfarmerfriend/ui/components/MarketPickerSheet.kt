@@ -24,7 +24,7 @@ import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.MarketGroup
 import com.example.androidfarmerfriend.data.model.MarketOption
 import com.example.androidfarmerfriend.ui.screens.market.FilterType
-import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,24 +83,24 @@ fun MarketPickerSheet(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
                 modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(strings.searchMarkets, color = GrayText, fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
+                placeholder = { Text(strings.searchMarkets, color = FarmerTheme.colors.textTertiary, fontSize = 14.sp) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = FarmerTheme.colors.textTertiary) },
                 trailingIcon = {
                     if (searchQuery.isNotEmpty()) {
                         IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
+                            Icon(Icons.Default.Close, contentDescription = null, tint = FarmerTheme.colors.textTertiary)
                         }
                     }
                 },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface
+                    unfocusedBorderColor = FarmerTheme.colors.outline,
+                    focusedBorderColor = FarmerTheme.colors.primary,
+                    unfocusedContainerColor = FarmerTheme.colors.surface,
+                    focusedContainerColor = FarmerTheme.colors.surface,
+                    unfocusedTextColor = FarmerTheme.colors.textPrimary,
+                    focusedTextColor = FarmerTheme.colors.textPrimary
                 )
             )
 
@@ -182,7 +182,7 @@ fun MarketPickerSheet(
                         ) {
                             Text(
                                 text = strings.noResults,
-                                color = GrayText,
+                                color = FarmerTheme.colors.textSecondary,
                                 style = MaterialTheme.typography.bodyLarge
                             )
                         }
@@ -207,7 +207,7 @@ private fun SectionHeader(
         Icon(
             imageVector = icon,
             contentDescription = null,
-            tint = FarmerGreenPrimary,
+            tint = FarmerTheme.colors.primary,
             modifier = Modifier.size(18.dp)
         )
         Spacer(modifier = Modifier.width(8.dp))
@@ -215,7 +215,7 @@ private fun SectionHeader(
             text = title,
             style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
-            color = FarmerGreenPrimary
+            color = FarmerTheme.colors.primary
         )
     }
 }
@@ -230,8 +230,8 @@ private fun MarketItem(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        color = if (isSelected) FarmerGreenPrimary.copy(alpha = 0.08f)
-        else MaterialTheme.colorScheme.surface,
+        color = if (isSelected) FarmerTheme.colors.softGreen
+        else FarmerTheme.colors.surface,
         shape = MaterialTheme.shapes.small
     ) {
         Row(
@@ -245,8 +245,8 @@ private fun MarketItem(
                     text = market.displayName,
                     style = MaterialTheme.typography.bodyLarge,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                    color = if (isSelected) FarmerGreenPrimary
-                    else MaterialTheme.colorScheme.onSurface
+                    color = if (isSelected) FarmerTheme.colors.primary
+                    else FarmerTheme.colors.textPrimary
                 )
                 // Show supported categories as small text
                 val categories = buildList {
@@ -260,7 +260,7 @@ private fun MarketItem(
                     Text(
                         text = categories.joinToString(" • "),
                         style = MaterialTheme.typography.labelSmall,
-                        color = GrayText.copy(alpha = 0.7f),
+                        color = FarmerTheme.colors.textTertiary,
                         fontSize = 11.sp
                     )
                 }
@@ -270,13 +270,13 @@ private fun MarketItem(
                 Surface(
                     modifier = Modifier.size(24.dp),
                     shape = CircleShape,
-                    color = FarmerGreenPrimary
+                    color = FarmerTheme.colors.primary
                 ) {
                     Box(contentAlignment = Alignment.Center) {
                         Icon(
                             Icons.Default.Check,
                             contentDescription = null,
-                            tint = MaterialTheme.colorScheme.surface,
+                            tint = FarmerTheme.colors.onPrimary,
                             modifier = Modifier.size(16.dp)
                         )
                     }

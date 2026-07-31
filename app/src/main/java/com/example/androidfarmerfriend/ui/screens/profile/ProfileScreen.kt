@@ -1,9 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.profile
 
 import com.example.androidfarmerfriend.BuildConfig
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.expandVertically
-import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -12,14 +9,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -29,10 +24,11 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.ui.components.ScreenHeader
+import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.MenuRow
+import com.example.androidfarmerfriend.ui.components.SectionTitle
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
-import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
-import com.example.androidfarmerfriend.ui.theme.GrayText
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
 fun ProfileScreen(
@@ -47,6 +43,7 @@ fun ProfileScreen(
     val location = remember { locationPrefs.selectedLocation }
     val languagePrefs = remember { LanguagePrefs(context) }
     var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
+    val colors = FarmerTheme.colors
 
     LaunchedEffect(Unit) {
         currentLang = languagePrefs.selectedLanguage
@@ -69,17 +66,20 @@ fun ProfileScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = MaterialTheme.colorScheme.background
+        containerColor = colors.background
     ) { padding ->
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            ScreenHeader(title = strings.profileTitle, showSearch = false)
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Spacer(modifier = Modifier.height(12.dp))
+            HeroTitle(text = strings.profileTitle)
+
+            Spacer(modifier = Modifier.height(8.dp))
 
             // ── Profile Card ──
             ProfileCard(
@@ -93,45 +93,85 @@ fun ProfileScreen(
                 onPhoneChange = { viewModel.onEvent(ProfileEvent.UpdateTempPhone(it)) }
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            SectionTitle(title = strings.settings)
 
-            // ── Menu Items ──
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(8.dp)
+            // ── Settings menu card (rows separated by hairline dividers, like .menu-row) ──
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = colors.surface)
             ) {
-                ProfileMenuItem(title = strings.myDetails, icon = Icons.Default.Person, onClick = { viewModel.onEvent(ProfileEvent.NavigateToDetails) })
-                ProfileMenuItem(title = strings.myLands, icon = Icons.Default.Landscape, onClick = { viewModel.onEvent(ProfileEvent.NavigateToLands) })
-                ProfileMenuItem(
-                    title = strings.language,
-                    icon = Icons.Default.Language,
-                    trailingText = currentLang.displayEnglish,
-                    onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
-                )
-                ProfileMenuItem(title = strings.notifications, icon = Icons.Default.Notifications, onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) })
-                ProfileMenuItem(title = strings.privacyPolicy, icon = Icons.Default.PrivacyTip, onClick = { viewModel.onEvent(ProfileEvent.NavigateToPrivacy) })
-                ProfileMenuItem(title = strings.settings, icon = Icons.Default.Settings, onClick = { viewModel.onEvent(ProfileEvent.NavigateToSettings) })
+                Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = 4.dp)) {
+                    SettingsRow(
+                        icon = Icons.Default.Person,
+                        iconTint = colors.primary,
+                        iconContainer = colors.softMint,
+                        title = strings.myDetails,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToDetails) },
+                        showDivider = true
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Landscape,
+                        iconTint = colors.alertGreen,
+                        iconContainer = colors.softGreen,
+                        title = strings.myLands,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToLands) },
+                        showDivider = true
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Language,
+                        iconTint = colors.weatherBlue,
+                        iconContainer = colors.softBlue,
+                        title = strings.language,
+                        trailing = currentLang.displayEnglish,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) },
+                        showDivider = true
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Notifications,
+                        iconTint = colors.alertPurple,
+                        iconContainer = colors.softPurple,
+                        title = strings.notifications,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) },
+                        showDivider = true
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.PrivacyTip,
+                        iconTint = colors.cropBrown,
+                        iconContainer = colors.softBrown,
+                        title = strings.privacyPolicy,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToPrivacy) },
+                        showDivider = true
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Settings,
+                        iconTint = colors.textSecondary,
+                        iconContainer = colors.surfaceMuted,
+                        title = strings.settings,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToSettings) },
+                        showDivider = false
+                    )
+                }
             }
 
             // ── Version Info ──
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(vertical = 12.dp),
+                    .padding(vertical = 24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
                 Text(
                     text = "${strings.appName} v${BuildConfig.VERSION_NAME}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = GrayText.copy(alpha = 0.5f)
+                    color = colors.textTertiary
                 )
                 Text(
                     text = strings.appTagline,
                     style = MaterialTheme.typography.labelSmall,
-                    color = GrayText.copy(alpha = 0.3f),
-                    fontSize = 8.sp
+                    color = colors.textTertiary.copy(alpha = 0.7f),
+                    fontSize = 8.sp,
+                    modifier = Modifier.padding(top = 2.dp)
                 )
             }
         }
@@ -150,100 +190,130 @@ private fun ProfileCard(
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit
 ) {
+    val colors = FarmerTheme.colors
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surface
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(20.dp)
         ) {
-            // ── Top row: Avatar + Info/Edit ──
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                // Avatar
-                Box(
-                    modifier = Modifier
-                        .size(64.dp)
-                        .clip(CircleShape)
-                        .background(FarmerGreenPrimary.copy(alpha = 0.12f))
-                        .border(2.dp, FarmerGreenPrimary.copy(alpha = 0.2f), CircleShape),
-                    contentAlignment = Alignment.Center
+            if (state.isEditing) {
+                // ── Edit mode: full-width stacked form ──
+                OutlinedTextField(
+                    value = state.tempName,
+                    onValueChange = onNameChange,
+                    label = { Text(strings.nameField, fontSize = 14.sp) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = colors.primary,
+                        unfocusedBorderColor = colors.outline,
+                        focusedContainerColor = colors.surface,
+                        unfocusedContainerColor = colors.surface
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(12.dp))
+                OutlinedTextField(
+                    value = state.tempPhone,
+                    onValueChange = onPhoneChange,
+                    label = { Text(strings.phoneField, fontSize = 14.sp) },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp),
+                    prefix = {
+                        Text(
+                            text = "+91 ",
+                            style = MaterialTheme.typography.bodyLarge,
+                            color = colors.textSecondary
+                        )
+                    },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
+                        keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone,
+                        imeAction = androidx.compose.ui.text.input.ImeAction.Done
+                    ),
+                    isError = state.phoneError != null,
+                    supportingText = state.phoneError?.let { err ->
+                        { Text(err, color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }
+                    },
+                    colors = OutlinedTextFieldDefaults.colors(
+                        focusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else colors.primary,
+                        unfocusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else colors.outline,
+                        focusedContainerColor = colors.surface,
+                        unfocusedContainerColor = colors.surface
+                    ),
+                    textStyle = MaterialTheme.typography.bodyLarge
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.size(32.dp),
-                        tint = FarmerGreenPrimary
-                    )
+                    FilledTonalButton(
+                        onClick = onSaveProfile,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.filledTonalButtonColors(
+                            containerColor = colors.primary,
+                            contentColor = colors.onPrimary
+                        ),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(modifier = Modifier.width(6.dp))
+                        Text("Save", fontSize = 14.sp, fontWeight = FontWeight.SemiBold)
+                    }
+                    TextButton(
+                        onClick = onCancelEditing,
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        contentPadding = PaddingValues(vertical = 12.dp)
+                    ) {
+                        Text("Cancel", fontSize = 14.sp, color = colors.textSecondary)
+                    }
                 }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                // Name / Phone / Location (display mode) or TextFields (edit mode)
-                Column(modifier = Modifier.weight(1f)) {
-                    if (state.isEditing) {
-                        OutlinedTextField(
-                            value = state.tempName,
-                            onValueChange = onNameChange,
-                            label = { Text(strings.nameField, fontSize = 12.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = FarmerGreenPrimary,
-                                unfocusedBorderColor = GrayText.copy(alpha = 0.3f)
-                            ),
-                            textStyle = MaterialTheme.typography.bodyLarge
+            } else {
+                // ── Display mode: Avatar + Info + Edit ──
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    // Avatar (soft green circle with a subtle surface ring — matches .avatar-lg)
+                    Box(
+                        modifier = Modifier
+                            .size(74.dp)
+                            .clip(CircleShape)
+                            .background(colors.softGreen)
+                            .border(3.dp, colors.surface, CircleShape),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.size(36.dp),
+                            tint = colors.primary
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        OutlinedTextField(
-                            value = state.tempPhone,
-                            onValueChange = onPhoneChange,
-                            label = { Text(strings.phoneField, fontSize = 12.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            singleLine = true,
-                            shape = RoundedCornerShape(12.dp),
-                            prefix = {
-                                Text(
-                                    text = "+91 ",
-                                    style = MaterialTheme.typography.bodyLarge,
-                                    color = GrayText
-                                )
-                            },
-                            keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(
-                                keyboardType = androidx.compose.ui.text.input.KeyboardType.Phone,
-                                imeAction = androidx.compose.ui.text.input.ImeAction.Done
-                            ),
-                            isError = state.phoneError != null,
-                            supportingText = state.phoneError?.let { err ->
-                                { Text(err, color = MaterialTheme.colorScheme.error, fontSize = 11.sp) }
-                            },
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else FarmerGreenPrimary,
-                                unfocusedBorderColor = if (state.phoneError != null) MaterialTheme.colorScheme.error else GrayText.copy(alpha = 0.3f)
-                            ),
-                            textStyle = MaterialTheme.typography.bodyLarge
-                        )
-                    } else {
+                    }
+
+                    Spacer(modifier = Modifier.width(15.dp))
+
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
                             text = state.userName,
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface
+                            color = colors.textPrimary
                         )
                         Spacer(modifier = Modifier.height(2.dp))
                         Text(
                             text = if (state.userPhone.startsWith("+91")) state.userPhone else "+91 ${state.userPhone}",
                             style = MaterialTheme.typography.bodyMedium,
-                            color = GrayText
+                            color = colors.textSecondary
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -251,64 +321,31 @@ private fun ProfileCard(
                                 Icons.Default.LocationOn,
                                 contentDescription = null,
                                 modifier = Modifier.size(14.dp),
-                                tint = FarmerGreenPrimary
+                                tint = colors.primary
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = locationName,
                                 style = MaterialTheme.typography.bodySmall,
-                                color = GrayText
+                                color = colors.textSecondary
                             )
                         }
                     }
-                }
 
-                Spacer(modifier = Modifier.width(8.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
 
-                // Edit / Save / Cancel buttons
-                Column(
-                    horizontalAlignment = Alignment.CenterHorizontally,
-                    verticalArrangement = Arrangement.Center
-                ) {
                     FilledTonalButton(
-                        onClick = {
-                            if (state.isEditing) onSaveProfile() else onStartEditing()
-                        },
+                        onClick = onStartEditing,
                         shape = RoundedCornerShape(12.dp),
                         colors = ButtonDefaults.filledTonalButtonColors(
-                            containerColor = FarmerGreenPrimary.copy(alpha = 0.12f),
-                            contentColor = FarmerGreenPrimary
+                            containerColor = colors.softGreen,
+                            contentColor = colors.primary
                         ),
-                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp)
                     ) {
-                        Icon(
-                            if (state.isEditing) Icons.Default.Check else Icons.Default.Edit,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp)
-                        )
+                        Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                         Spacer(modifier = Modifier.width(4.dp))
-                        Text(
-                            text = if (state.isEditing) "Save" else "Edit",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-
-                    AnimatedVisibility(
-                        visible = state.isEditing,
-                        enter = expandVertically(),
-                        exit = shrinkVertically()
-                    ) {
-                        TextButton(
-                            onClick = onCancelEditing,
-                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "Cancel",
-                                fontSize = 12.sp,
-                                color = GrayText
-                            )
-                        }
+                        Text("Edit", fontSize = 13.sp, fontWeight = FontWeight.SemiBold)
                     }
                 }
             }
@@ -316,68 +353,33 @@ private fun ProfileCard(
     }
 }
 
-// ── Menu Item Row ──
+/** Settings row with a hairline divider below (matches `.menu-row` border-bottom). */
 @Composable
-fun ProfileMenuItem(title: String, icon: ImageVector, trailingText: String? = null, onClick: () -> Unit) {
-    Surface(
-        onClick = onClick,
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(12.dp),
-        tonalElevation = 1.dp
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(horizontal = 16.dp, vertical = 14.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(36.dp),
-                shape = CircleShape,
-                color = FarmerGreenPrimary.copy(alpha = 0.1f)
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        icon,
-                        contentDescription = null,
-                        tint = FarmerGreenPrimary,
-                        modifier = Modifier.size(20.dp)
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Text(
-                text = title,
-                modifier = Modifier.weight(1f),
-                style = MaterialTheme.typography.bodyLarge,
-                color = MaterialTheme.colorScheme.onSurface,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium
-            )
-
-            if (trailingText != null) {
-                Surface(
-                    shape = RoundedCornerShape(8.dp),
-                    color = FarmerGreenPrimary.copy(alpha = 0.08f)
-                ) {
-                    Text(
-                        text = trailingText,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 4.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = FarmerGreenPrimary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-                Spacer(modifier = Modifier.width(8.dp))
-            }
-
-            Icon(
-                Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                contentDescription = null,
-                tint = GrayText.copy(alpha = 0.4f),
-                modifier = Modifier.size(20.dp)
+private fun SettingsRow(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    iconTint: androidx.compose.ui.graphics.Color,
+    iconContainer: androidx.compose.ui.graphics.Color,
+    title: String,
+    trailing: String? = null,
+    onClick: () -> Unit,
+    showDivider: Boolean
+) {
+    Column {
+        MenuRow(
+            icon = icon,
+            iconTint = iconTint,
+            iconContainer = iconContainer,
+            title = title,
+            trailing = trailing,
+            onClick = onClick
+        )
+        if (showDivider) {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 48.dp)
+                    .height(1.dp)
+                    .background(FarmerTheme.colors.outline)
             )
         }
     }
