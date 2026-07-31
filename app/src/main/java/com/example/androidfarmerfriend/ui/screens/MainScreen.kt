@@ -28,6 +28,7 @@ import com.example.androidfarmerfriend.ui.screens.schemes.SchemesScreen
 import com.example.androidfarmerfriend.ui.screens.cropnotes.CropNotesScreen
 import com.example.androidfarmerfriend.ui.screens.language.LanguageScreen
 import com.example.androidfarmerfriend.ui.screens.privacy.PrivacyPolicyScreen
+import com.example.androidfarmerfriend.ui.screens.privacy.TermsOfUseScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 
 @Composable
@@ -94,6 +95,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                         when (route) {
                             "language" -> navController.navigate(Screen.Language.route)
                             "privacy_policy" -> navController.navigate(Screen.PrivacyPolicy.route)
+                            "terms_of_use" -> navController.navigate(Screen.TermsOfUse.route)
                             else -> {}
                         }
                     }
@@ -112,6 +114,11 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             }
             composable(Screen.PrivacyPolicy.route) {
                 PrivacyPolicyScreen(
+                    onBack = { navController.popBackStack() }
+                )
+            }
+            composable(Screen.TermsOfUse.route) {
+                TermsOfUseScreen(
                     onBack = { navController.popBackStack() }
                 )
             }

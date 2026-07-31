@@ -15,20 +15,20 @@ import androidx.compose.ui.viewinterop.AndroidView
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
-/** Hosted privacy policy (FlyCricket doc hosting). */
-private const val PRIVACY_POLICY_URL =
-    "https://doc-hosting.flycricket.io/farmer-friend-privacy-policy/b8e9b2d9-76fb-4e2c-a736-7647e5589687/privacy"
+/** Hosted terms of use (FlyCricket doc hosting). */
+private const val TERMS_URL =
+    "https://doc-hosting.flycricket.io/farmer-friend-terms-of-use/63df81a9-6229-4119-ae1d-149e7b5de893/terms"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun PrivacyPolicyScreen(onBack: () -> Unit = {}) {
+fun TermsOfUseScreen(onBack: () -> Unit = {}) {
     val strings = LocalAppStrings.current
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = strings.privacyPolicy, fontWeight = FontWeight.Bold)
+                    Text(text = "Terms of Use", fontWeight = FontWeight.Bold)
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
@@ -54,7 +54,7 @@ fun PrivacyPolicyScreen(onBack: () -> Unit = {}) {
                     settings.loadWithOverviewMode = true
                     settings.useWideViewPort = true
                     settings.defaultTextEncodingName = "UTF-8"
-                    loadUrl(PRIVACY_POLICY_URL)
+                    loadUrl(TERMS_URL)
                 }
             }
         )

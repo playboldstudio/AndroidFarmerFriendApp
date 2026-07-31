@@ -6,6 +6,7 @@ sealed interface ProfileEvent {
     data object NavigateToLanguage : ProfileEvent
     data object NavigateToNotifications : ProfileEvent
     data object NavigateToPrivacy : ProfileEvent
+    data object NavigateToTerms : ProfileEvent
     data object NavigateToSettings : ProfileEvent
     
     // Edit Profile Events

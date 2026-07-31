@@ -36,6 +36,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         when (event) {
             is ProfileEvent.NavigateToLanguage -> _navigation.value = "language"
             is ProfileEvent.NavigateToPrivacy -> _navigation.value = "privacy_policy"
+            is ProfileEvent.NavigateToTerms -> _navigation.value = "terms_of_use"
 
             is ProfileEvent.NavigateToDetails,
             is ProfileEvent.NavigateToLands,

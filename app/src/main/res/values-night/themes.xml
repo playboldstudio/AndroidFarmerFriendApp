@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <style name="Theme.AndroidFarmerFriend" parent="android:Theme.Material.NoActionBar" />
 
-    <style name="Theme.AndroidFarmerFriend" parent="android:Theme.Material.Light.NoActionBar" />
-
-    <!-- Modern splash: warm brand background, rounded app logo. -->
     <style name="Theme.AndroidFarmerFriend.Splash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">#F7F6F3</item>
+        <item name="windowSplashScreenBackground">#121512</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
-        <item name="windowSplashScreenIconBackgroundColor">#F7F6F3</item>
+        <item name="windowSplashScreenIconBackgroundColor">#121512</item>
         <item name="windowSplashScreenAnimationDuration">400</item>
         <item name="postSplashScreenTheme">@style/Theme.AndroidFarmerFriend</item>
     </style>

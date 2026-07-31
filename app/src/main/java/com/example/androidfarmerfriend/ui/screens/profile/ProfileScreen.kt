@@ -144,6 +144,14 @@ fun ProfileScreen(
                         showDivider = true
                     )
                     SettingsRow(
+                        icon = Icons.Default.Description,
+                        iconTint = colors.weatherBlue,
+                        iconContainer = colors.softBlue,
+                        title = "Terms of Use",
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToTerms) },
+                        showDivider = true
+                    )
+                    SettingsRow(
                         icon = Icons.Default.Settings,
                         iconTint = colors.textSecondary,
                         iconContainer = colors.surfaceMuted,

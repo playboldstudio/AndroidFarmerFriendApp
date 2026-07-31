@@ -37,6 +37,7 @@ import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.LocPill
+import com.example.androidfarmerfriend.ui.components.NotificationPermissionBanner
 import com.example.androidfarmerfriend.ui.components.SectionTitle
 import com.example.androidfarmerfriend.ui.components.TintIconCircle
 import com.example.androidfarmerfriend.ui.components.WeatherHeroCard
@@ -111,7 +112,7 @@ fun HomeScreen(
     ) {
         FarmerFriendLogo(strings = strings)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        NotificationPermissionBanner(modifier = Modifier.padding(bottom = 12.dp))
 
         HeroTitle(text = greeting, accent = extractedName(greeting))
 
