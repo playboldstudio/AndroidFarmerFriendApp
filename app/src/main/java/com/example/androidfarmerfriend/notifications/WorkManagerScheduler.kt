@@ -73,21 +73,26 @@ object WorkManagerScheduler {
     }
 
     /**
-     * Sends daily market price summary at 7:15am.
+     * Sends daily market price summary at a randomized time within 7:00–7:30am.
      */
     fun schedulePriceAlerts(context: Context) {
-        Log.d(TAG, "Scheduling daily price alerts (7:15am)")
+        Log.d(TAG, "Scheduling daily price alerts (7:00–7:30am)")
 
         val now = Calendar.getInstance()
         val target = Calendar.getInstance().apply {
             set(Calendar.HOUR_OF_DAY, 7)
-            set(Calendar.MINUTE, 15)
+            set(Calendar.MINUTE, 0)
             set(Calendar.SECOND, 0)
             set(Calendar.MILLISECOND, 0)
             if (before(now)) add(Calendar.DAY_OF_MONTH, 1)
         }
 
-        val delay = target.timeInMillis - now.timeInMillis
+        // Stable "random" offset between 0 and 29 minutes derived from the target
+        // day, so the daily push lands somewhere in 7:00–7:30am without varying
+        // across app restarts (avoids duplicate-schedule drift).
+        val daySeed = target.timeInMillis / 86_400_000L
+        val randomMinute = (daySeed * 2654435761L).toInt().let { if (it < 0) -it else it } % 30
+        val delay = (target.timeInMillis - now.timeInMillis) + randomMinute * 60_000L
 
         val request = PeriodicWorkRequestBuilder<PriceAlertWorker>(
             1, TimeUnit.DAYS

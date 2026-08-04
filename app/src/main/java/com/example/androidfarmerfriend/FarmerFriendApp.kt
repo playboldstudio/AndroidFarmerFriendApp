@@ -17,7 +17,6 @@ class FarmerFriendApp : Application(), Configuration.Provider {
         FirebaseCrashlytics.getInstance().setCrashlyticsCollectionEnabled(!BuildConfig.DEBUG)
 
         NotificationHelper.createChannels(this)
-        WorkManagerScheduler.scheduleDailyDigest(this)
         WorkManagerScheduler.scheduleWeatherAlerts(this)
         WorkManagerScheduler.schedulePriceAlerts(this)
     }

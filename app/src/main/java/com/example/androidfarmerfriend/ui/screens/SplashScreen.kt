@@ -58,7 +58,7 @@ fun SplashScreen(onReady: () -> Unit = {}, onFinished: () -> Unit) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Image(
-                painter = painterResource(R.drawable.splash_logo),
+                painter = painterResource(R.mipmap.ic_launcher_foreground),
                 contentDescription = null,
                 modifier = Modifier
                     .size(120.dp)

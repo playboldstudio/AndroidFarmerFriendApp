@@ -65,8 +65,8 @@ class WeatherAlertWorker(
                     continue
                 }
 
-                saveAlertToFirestore(alert)
-                showNotification(alert)
+                saveAlertToFirestore(alert, dedupeKey)
+                showNotification(alert, dedupeKey)
 
                 // Mark as sent
                 prefs.edit().putBoolean(dedupeKey, true).apply()
@@ -239,7 +239,7 @@ class WeatherAlertWorker(
         }
     }
 
-    private suspend fun saveAlertToFirestore(alert: WeatherAlert) {
+    private suspend fun saveAlertToFirestore(alert: WeatherAlert, dedupeKey: String) {
         val alertData = hashMapOf(
             "title" to alert.title,
             "message" to alert.message,
@@ -248,22 +248,25 @@ class WeatherAlertWorker(
             "location" to "",
             "isRead" to false,
             "actionRoute" to alert.route,
-            "time" to "Just now"
+            "time" to "Just now",
+            "dedupeKey" to dedupeKey
         )
 
+        // Deterministic doc ID prevents duplicate Firestore docs on re-runs.
         FirebaseFirestore.getInstance()
             .collection("alerts")
-            .add(alertData)
+            .document(dedupeKey)
+            .set(alertData)
             .await()
     }
 
-    private fun showNotification(alert: WeatherAlert) {
+    private fun showNotification(alert: WeatherAlert, dedupeKey: String) {
         NotificationHelper.showNotification(
             context = applicationContext,
             channelId = NotificationHelper.CHANNEL_WEATHER,
             title = alert.title,
             message = alert.message,
-            notificationId = System.currentTimeMillis().toInt()
+            notificationId = dedupeKey.hashCode()
         )
     }
 

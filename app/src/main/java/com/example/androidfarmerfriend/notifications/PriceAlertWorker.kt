@@ -101,7 +101,8 @@ class PriceAlertWorker(
                 append(messages.joinToString("\n\n"))
             }
 
-            // Save to Firestore
+            // Save to Firestore with a deterministic doc ID so re-runs overwrite
+            // instead of appending duplicates.
             val alertData = hashMapOf(
                 "title" to title,
                 "message" to body,
@@ -110,21 +111,23 @@ class PriceAlertWorker(
                 "location" to "Koyambedu",
                 "isRead" to false,
                 "actionRoute" to "market",
-                "time" to "Just now"
+                "time" to "Just now",
+                "dedupeKey" to "daily_price_$today"
             )
 
             FirebaseFirestore.getInstance()
                 .collection("alerts")
-                .add(alertData)
+                .document("daily_price_$today")
+                .set(alertData)
                 .await()
 
-            // Show notification
+            // Show a single, fixed-ID notification (replaces, never stacks).
             NotificationHelper.showNotification(
                 context = applicationContext,
                 channelId = NotificationHelper.CHANNEL_PRICES,
                 title = title,
                 message = "Market prices updated — tap to view details",
-                notificationId = System.currentTimeMillis().toInt()
+                notificationId = DAILY_MARKET_NOTIFICATION_ID
             )
 
             // Mark as ran today
@@ -143,5 +146,6 @@ class PriceAlertWorker(
         private const val PREFS_NAME = "price_alert_prefs"
         private const val LAST_RUN_KEY = "last_run_date"
         const val WORK_NAME = "price_alerts"
+        const val DAILY_MARKET_NOTIFICATION_ID = 7001
     }
 }

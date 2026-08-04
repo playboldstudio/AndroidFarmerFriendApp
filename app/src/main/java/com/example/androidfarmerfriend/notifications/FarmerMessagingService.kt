@@ -31,16 +31,20 @@ class FarmerMessagingService : FirebaseMessagingService() {
         val location = message.data["location"] ?: ""
         val actionRoute = message.data["actionRoute"] ?: ""
 
-        Log.d(TAG, "Alert: title=$title, type=$alertType, location=$location")
+        // Dedup key from the server (if any) — used for deterministic doc ID.
+        val dedupeKey = message.data["dedupeKey"] ?: "${alertType}_${System.currentTimeMillis()}"
 
-        // Save to Firestore so it appears in AlertsScreen
-        saveAlertToFirestore(title, body, alertType, location, actionRoute)
+        Log.d(TAG, "Alert: title=$title, type=$alertType, location=$location, dedupeKey=$dedupeKey")
+
+        // Save to Firestore with deterministic ID so FCM + workers don't duplicate.
+        saveAlertToFirestore(title, body, alertType, location, actionRoute, dedupeKey)
 
         NotificationHelper.showNotification(
             context = this,
             channelId = channelId,
             title = title,
             message = body,
+            notificationId = dedupeKey.hashCode(),
             data = message.data
         )
     }
@@ -50,7 +54,8 @@ class FarmerMessagingService : FirebaseMessagingService() {
         message: String,
         type: String,
         location: String,
-        actionRoute: String
+        actionRoute: String,
+        dedupeKey: String
     ) {
         val alertData = hashMapOf(
             "title" to title,
@@ -60,16 +65,19 @@ class FarmerMessagingService : FirebaseMessagingService() {
             "location" to location,
             "isRead" to false,
             "actionRoute" to actionRoute,
-            "time" to "Just now"
+            "time" to "Just now",
+            "dedupeKey" to dedupeKey
         )
 
         Log.d(TAG, "Saving alert to Firestore: $alertData")
 
+        // Deterministic doc ID — overwrites instead of appending duplicates.
         FirebaseFirestore.getInstance()
             .collection("alerts")
-            .add(alertData)
-            .addOnSuccessListener { docRef ->
-                Log.d(TAG, "Alert saved successfully with id: ${docRef.id}")
+            .document(dedupeKey)
+            .set(alertData)
+            .addOnSuccessListener {
+                Log.d(TAG, "Alert saved successfully with key: $dedupeKey")
             }
             .addOnFailureListener { e ->
                 Log.e(TAG, "Failed to save alert to Firestore", e)

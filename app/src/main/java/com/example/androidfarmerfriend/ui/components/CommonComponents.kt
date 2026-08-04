@@ -11,6 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -105,6 +106,41 @@ fun HeroTitle(
         letterSpacing = (-0.5).sp,
         modifier = modifier
     )
+}
+
+/**
+ * Sub-screen header: soft rounded back button + HeroTitle. Keeps the exact
+ * title size/alignment of the tab screens (`.hero-title`) while giving pushed
+ * destinations (Language / Privacy / Terms) a back affordance.
+ */
+@Composable
+fun SubScreenHeader(
+    title: String,
+    onBack: () -> Unit,
+    accent: String? = null,
+    modifier: Modifier = Modifier
+) {
+    val colors = FarmerTheme.colors
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        IconButton(
+            onClick = onBack,
+            modifier = Modifier
+                .clip(RoundedCornerShape(13.dp))
+                .background(colors.surfaceMuted)
+        ) {
+            Icon(
+                Icons.AutoMirrored.Filled.ArrowBack,
+                contentDescription = "Back",
+                tint = colors.textPrimary,
+                modifier = Modifier.size(22.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        HeroTitle(text = title, accent = accent, modifier = Modifier.weight(1f, fill = false))
+    }
 }
 
 /** Location / context pill — matches `.loc-pill`. */

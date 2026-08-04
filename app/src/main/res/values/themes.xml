@@ -6,7 +6,7 @@
     <!-- Modern splash: warm brand background, rounded app logo. -->
     <style name="Theme.AndroidFarmerFriend.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#F7F6F3</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
         <item name="windowSplashScreenIconBackgroundColor">#F7F6F3</item>
         <item name="windowSplashScreenAnimationDuration">400</item>
         <item name="postSplashScreenTheme">@style/Theme.AndroidFarmerFriend</item>

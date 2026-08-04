@@ -30,7 +30,7 @@ class FirestoreAlertRepository {
         query = query.limit(limit)
 
         val snapshot = query.get().await()
-        return snapshot.documents.mapNotNull { doc ->
+        return dedupe(snapshot.documents.mapNotNull { doc ->
             try {
                 Alert(
                     id = doc.id,
@@ -50,6 +50,15 @@ class FirestoreAlertRepository {
             } catch (e: Exception) {
                 null
             }
+        })
+    }
+
+    /** Collapse alerts that share the same content (duplicate protection). */
+    private fun dedupe(alerts: List<Alert>): List<Alert> {
+        val seen = HashSet<String>()
+        return alerts.filter { alert ->
+            val key = "${alert.type}_${alert.title}_${alert.message}".hashCode().toString()
+            seen.add(key)
         }
     }
 
@@ -63,7 +72,7 @@ class FirestoreAlertRepository {
             .limit(limit)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
-                val alerts = snapshot.documents.mapNotNull { doc ->
+                val alerts = dedupe(snapshot.documents.mapNotNull { doc ->
                     try {
                         Alert(
                             id = doc.id,
@@ -83,7 +92,7 @@ class FirestoreAlertRepository {
                     } catch (e: Exception) {
                         null
                     }
-                }
+                })
                 onAlertsReceived(alerts)
             }
     }

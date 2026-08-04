@@ -66,7 +66,11 @@ fun ProfileScreen(
 
     Scaffold(
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        containerColor = colors.background
+        containerColor = colors.background,
+        // The outer MainScreen Scaffold already applies the status-bar inset
+        // to the NavHost, so don't re-apply window insets here — otherwise the
+        // title sits lower than on every other tab.
+        contentWindowInsets = WindowInsets(0, 0, 0, 0)
     ) { padding ->
         Column(
             modifier = Modifier
@@ -147,7 +151,7 @@ fun ProfileScreen(
                         icon = Icons.Default.Description,
                         iconTint = colors.weatherBlue,
                         iconContainer = colors.softBlue,
-                        title = "Terms of Use",
+                        title = strings.termsOfUse,
                         onClick = { viewModel.onEvent(ProfileEvent.NavigateToTerms) },
                         showDivider = true
                     )
