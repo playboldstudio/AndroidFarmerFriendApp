@@ -33,6 +33,14 @@
     public static androidx.work.impl.WorkManagerImpl createWorkManager(android.content.Context, androidx.work.Configuration);
 }
 
+# WorkManager Room generated classes
+-keep class androidx.work.impl.WorkDatabase_Impl { *; }
+
+# Keep all RoomDatabase implementations
+-keep class * extends androidx.room.RoomDatabase {
+    <init>(...);
+}
+
 # WorkManager instantiates Worker subclasses reflectively (must keep the
 # (Context, WorkerParameters) constructor + class name).
 -keep class * extends androidx.work.Worker {
