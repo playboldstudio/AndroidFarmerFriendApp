@@ -12,7 +12,8 @@ data class Crop(
     val imageUrl: String = "",
     val prevPrice: Double? = null,
     val priceDiff: Double? = null,
-    val priceDiffPercent: Double? = null
+    val priceDiffPercent: Double? = null,
+    val retailPrice: String = ""
 )
 
 data class WeatherInfo(
@@ -56,11 +57,15 @@ data class Scheme(
 )
 
 data class Alert(
-    val id: Int,
-    val title: String,
-    val message: String,
-    val time: String,
-    val type: AlertType
+    val id: String = "",
+    val title: String = "",
+    val message: String = "",
+    val time: String = "",
+    val timestamp: Long = System.currentTimeMillis(),
+    val type: AlertType = AlertType.PRICE,
+    val isRead: Boolean = false,
+    val actionRoute: String = "",
+    val location: String = ""
 )
 
 data class Disease(

@@ -4,10 +4,10 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,16 +25,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.R
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
-import com.example.androidfarmerfriend.ui.components.FarmerCard
+import com.example.androidfarmerfriend.data.util.UserPrefs
+import com.example.androidfarmerfriend.ui.components.EmptyState
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
+import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
-import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.ui.components.weatherIconFor
+import com.example.androidfarmerfriend.ui.components.LocPill
+import com.example.androidfarmerfriend.ui.components.NotificationPermissionBanner
+import com.example.androidfarmerfriend.ui.components.SectionTitle
+import com.example.androidfarmerfriend.ui.components.TintIconCircle
+import com.example.androidfarmerfriend.ui.components.WeatherHeroCard
 import com.example.androidfarmerfriend.ui.navigation.Screen
-import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
 fun HomeScreen(
@@ -43,13 +52,39 @@ fun HomeScreen(
 ) {
     val state by viewModel.state.collectAsState()
 
+    val strings = LocalAppStrings.current
     val context = LocalContext.current
     val locationPrefs = remember { LocationPrefs(context) }
+    val userPrefs = remember { UserPrefs(context) }
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
+    val greeting = remember(userPrefs.userName, strings) {
+        val name = userPrefs.userName
+        val defaultFarmerNames = setOf(
+            "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
+            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
+        )
+        if (name.isNotBlank() && name !in defaultFarmerNames) {
+            val greetingWithoutEmoji = strings.homeGreeting.replace(" 👋", "")
+            val parts = greetingWithoutEmoji.split(",").map { it.trim() }
+            if (parts.size >= 2) {
+                "${parts[0]}, $name! 👋"
+            } else {
+                strings.homeGreeting
+            }
+        } else {
+            strings.homeGreeting
+        }
+    }
+
     LaunchedEffect(Unit) {
+        viewModel.setStrings(strings)
         viewModel.onEvent(HomeEvent.LoadLocation(selectedLocation))
+    }
+
+    LaunchedEffect(strings) {
+        viewModel.setStrings(strings)
     }
 
     val repository = remember { FarmerRepository() }
@@ -71,194 +106,170 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+            .background(FarmerTheme.colors.background)
+            .padding(horizontal = 16.dp)
+            .verticalScroll(rememberScrollState())
     ) {
-        FarmerFriendLogo()
+        FarmerFriendLogo(strings = strings)
 
-        Spacer(modifier = Modifier.height(12.dp))
+        NotificationPermissionBanner(modifier = Modifier.padding(bottom = 12.dp))
 
-        ScreenHeader(
-            title = "வணக்கம், விவசாயி! 👋",
-            subtitle = selectedLocation.name,
-            isHome = true,
-            showSearch = false,
-            onLocationClick = { showLocationPicker = true }
+        HeroTitle(text = greeting, accent = extractedName(greeting))
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        LocPill(
+            text = selectedLocation.name,
+            onClick = { showLocationPicker = true }
         )
 
         Spacer(modifier = Modifier.height(8.dp))
 
         when (val weatherState = state.weatherState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary, modifier = Modifier.size(32.dp))
-            }
-            is UiState.Error -> Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = GrayText, modifier = Modifier.size(24.dp))
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text("வானிலை தரவு இல்லை", color = GrayText, style = MaterialTheme.typography.bodySmall)
-                }
-            }
-            is UiState.Success -> WeatherSummaryCard(weatherState.data)
+            is UiState.Loading -> FullScreenLoading()
+            is UiState.Error -> EmptyState(
+                icon = Icons.Default.CloudOff,
+                title = strings.weatherNoData
+            )
+            is UiState.Success -> WeatherHeroCard(
+                weather = weatherState.data,
+                strings = strings,
+                modifier = Modifier.padding(top = 16.dp)
+            )
         }
 
+        SectionTitle(title = strings.quickAccess)
+
+        QuickAccessGrid(onNavigate = onNavigate, strings = strings)
+
         Spacer(modifier = Modifier.height(24.dp))
-
-        Text(
-            text = "விரைவு அணுகல்",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier.padding(bottom = 16.dp),
-            color = MaterialTheme.colorScheme.onBackground
-        )
-
-        QuickAccessGrid(onNavigate = onNavigate)
     }
 }
 
+/** Returns the personalized name from the greeting, if any. */
+private fun extractedName(greeting: String): String? {
+    val defaultFarmerNames = setOf(
+        "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
+        "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
+    )
+    val match = Regex(",\\s*([^,!]+)!?\\s*👋").find(greeting)
+    val candidate = match?.groupValues?.get(1)?.trim()
+    return if (!candidate.isNullOrBlank() && candidate !in defaultFarmerNames) candidate else null
+}
+
 @Composable
-fun FarmerFriendLogo() {
+fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 8.dp),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Center
+            .padding(top = 16.dp, bottom = 14.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Image(
-            painter = painterResource(R.mipmap.ic_launcher),
-            contentDescription = "Farmer Friend Logo",
-            modifier = Modifier.size(48.dp)
-        )
-        Spacer(modifier = Modifier.width(12.dp))
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .background(FarmerTheme.colors.softGreen, RoundedCornerShape(13.dp))
+        ) {
+            Image(
+                painter = painterResource(R.mipmap.ic_launcher_foreground),
+                contentDescription = null,
+                modifier = Modifier.size(42.dp)
+            )
+        }
+        Spacer(modifier = Modifier.width(10.dp))
         Column {
             Text(
-                text = "Farmer Friend",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = FarmerGreenPrimary
+                text = strings.appName,
+                color = FarmerTheme.colors.primary,
+                fontSize = 19.sp,
+                fontWeight = FontWeight.ExtraBold,
+                letterSpacing = (-0.3).sp
             )
             Text(
-                text = "விவசாயி நண்பன்",
-                style = MaterialTheme.typography.bodySmall,
-                color = GrayText
+                text = strings.farmerFriendTamil,
+                color = FarmerTheme.colors.textSecondary,
+                fontSize = 11.sp
             )
         }
     }
 }
 
 @Composable
-fun WeatherSummaryCard(weather: WeatherInfo) {
-    FarmerCard {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    weatherIconFor(weather.weatherCode),
-                    contentDescription = null,
-                    modifier = Modifier.size(44.dp),
-                    tint = WeatherYellow
-                )
-                Spacer(modifier = Modifier.width(16.dp))
-                Column {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            text = weather.temperature,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            fontSize = 32.sp,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(
-                            text = weather.condition,
-                            style = MaterialTheme.typography.titleMedium,
-                            color = MaterialTheme.colorScheme.onSurface
-                        )
-                    }
-                    if (weather.todayLow.isNotEmpty() && weather.todayHigh.isNotEmpty()) {
-                        Text(
-                            text = "குறைந்தபட்சம் ${weather.todayLow} | அதிகபட்சம் ${weather.todayHigh}",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = GrayText
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                WeatherStatItem(label = "மழை", value = weather.rainChance, icon = Icons.Default.WaterDrop)
-                WeatherStatItem(label = "ஈரப்பதம்", value = weather.humidity, icon = Icons.Default.Opacity)
-                WeatherStatItem(label = "காற்று", value = weather.windSpeed, icon = Icons.Default.Air)
-            }
-        }
-    }
+fun WeatherSummaryCard(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
+    WeatherHeroCard(weather = weather, strings = strings)
 }
 
 @Composable
 fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = GrayText, fontSize = 10.sp)
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = FarmerTheme.colors.textSecondary, fontSize = 10.sp)
         Spacer(modifier = Modifier.height(4.dp))
-        Text(text = value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface)
+        Text(text = value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = FarmerTheme.colors.textPrimary)
     }
 }
 
-data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val route: String)
+data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val container: Color, val route: String)
 
 @Composable
-fun QuickAccessGrid(onNavigate: (String) -> Unit = {}) {
+fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.Tamil) {
+    val colors = FarmerTheme.colors
     val items = listOf(
-        QuickActionItem("மார்க்கெட்", Icons.Default.BarChart, FarmerGreenSecondary, Screen.Market.route),
-        QuickActionItem("வானிலை", Icons.Default.WbCloudy, WeatherBlue, Screen.Weather.route),
-        QuickActionItem("திட்டங்கள்", Icons.Default.LibraryBooks, SchemeLightGreen, Screen.Schemes.route),
-        QuickActionItem("நோய்கள்", Icons.Default.BugReport, DiseaseOrange, Screen.Disease.route),
-        QuickActionItem("அறிவிப்புகள்", Icons.Default.Notifications, AlertPurple, Screen.Alerts.route),
-        QuickActionItem("பயிர் குறிப்புகள்", Icons.Default.MenuBook, CropNotesBrown, Screen.CropNotes.route)
+        QuickActionItem(strings.navMarket, Icons.Default.BarChart, colors.primary, colors.softMint, Screen.Market.route),
+        QuickActionItem(strings.weatherTitle, Icons.Default.WbCloudy, colors.weatherBlue, colors.softBlue, Screen.Weather.route),
+        QuickActionItem(strings.schemesTitle, Icons.Default.LibraryBooks, colors.alertGreen, colors.softLavender, Screen.Schemes.route),
+        QuickActionItem(strings.diseaseTitle, Icons.Default.BugReport, colors.diseaseOrange, colors.softOrange, Screen.Disease.route),
+        QuickActionItem(strings.alertsTitle, Icons.Default.Notifications, colors.alertPurple, colors.softPurple, Screen.Alerts.route),
+        QuickActionItem(strings.cropNotesTitle, Icons.Default.MenuBook, colors.cropBrown, colors.softBrown, Screen.CropNotes.route)
     )
 
-    LazyVerticalGrid(
-        columns = GridCells.Fixed(3),
-        horizontalArrangement = Arrangement.spacedBy(16.dp),
-        verticalArrangement = Arrangement.spacedBy(24.dp),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        items(items) { item ->
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.clickable { onNavigate(item.route) }
-            ) {
-                Surface(
-                    modifier = Modifier.size(64.dp),
-                    shape = CircleShape,
-                    shadowElevation = 1.dp,
-                    color = MaterialTheme.colorScheme.surface
-                ) {
-                    Box(contentAlignment = Alignment.Center) {
-                        Icon(item.icon, contentDescription = item.title, tint = item.color, modifier = Modifier.size(32.dp))
-                    }
+    // Fixed 6-item grid: plain Column-of-Rows (not lazy) so it works inside a
+    // scrollable parent without infinite-height measurement issues.
+    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+        items.chunked(3).forEach { rowItems ->
+            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                rowItems.forEach { item ->
+                    QuickAccessTile(item, onNavigate, Modifier.weight(1f))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = item.title,
-                    style = MaterialTheme.typography.labelSmall,
-                    textAlign = TextAlign.Center,
-                    maxLines = 2,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onBackground,
-                    lineHeight = 16.sp,
-                    fontWeight = FontWeight.Medium
-                )
+                // Keep the row evenly distributed if the last row is short.
+                if (rowItems.size < 3) {
+                    repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
+                }
             }
         }
+    }
+}
+
+@Composable
+private fun QuickAccessTile(
+    item: QuickActionItem,
+    onNavigate: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = FarmerTheme.colors
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .background(colors.surface, RoundedCornerShape(22.dp))
+            .clickable { onNavigate(item.route) }
+            .padding(vertical = 14.dp, horizontal = 4.dp)
+    ) {
+        TintIconCircle(
+            icon = item.icon,
+            tint = item.color,
+            container = item.container,
+            size = 52.dp,
+            cornerRadius = 26.dp
+        )
+        Spacer(modifier = Modifier.height(7.dp))
+        Text(
+            text = item.title,
+            color = colors.textPrimary,
+            fontSize = 11.sp,
+            fontWeight = FontWeight.SemiBold,
+            textAlign = TextAlign.Center,
+            lineHeight = 13.sp,
+            maxLines = 2
+        )
     }
 }
 

@@ -2,7 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.disease
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.example.androidfarmerfriend.data.model.Disease
+import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,39 +10,25 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-sealed interface DiseaseEvent {
-    data class SelectFilter(val filter: String) : DiseaseEvent
-    data class Search(val query: String) : DiseaseEvent
-    data object Retry : DiseaseEvent
-}
-
-data class DiseaseState(
-    val diseasesState: UiState<List<Disease>> = UiState.Loading,
-    val selectedFilter: String = "அனைத்து",
-    val searchQuery: String = ""
-) {
-    val filteredDiseases: List<Disease>
-        get() {
-            val data = (diseasesState as? UiState.Success)?.data ?: return emptyList()
-            val query = searchQuery.trim().lowercase()
-            return data.filter { disease ->
-                val matchesFilter = selectedFilter == "அனைத்தు" || selectedFilter == "அனைத்து" ||
-                    disease.name.contains(selectedFilter, ignoreCase = true) ||
-                    disease.cropAffected.contains(selectedFilter, ignoreCase = true)
-                val matchesSearch = query.isEmpty() ||
-                    disease.name.lowercase().contains(query) ||
-                    disease.cropAffected.lowercase().contains(query)
-                matchesFilter && matchesSearch
-            }
-        }
-}
-
 class DiseaseViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
     private val _state = MutableStateFlow(DiseaseState())
     val state: StateFlow<DiseaseState> = _state.asStateFlow()
 
-    init {
-        loadData()
+    private var currentLanguage: Language = Language.TAMIL
+
+    fun loadData(language: Language = currentLanguage) {
+        currentLanguage = language
+        _state.value = _state.value.copy(diseasesState = UiState.Loading, searchQuery = "")
+        viewModelScope.launch {
+            try {
+                val diseases = repository.getDiseases(language)
+                _state.value = _state.value.copy(diseasesState = UiState.Success(diseases))
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(
+                    diseasesState = UiState.Error(e.message ?: "Failed to load diseases")
+                )
+            }
+        }
     }
 
     fun onEvent(event: DiseaseEvent) {
@@ -54,20 +40,6 @@ class DiseaseViewModel(private val repository: FarmerRepository = FarmerReposito
                 _state.value = _state.value.copy(searchQuery = event.query)
             }
             is DiseaseEvent.Retry -> loadData()
-        }
-    }
-
-    private fun loadData() {
-        _state.value = _state.value.copy(diseasesState = UiState.Loading)
-        viewModelScope.launch {
-            try {
-                val diseases = repository.getDiseases()
-                _state.value = _state.value.copy(diseasesState = UiState.Success(diseases))
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    diseasesState = UiState.Error(e.message ?: "நோய் தரவுகளை ஏற்ற முடியவில்லை")
-                )
-            }
         }
     }
 }

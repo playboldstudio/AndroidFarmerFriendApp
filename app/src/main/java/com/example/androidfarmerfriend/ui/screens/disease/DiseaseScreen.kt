@@ -2,11 +2,10 @@ package com.example.androidfarmerfriend.ui.screens.disease
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -14,124 +13,86 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
-import com.example.androidfarmerfriend.ui.components.FarmerCard
-import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.ui.components.EmptyState
+import com.example.androidfarmerfriend.ui.components.ErrorState
+import com.example.androidfarmerfriend.ui.components.FullScreenLoading
+import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.RowCard
+import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
+    val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
-    var showSearchBar by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    val colors = FarmerTheme.colors
+    val languagePrefs = remember {
+        com.example.androidfarmerfriend.data.localization.LanguagePrefs(context)
+    }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+    LaunchedEffect(Unit) {
+        viewModel.loadData(languagePrefs.selectedLanguage)
+    }
+
+    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = {
+            isRefreshing = true
+            viewModel.loadData()
+            isRefreshing = false
+        }
     ) {
-        ScreenHeader(
-            title = "நோய் கண்டறிதல்",
-            isSearchActive = showSearchBar,
-            onSearchClick = {
-                showSearchBar = !showSearchBar
-                if (!showSearchBar) viewModel.onEvent(DiseaseEvent.Search(""))
-            }
-        )
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(colors.background)
+                .padding(horizontal = 16.dp)
+        ) {
+            Spacer(modifier = Modifier.height(16.dp))
 
-        Spacer(modifier = Modifier.height(8.dp))
+            HeroTitle(text = strings.diseaseDetectionTitle)
 
-        if (showSearchBar) {
-            OutlinedTextField(
+            Spacer(modifier = Modifier.height(16.dp))
+
+            SearchField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.onEvent(DiseaseEvent.Search(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("நோய் பெயரைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-                trailingIcon = {
-                    if (state.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onEvent(DiseaseEvent.Search("")) }) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
+                placeholder = strings.searchDiseases
             )
-        }
 
-        Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(rememberScrollState())
-                .padding(vertical = 8.dp)
-        ) {
-            listOf("அனைத்து", "இலை நோய்கள்", "பழ நோய்கள்").forEach { filter ->
-                val isSelected = filter == state.selectedFilter
-                FilterChip(
-                    selected = isSelected,
-                    onClick = { viewModel.onEvent(DiseaseEvent.SelectFilter(filter)) },
-                    label = { Text(filter, fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal) },
-                    colors = FilterChipDefaults.filterChipColors(
-                        containerColor = MaterialTheme.colorScheme.surface,
-                        selectedContainerColor = FarmerGreenPrimary,
-                        labelColor = MaterialTheme.colorScheme.onSurface,
-                        selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                    )
+            Spacer(modifier = Modifier.height(14.dp))
+
+            when (val diseaseState = state.diseasesState) {
+                is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
+                is UiState.Error -> ErrorState(
+                    message = diseaseState.message.ifBlank { strings.diseaseLoadError },
+                    onRetry = { viewModel.onEvent(DiseaseEvent.Retry) },
+                    modifier = Modifier.padding(top = 32.dp)
                 )
-            }
-        }
-
-        when (val diseaseState = state.diseasesState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
-            is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("நோய் தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(diseaseState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.onEvent(DiseaseEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
-                    }
-                }
-            }
-            is UiState.Success -> {
-                if (state.filteredDiseases.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("நோய்கள் எதுவும் இல்லை", color = GrayText)
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
-                    ) {
-                        items(state.filteredDiseases) { disease ->
-                            DiseaseItem(disease)
+                is UiState.Success -> {
+                    if (state.filteredDiseases.isEmpty()) {
+                        EmptyState(
+                            icon = Icons.Default.SearchOff,
+                            title = strings.noDiseases
+                        )
+                    } else {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            contentPadding = PaddingValues(bottom = 16.dp)
+                        ) {
+                            items(state.filteredDiseases) { disease ->
+                                DiseaseItem(disease)
+                            }
                         }
                     }
                 }
@@ -143,60 +104,33 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
 @Composable
 fun DiseaseItem(disease: Disease) {
     val context = LocalContext.current
-    FarmerCard(
-        modifier = Modifier.clickable {
+    val colors = FarmerTheme.colors
+    RowCard(
+        title = disease.name,
+        subtitle = disease.cropAffected,
+        icon = Icons.Default.BugReport,
+        iconTint = colors.diseaseOrange,
+        iconContainer = colors.softOrange,
+        end = {
+            Icon(
+                Icons.Default.OpenInNew,
+                contentDescription = null,
+                tint = colors.textTertiary,
+                modifier = Modifier.size(20.dp)
+            )
+        },
+        onClick = {
             if (disease.sourceUrl.isNotBlank()) {
                 WebSearchUtil.openUrl(context, disease.sourceUrl)
             }
         }
-    ) {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(56.dp),
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                shape = MaterialTheme.shapes.medium
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(Icons.Default.BugReport, contentDescription = null, tint = DiseaseOrange, modifier = Modifier.size(28.dp))
-                }
-            }
-
-            Spacer(modifier = Modifier.width(16.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = disease.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = disease.cropAffected,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = GrayText
-                )
-            }
-
-            Icon(
-                Icons.Default.OpenInNew,
-                contentDescription = "திறக்க",
-                tint = FarmerGreenPrimary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
-    }
+    )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun DiseaseScreenPreview() {
-    AndroidFarmerFriendTheme {
+    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
         DiseaseScreen()
     }
 }
