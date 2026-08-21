@@ -15,8 +15,14 @@ class UserPrefs(context: Context) {
         get() = prefs.getString(KEY_PHONE, "9876543210") ?: "9876543210"
         set(value) = prefs.edit().putString(KEY_PHONE, value).apply()
 
+    /** Selected theme mode key ("system" | "light" | "dark"). */
+    var themeMode: String
+        get() = prefs.getString(KEY_THEME, "system") ?: "system"
+        set(value) = prefs.edit().putString(KEY_THEME, value).apply()
+
     companion object {
         private const val KEY_NAME = "user_name"
         private const val KEY_PHONE = "user_phone"
+        private const val KEY_THEME = "theme_mode"
     }
 }

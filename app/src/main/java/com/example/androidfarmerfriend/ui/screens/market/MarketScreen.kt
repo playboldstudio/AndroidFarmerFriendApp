@@ -31,7 +31,12 @@ import com.example.androidfarmerfriend.ui.components.PillChipGroup
 import com.example.androidfarmerfriend.ui.components.RowCard
 import com.example.androidfarmerfriend.ui.components.SearchField
 import com.example.androidfarmerfriend.ui.components.TrendTag
+import com.example.androidfarmerfriend.ui.components.TintIconCircle
+import com.example.androidfarmerfriend.ui.components.FarmerCard
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
+import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -165,7 +170,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     }
 }
 
-/** Green trend summary card — matches the "MARKET TREND TODAY" card in market.html. */
+/** Green trend summary card — Stitch restyle: no emojis, icon-driven accent. */
 @Composable
 fun MarketTrendCard(
     crops: List<Crop>,
@@ -176,24 +181,24 @@ fun MarketTrendCard(
     val diffs = crops.mapNotNull { it.priceDiffPercent ?: it.trend.takeIf { d -> d != 0.0 } }
     val rising = diffs.any { it > 0 }
     val falling = diffs.any { it < 0 }
-    // No trend data available → show the price range instead.
     val hasTrendData = diffs.isNotEmpty()
-    val (label, accent, icon) = when {
-        rising && !falling -> Triple(strings.trendRising, colors.primary, "▲")
-        falling && !rising -> Triple(strings.trendFalling, TrendDownColor, "▼")
-        hasTrendData -> Triple(strings.trendStable, colors.textSecondary, "▬")
+    val (label, accent) = when {
+        rising && !falling -> strings.trendRising to colors.primary
+        falling && !rising -> strings.trendFalling to TrendDownColor
+        hasTrendData -> strings.trendStable to colors.textSecondary
         else -> {
             val prices = crops.mapNotNull { it.priceValue }.filter { it > 0 }
             if (prices.isNotEmpty()) {
-                Triple(
-                    "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())}",
-                    colors.primary,
-                    "💰"
-                )
+                "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())}" to colors.primary
             } else {
-                Triple("—", colors.textSecondary, "💰")
+                "—" to colors.textSecondary
             }
         }
+    }
+    val trendIcon = when {
+        rising && !falling -> Icons.Default.TrendingUp
+        falling && !rising -> Icons.Default.TrendingDown
+        else -> Icons.Default.BarChart
     }
     Card(
         modifier = modifier.fillMaxWidth(),
@@ -216,15 +221,19 @@ fun MarketTrendCard(
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = if (icon == "💰") label else "$icon $label",
+                    text = label,
                     color = accent,
-                    fontSize = if (icon == "💰") 16.sp else 18.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    letterSpacing = (-0.3).sp
                 )
             }
-            Text(
-                text = "🌾",
-                fontSize = 30.sp
+            TintIconCircle(
+                icon = trendIcon,
+                tint = accent,
+                container = colors.softGreen,
+                size = 48.dp,
+                cornerRadius = 16.dp
             )
         }
     }
@@ -235,14 +244,64 @@ private val TrendDownColor = com.example.androidfarmerfriend.ui.theme.TrendRed
 @Composable
 fun MarketCropItem(crop: Crop, marketName: String = "") {
     val colors = FarmerTheme.colors
+    val title = if (crop.nameEng.isNotBlank()) crop.nameEng else crop.name
+    val subtitle = if (crop.nameEng.isNotBlank() && crop.name != crop.nameEng) crop.name else null
 
-    RowCard(
-        title = crop.name,
-        subtitle = if (marketName.isNotEmpty()) "📍 $marketName" else null,
-        icon = Icons.Default.ShoppingCart,
-        iconTint = colors.primary,
-        iconContainer = colors.softMint,
-        end = {
+    FarmerCard {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (crop.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = crop.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(colors.softMint),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    color = colors.textPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold,
+                    letterSpacing = (-0.2).sp
+                )
+                if (subtitle != null) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = subtitle,
+                        color = colors.textTertiary,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.Medium
+                    )
+                }
+                val insight = when {
+                    crop.retailPrice.isNotBlank() -> "Retail ₹${crop.retailPrice}"
+                    crop.avgPrice != null -> "Monthly avg ₹${"%.2f".format(crop.avgPrice)}"
+                    else -> null
+                }
+                if (insight != null) {
+                    Spacer(modifier = Modifier.height(3.dp))
+                    Text(
+                        text = insight,
+                        color = colors.textSecondary,
+                        fontSize = 11.5.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.width(10.dp))
+
             Column(horizontalAlignment = Alignment.End) {
                 PriceText(price = crop.price)
                 val trend = crop.priceDiffPercent ?: crop.trend.takeIf { it != 0.0 }
@@ -252,7 +311,7 @@ fun MarketCropItem(crop: Crop, marketName: String = "") {
                 }
             }
         }
-    )
+    }
 }
 
 /** Price with unit subscript — matches `.price` in the HTML. */

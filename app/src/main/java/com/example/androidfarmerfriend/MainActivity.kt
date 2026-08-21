@@ -8,9 +8,11 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.*
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.screens.MainScreen
 import com.example.androidfarmerfriend.ui.screens.SplashScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.ThemeMode
 
 class MainActivity : ComponentActivity() {
 
@@ -28,8 +30,10 @@ class MainActivity : ComponentActivity() {
 
         splashScreen.setKeepOnScreenCondition { systemSplashVisible }
 
+        val themeMode = ThemeMode.from(UserPrefs(this).themeMode)
+
         setContent {
-            AndroidFarmerFriendTheme {
+            AndroidFarmerFriendTheme(themeMode = themeMode) {
                 if (composeSplashVisible) {
                     SplashScreen(
                         onReady = { systemSplashVisible = false },

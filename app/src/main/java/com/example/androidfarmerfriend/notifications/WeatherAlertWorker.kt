@@ -115,7 +115,7 @@ class WeatherAlertWorker(
             )
             in 61..67 -> alerts.add(
                 WeatherAlert(
-                    title = "🌧️ Heavy Rain Warning",
+                    title = "Heavy Rain Warning",
                     message = "Heavy rainfall in $locationName. Ensure proper drainage and protect crops.",
                     type = "WEATHER",
                     route = "weather",
@@ -124,7 +124,7 @@ class WeatherAlertWorker(
             )
             in 71..77 -> alerts.add(
                 WeatherAlert(
-                    title = "❄️ Snow Alert",
+                    title = "Snow Alert",
                     message = "Snowfall expected in $locationName. Protect livestock and sensitive crops.",
                     type = "WEATHER",
                     route = "weather",
@@ -134,7 +134,7 @@ class WeatherAlertWorker(
             in 80..82 -> if (current.precipitation != null && current.precipitation > 10) {
                 alerts.add(
                     WeatherAlert(
-                        title = "🌧️ Heavy Showers",
+                        title = "Heavy Showers",
                         message = "Heavy rain showers in $locationName (${current.precipitation}mm). Secure farm equipment.",
                         type = "WEATHER",
                         route = "weather",
@@ -148,7 +148,7 @@ class WeatherAlertWorker(
         when {
             temp >= 42 -> alerts.add(
                 WeatherAlert(
-                    title = "🔥 Extreme Heat Warning",
+                    title = "Extreme Heat Warning",
                     message = "Temperature at ${temp.toInt()}°C in $locationName. Provide shade and water for livestock.",
                     type = "WEATHER",
                     route = "weather",
@@ -157,7 +157,7 @@ class WeatherAlertWorker(
             )
             temp >= 38 -> alerts.add(
                 WeatherAlert(
-                    title = "☀️ Heat Wave Alert",
+                    title = "Heat Wave Alert",
                     message = "Temperature at ${temp.toInt()}°C in $locationName. Irrigate crops during early morning.",
                     type = "WEATHER",
                     route = "weather",
@@ -216,7 +216,7 @@ class WeatherAlertWorker(
         if (todayMinTemp <= 5 && todayMinTemp > -10) {
             alerts.add(
                 WeatherAlert(
-                    title = "❄️ Frost Risk",
+                    title = "Frost Risk",
                     message = "Temperature expected to drop to ${todayMinTemp.toInt()}°C tonight in $locationName. Cover sensitive plants.",
                     type = "WEATHER",
                     route = "weather",
@@ -229,7 +229,7 @@ class WeatherAlertWorker(
         if (rainProb != null && rainProb > 80 && todayCode != null && todayCode in 51..82) {
             alerts.add(
                 WeatherAlert(
-                    title = "🌧️ Rain Expected Today",
+                    title = "Rain Expected Today",
                     message = "${rainProb}% chance of rain in $locationName today. Plan field work accordingly.",
                     type = "WEATHER",
                     route = "weather",

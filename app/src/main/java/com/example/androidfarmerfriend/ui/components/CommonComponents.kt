@@ -775,6 +775,7 @@ fun DayPill(
     day: String,
     weatherCode: Int,
     temp: String,
+    rainChance: String = "",
     selected: Boolean
 ) {
     val colors = FarmerTheme.colors
@@ -825,6 +826,14 @@ fun DayPill(
             fontSize = 12.5.sp,
             fontWeight = FontWeight.ExtraBold
         )
+        if (rainChance.isNotBlank()) {
+            Text(
+                text = rainChance,
+                color = fgSub,
+                fontSize = 10.sp,
+                fontWeight = FontWeight.Medium
+            )
+        }
     }
 }
 
@@ -842,12 +851,21 @@ fun FarmTipCard(title: String, body: String, modifier: Modifier = Modifier) {
         colors = CardDefaults.cardColors(containerColor = colors.softGreen)
     ) {
         Column(modifier = Modifier.padding(18.dp)) {
-            Text(
-                text = "🌱  $title",
-                color = colors.primary,
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    imageVector = Icons.Default.Spa,
+                    contentDescription = null,
+                    tint = colors.primary,
+                    modifier = Modifier.size(16.dp)
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = title,
+                    color = colors.primary,
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold
+                )
+            }
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = body,

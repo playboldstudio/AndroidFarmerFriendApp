@@ -207,20 +207,44 @@ fun CropNoteItem(note: CropNote) {
                 lineHeight = 19.sp
             )
 
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                NoteTag("💧 Watered")
-                NoteTag("🧪 Fertilized")
+            if (note.season.isNotBlank()) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 12.dp)
+                ) {
+                    Icon(
+                        Icons.Default.CloudQueue,
+                        contentDescription = null,
+                        tint = colors.weatherBlue,
+                        modifier = Modifier.size(13.dp)
+                    )
+                    Spacer(modifier = Modifier.width(5.dp))
+                    Text(
+                        text = note.season,
+                        color = colors.textSecondary,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
             }
 
-            Text(
-                text = "Today",
-                color = colors.textTertiary,
-                fontSize = 11.sp,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(top = 10.dp)
-            )
+            ) {
+                Icon(
+                    Icons.Default.OpenInNew,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(13.dp)
+                )
+                Spacer(modifier = Modifier.width(5.dp))
+                Text(
+                    text = "Source",
+                    color = colors.textTertiary,
+                    fontSize = 11.sp
+                )
+            }
         }
     }
 }

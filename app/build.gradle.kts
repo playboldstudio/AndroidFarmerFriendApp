@@ -73,6 +73,7 @@ dependencies {
     implementation(libs.gson)
     implementation(libs.androidx.browser)
     implementation(libs.jsoup)
+    implementation(libs.coil.compose)
     implementation(platform(libs.firebase.bom))
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)

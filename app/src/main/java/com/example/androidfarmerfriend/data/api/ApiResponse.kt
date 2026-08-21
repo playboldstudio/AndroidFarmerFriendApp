@@ -25,13 +25,18 @@ data class DataHeader(
     val orderId: Int?
 )
 
+data class ImageTable(
+    val imageUrl: String? = null
+)
+
 data class VegetableItem(
     val columnNameEng: String?,
     val vegetablename: String?,
     val price: Any?,
     val retailprice: Any?,
     val units: String?,
-    val id: String?
+    val id: String?,
+    val table: ImageTable? = null
 )
 
 data class FruitItem(
@@ -40,7 +45,8 @@ data class FruitItem(
     val price: Any?,
     val retailprice: Any?,
     val units: String?,
-    val id: String?
+    val id: String?,
+    val table: ImageTable? = null
 )
 
 data class NonVegItem(
@@ -48,7 +54,8 @@ data class NonVegItem(
     val nonvegname: String?,
     val price: Any?,
     val units: String?,
-    val id: String?
+    val id: String?,
+    val table: ImageTable? = null
 )
 
 data class GoldItem(
@@ -56,7 +63,8 @@ data class GoldItem(
     val name: String?,
     val price: Any?,
     val units: String?,
-    val id: String?
+    val id: String?,
+    val table: ImageTable? = null
 )
 
 // --- NECC Egg Price API DTOs ---

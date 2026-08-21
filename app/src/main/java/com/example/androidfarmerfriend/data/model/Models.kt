@@ -13,7 +13,8 @@ data class Crop(
     val prevPrice: Double? = null,
     val priceDiff: Double? = null,
     val priceDiffPercent: Double? = null,
-    val retailPrice: String = ""
+    val retailPrice: String = "",
+    val avgPrice: Double? = null
 )
 
 data class WeatherInfo(
@@ -37,7 +38,8 @@ data class ForecastDay(
     val day: String,
     val maxTemp: String,
     val minTemp: String,
-    val weatherCode: Int
+    val weatherCode: Int,
+    val rainChance: String = ""
 )
 
 data class QuickAction(

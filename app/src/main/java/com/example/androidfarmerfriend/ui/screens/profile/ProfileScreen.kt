@@ -29,6 +29,10 @@ import com.example.androidfarmerfriend.ui.components.MenuRow
 import com.example.androidfarmerfriend.ui.components.SectionTitle
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import com.example.androidfarmerfriend.ui.theme.ThemeMode
+import com.example.androidfarmerfriend.data.util.UserPrefs
+import com.example.androidfarmerfriend.ui.components.PillChip
+import androidx.activity.ComponentActivity
 
 @Composable
 fun ProfileScreen(
@@ -43,6 +47,7 @@ fun ProfileScreen(
     val location = remember { locationPrefs.selectedLocation }
     val languagePrefs = remember { LanguagePrefs(context) }
     var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
+    var themeMode by remember { mutableStateOf(ThemeMode.from(UserPrefs(context).themeMode)) }
     val colors = FarmerTheme.colors
 
     LaunchedEffect(Unit) {
@@ -165,6 +170,35 @@ fun ProfileScreen(
                     )
                 }
             }
+
+            // ── Appearance (theme) ──
+            SectionTitle(title = "Appearance")
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                shape = RoundedCornerShape(24.dp),
+                colors = CardDefaults.cardColors(containerColor = colors.surface)
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 10.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    ThemeMode.entries.forEach { mode ->
+                        PillChip(
+                            text = mode.label,
+                            selected = mode == themeMode,
+                            onClick = {
+                                UserPrefs(context).themeMode = mode.key
+                                themeMode = mode
+                                (context as? ComponentActivity)?.recreate()
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(14.dp))
 
             // ── Version Info ──
             Column(

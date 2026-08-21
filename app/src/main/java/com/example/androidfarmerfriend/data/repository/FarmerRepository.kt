@@ -15,6 +15,7 @@ import java.util.Date
 import java.util.Locale
 
 class FarmerRepository {
+    private val vegImageBase = "https://vegetablemarketprice.com"
     private val weatherApi = ApiClient.weatherApi
     private val vegetableMarketApi = ApiClient.vegetableMarketApi
     private val eggRatesApi = ApiClient.eggRatesApi
@@ -36,7 +37,8 @@ class FarmerRepository {
                             day = WeatherCodeMapper.dayLabel(date, index, strings),
                             maxTemp = "${daily?.tempMax?.getOrNull(index)?.toInt() ?: 0}°",
                             minTemp = "${daily?.tempMin?.getOrNull(index)?.toInt() ?: 0}°",
-                            weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0
+                            weatherCode = daily?.weatherCode?.getOrNull(index) ?: 0,
+                            rainChance = "${daily?.precipitationProbabilityMax?.getOrNull(index) ?: 0}%"
                         )
                     )
                 }
@@ -160,7 +162,8 @@ class FarmerRepository {
             trend = 0.0,
             category = "vegetable",
             units = units ?: "kg",
-            retailPrice = retail
+            retailPrice = retail,
+            imageUrl = table?.imageUrl?.let { "$vegImageBase/$it" } ?: ""
         )
     }
 
@@ -185,7 +188,8 @@ class FarmerRepository {
             trend = 0.0,
             category = "fruit",
             units = units ?: "kg",
-            retailPrice = retail
+            retailPrice = retail,
+            imageUrl = table?.imageUrl?.let { "$vegImageBase/$it" } ?: ""
         )
     }
 
@@ -208,7 +212,8 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "nonveg",
-            units = units ?: "kg"
+            units = units ?: "kg",
+            imageUrl = table?.imageUrl?.let { "$vegImageBase/$it" } ?: ""
         )
     }
 
@@ -231,7 +236,8 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "gold",
-            units = units ?: "gm"
+            units = units ?: "gm",
+            imageUrl = table?.imageUrl?.let { "$vegImageBase/$it" } ?: ""
         )
     }
 
@@ -252,7 +258,12 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "egg",
-            units = "piece"
+            units = "piece",
+            avgPrice = when (val a = avg) {
+                is Number -> a.toDouble()
+                is String -> a.toDoubleOrNull()
+                else -> null
+            }
         )
     }
 }

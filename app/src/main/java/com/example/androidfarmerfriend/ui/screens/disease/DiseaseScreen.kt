@@ -15,7 +15,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.layout.ContentScale
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.AsyncImage
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
@@ -23,7 +28,8 @@ import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.HeroTitle
-import com.example.androidfarmerfriend.ui.components.RowCard
+import com.example.androidfarmerfriend.ui.components.FarmerCard
+import com.example.androidfarmerfriend.ui.components.TintIconCircle
 import com.example.androidfarmerfriend.ui.components.SearchField
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
@@ -105,26 +111,64 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
 fun DiseaseItem(disease: Disease) {
     val context = LocalContext.current
     val colors = FarmerTheme.colors
-    RowCard(
-        title = disease.name,
-        subtitle = disease.cropAffected,
-        icon = Icons.Default.BugReport,
-        iconTint = colors.diseaseOrange,
-        iconContainer = colors.softOrange,
-        end = {
+    FarmerCard(
+        modifier = Modifier.clickable {
+            if (disease.sourceUrl.isNotBlank()) {
+                WebSearchUtil.openUrl(context, disease.sourceUrl)
+            }
+        }
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (disease.imageUrl.isNotBlank()) {
+                AsyncImage(
+                    model = disease.imageUrl,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .size(52.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(colors.softOrange),
+                    contentScale = ContentScale.Crop
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            } else {
+                TintIconCircle(
+                    icon = Icons.Default.BugReport,
+                    tint = colors.diseaseOrange,
+                    container = colors.softOrange,
+                    size = 46.dp,
+                    cornerRadius = 15.dp
+                )
+                Spacer(modifier = Modifier.width(12.dp))
+            }
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = disease.name,
+                    color = colors.textPrimary,
+                    fontSize = 15.sp,
+                    fontWeight = FontWeight.Bold
+                )
+                if (disease.cropAffected.isNotBlank()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = disease.cropAffected,
+                        color = colors.textSecondary,
+                        fontSize = 11.5.sp
+                    )
+                }
+            }
             Icon(
                 Icons.Default.OpenInNew,
                 contentDescription = null,
                 tint = colors.textTertiary,
                 modifier = Modifier.size(20.dp)
             )
-        },
-        onClick = {
-            if (disease.sourceUrl.isNotBlank()) {
-                WebSearchUtil.openUrl(context, disease.sourceUrl)
-            }
         }
-    )
+    }
 }
 
 @Preview(showBackground = true)

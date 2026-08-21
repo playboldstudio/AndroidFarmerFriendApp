@@ -116,7 +116,7 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.T
     )
 
     if (weather.forecast.isNotEmpty()) {
-        SectionTitle(title = strings.today)
+        SectionTitle(title = "Forecast")
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -128,6 +128,7 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.T
                     day = day.day,
                     weatherCode = day.weatherCode,
                     temp = day.maxTemp,
+                    rainChance = day.rainChance,
                     selected = index == 0
                 )
             }

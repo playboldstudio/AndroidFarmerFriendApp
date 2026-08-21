@@ -12,6 +12,22 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
+/** User-selectable theme mode — drives Material 3 light/dark via `AndroidFarmerFriendTheme`. */
+enum class ThemeMode(val key: String) {
+    SYSTEM("system"),
+    LIGHT("light"),
+    DARK("dark");
+    val label: String
+        get() = when (this) {
+            SYSTEM -> "System"
+            LIGHT -> "Light"
+            DARK -> "Dark"
+        }
+    companion object {
+        fun from(key: String?) = entries.firstOrNull { it.key == key } ?: SYSTEM
+    }
+}
+
 // Design-system tokens made available via CompositionLocal.
 val LocalFarmerColors = staticCompositionLocalOf { LightFarmerColors }
 
@@ -33,9 +49,14 @@ private val FarmerShapes = Shapes(
 
 @Composable
 fun AndroidFarmerFriendTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
     val farmerColors = if (darkTheme) DarkFarmerColors else LightFarmerColors
     val colorScheme = if (darkTheme) {
         darkColorScheme(

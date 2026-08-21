@@ -59,22 +59,16 @@ fun HomeScreen(
     var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
 
-    val greeting = remember(userPrefs.userName, strings) {
+    val (greeting, accentName) = remember(userPrefs.userName, strings) {
         val name = userPrefs.userName
         val defaultFarmerNames = setOf(
-            "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
-            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
+            "விவசாயி", "Farmer", "किसान", "రైతు", "കര్షകൻ",
+            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂਤ", "ଚାஷୀ"
         )
         if (name.isNotBlank() && name !in defaultFarmerNames) {
-            val greetingWithoutEmoji = strings.homeGreeting.replace(" 👋", "")
-            val parts = greetingWithoutEmoji.split(",").map { it.trim() }
-            if (parts.size >= 2) {
-                "${parts[0]}, $name! 👋"
-            } else {
-                strings.homeGreeting
-            }
+            "Hello, $name" to name
         } else {
-            strings.homeGreeting
+            strings.homeGreeting to null
         }
     }
 
@@ -114,7 +108,7 @@ fun HomeScreen(
 
         NotificationPermissionBanner(modifier = Modifier.padding(bottom = 12.dp))
 
-        HeroTitle(text = greeting, accent = extractedName(greeting))
+        HeroTitle(text = greeting, accent = accentName)
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -152,7 +146,7 @@ private fun extractedName(greeting: String): String? {
         "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
         "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
     )
-    val match = Regex(",\\s*([^,!]+)!?\\s*👋").find(greeting)
+    val match = Regex(",\\s*([^,!]+)!?").find(greeting)
     val candidate = match?.groupValues?.get(1)?.trim()
     return if (!candidate.isNullOrBlank() && candidate !in defaultFarmerNames) candidate else null
 }
@@ -222,17 +216,17 @@ fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = App
         QuickActionItem(strings.cropNotesTitle, Icons.Default.MenuBook, colors.cropBrown, colors.softBrown, Screen.CropNotes.route)
     )
 
-    // Fixed 6-item grid: plain Column-of-Rows (not lazy) so it works inside a
-    // scrollable parent without infinite-height measurement issues.
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
-        items.chunked(3).forEach { rowItems ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+    // Fixed 6-item grid in a 2-column zig-zag (Stitch: avoid 3-equal rows).
+    // Plain Column-of-Rows (not lazy) so it works inside a scrollable parent.
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
+        items.chunked(2).forEach { rowItems ->
+            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), modifier = Modifier.fillMaxWidth()) {
                 rowItems.forEach { item ->
                     QuickAccessTile(item, onNavigate, Modifier.weight(1f))
                 }
                 // Keep the row evenly distributed if the last row is short.
-                if (rowItems.size < 3) {
-                    repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
+                if (rowItems.size < 2) {
+                    repeat(2 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
             }
         }

@@ -50,7 +50,7 @@ class PriceAlertWorker(
                         val unit = item.units ?: "kg"
                         "• $name — ₹${"%.0f".format(price)}/$unit"
                     }
-                    messages.add("🥬 Top Vegetable Prices (Koyambedu):\n$summary")
+                    messages.add("Top Vegetable Prices (Koyambedu):\n$summary")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch vegetable prices", e)
@@ -68,7 +68,7 @@ class PriceAlertWorker(
                         val unit = item.units ?: "kg"
                         "• $name — ₹${"%.0f".format(price)}/$unit"
                     }
-                    messages.add("🍎 Top Fruit Prices (Koyambedu):\n$summary")
+                    messages.add("Top Fruit Prices (Koyambedu):\n$summary")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch fruit prices", e)
@@ -84,7 +84,7 @@ class PriceAlertWorker(
                 if (eggData != null) {
                     val price = eggData.price ?: 0
                     val city = eggData.city ?: "Chennai"
-                    messages.add("🥚 Egg Rate ($city): ₹${"%.2f".format(price)}/piece")
+                    messages.add("Egg Rate ($city): ₹${"%.2f".format(price)}/piece")
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to fetch egg prices", e)
@@ -95,7 +95,7 @@ class PriceAlertWorker(
                 return Result.success()
             }
 
-            val title = "📊 Daily Market Prices"
+            val title = "Daily Market Prices"
             val body = buildString {
                 append("Today's market update:\n\n")
                 append(messages.joinToString("\n\n"))
