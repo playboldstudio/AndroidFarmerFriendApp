@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -71,6 +75,7 @@ fun FarmerCard(
         elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
         colors = CardDefaults.cardColors(containerColor = containerColor),
         shape = RoundedCornerShape(24.dp),
+        border = BorderStroke(1.dp, FarmerTheme.colors.outline.copy(alpha = 0.6f)),
         content = content
     )
 }
@@ -302,7 +307,7 @@ fun PillChipGroup(
     }
 }
 
-/** Single pill chip. */
+/** Single pill chip with animated selection + 44dp touch target. */
 @Composable
 fun PillChip(
     text: String,
@@ -310,20 +315,33 @@ fun PillChip(
     onClick: () -> Unit
 ) {
     val colors = FarmerTheme.colors
-    val bg = if (selected) colors.primary else colors.surface
-    val fg = if (selected) colors.onPrimary else colors.textSecondary
-    val border = if (selected) colors.primary else colors.outline
+    val bg by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.surface,
+        animationSpec = tween(durationMillis = 220),
+        label = "chipBg"
+    )
+    val fg by animateColorAsState(
+        targetValue = if (selected) colors.onPrimary else colors.textSecondary,
+        animationSpec = tween(durationMillis = 220),
+        label = "chipFg"
+    )
+    val border by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.outline,
+        animationSpec = tween(durationMillis = 220),
+        label = "chipBorder"
+    )
     Text(
         text = text,
         color = fg,
         fontSize = 12.5.sp,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier
+            .defaultMinSize(minHeight = 44.dp)
             .clip(RoundedCornerShape(999.dp))
             .background(bg)
             .border(BorderStroke(1.dp, border), RoundedCornerShape(999.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 15.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp)
     )
 }
 
@@ -751,7 +769,7 @@ private fun HeroStat(icon: ImageVector, value: String, label: String) {
 /* Forecast day pill                                                   */
 /* ------------------------------------------------------------------ */
 
-/** Single forecast day pill — matches `.day-pill`. */
+/** Single forecast day pill — matches `.day-pill`, with animated selection. */
 @Composable
 fun DayPill(
     day: String,
@@ -760,9 +778,21 @@ fun DayPill(
     selected: Boolean
 ) {
     val colors = FarmerTheme.colors
-    val bg = if (selected) colors.primary else colors.surface
-    val fg = if (selected) colors.onPrimary else colors.textPrimary
-    val fgSub = if (selected) colors.onPrimary.copy(alpha = 0.85f) else colors.textSecondary
+    val bg by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.surface,
+        animationSpec = tween(durationMillis = 220),
+        label = "dayBg"
+    )
+    val fg by animateColorAsState(
+        targetValue = if (selected) colors.onPrimary else colors.textPrimary,
+        animationSpec = tween(durationMillis = 220),
+        label = "dayFg"
+    )
+    val fgSub by animateColorAsState(
+        targetValue = if (selected) colors.onPrimary.copy(alpha = 0.85f) else colors.textSecondary,
+        animationSpec = tween(durationMillis = 220),
+        label = "dayFgSub"
+    )
     Column(
         modifier = Modifier
             .width(62.dp)

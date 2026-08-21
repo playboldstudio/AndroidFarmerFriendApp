@@ -41,8 +41,8 @@ class LanguagePrefs(context: Context) {
 
     var selectedLanguage: Language
         get() {
-            val code = prefs.getString(KEY_LANG, null) ?: return Language.TAMIL
-            return Language.entries.find { it.code == code } ?: Language.TAMIL
+            val code = prefs.getString(KEY_LANG, null) ?: return Language.ENGLISH
+            return Language.entries.find { it.code == code } ?: Language.ENGLISH
         }
         set(value) {
             prefs.edit().putString(KEY_LANG, value.code).apply()

@@ -9,6 +9,6 @@ data class ProfileState(
     val tempName: String = "",
     val tempPhone: String = "",
     val phoneError: String? = null,
-    val selectedLanguage: Language = Language.TAMIL,
+    val selectedLanguage: Language = Language.ENGLISH,
     val message: String? = null
 )

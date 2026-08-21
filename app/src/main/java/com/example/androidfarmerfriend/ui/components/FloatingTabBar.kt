@@ -18,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.ui.navigation.Screen
@@ -69,18 +73,28 @@ fun FloatingTabBar(
             ) {
                 items.forEach { item ->
                     val selected = item.screen.route == currentRoute
+                    val navSelectedBg by animateColorAsState(
+                        targetValue = if (selected) colors.softGreen else Color.Transparent,
+                        animationSpec = tween(durationMillis = 240),
+                        label = "navBg"
+                    )
+                    val navIconTint by animateColorAsState(
+                        targetValue = if (selected) colors.primary else colors.textTertiary,
+                        animationSpec = tween(durationMillis = 240),
+                        label = "navIcon"
+                    )
                     Box(
                         modifier = Modifier
                             .size(48.dp)
                             .clip(RoundedCornerShape(16.dp))
-                            .then(if (selected) Modifier.background(colors.softGreen) else Modifier)
+                            .background(navSelectedBg)
                             .clickable { onTabSelected(item) },
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = item.icon,
                             contentDescription = null,
-                            tint = if (selected) colors.primary else colors.textTertiary,
+                            tint = navIconTint,
                             modifier = Modifier.size(24.dp)
                         )
                     }

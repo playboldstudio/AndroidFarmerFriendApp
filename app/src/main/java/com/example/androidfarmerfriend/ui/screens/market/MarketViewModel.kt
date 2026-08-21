@@ -62,7 +62,7 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                     FilterType.GOLD -> repository.getGoldPrices(market.apiSlug)
                     FilterType.EGG -> repository.getEggPrices(market.apiSlug)
                 }
-                val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale("ta", "IN")).format(Date())
+                val date = SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.ENGLISH).format(Date())
                 _state.value = _state.value.copy(
                     cropsState = UiState.Success(crops),
                     fetchDate = date
