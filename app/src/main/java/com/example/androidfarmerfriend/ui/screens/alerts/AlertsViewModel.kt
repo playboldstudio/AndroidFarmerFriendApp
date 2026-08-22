@@ -1,8 +1,10 @@
 package com.example.androidfarmerfriend.ui.screens.alerts
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.alerts.AlertSeedData
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,8 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AlertsViewModel : ViewModel() {
-    private val _state = MutableStateFlow(AlertsState())
+class AlertsViewModel(application: Application) : AndroidViewModel(application) {
+    private val _state = MutableStateFlow(
+        AlertsState(locationName = LocationPrefs(application).selectedLocation.name)
+    )
     val state: StateFlow<AlertsState> = _state.asStateFlow()
 
     private val repository = FirestoreAlertRepository.getInstance()
