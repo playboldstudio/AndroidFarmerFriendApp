@@ -1,7 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.cropnotes
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
@@ -10,30 +9,32 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.ui.draw.clip
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
-import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.PillChip
 import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.ShimmerList
+import com.example.androidfarmerfriend.ui.components.SubScreenHeader
 import com.example.androidfarmerfriend.ui.components.TintIconCircle
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
@@ -41,21 +42,21 @@ private const val ALL_CROPS = "__all__"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
+fun CropNotesScreen(
+    onBack: () -> Unit = {},
+    viewModel: CropNotesViewModel = viewModel()
+) {
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
     var isRefreshing by remember { mutableStateOf(false) }
     val colors = FarmerTheme.colors
-    val languagePrefs = remember {
-        com.example.androidfarmerfriend.data.localization.LanguagePrefs(context)
-    }
 
     LaunchedEffect(Unit) {
-        viewModel.loadData(languagePrefs.selectedLanguage)
+        viewModel.loadData()
     }
 
-    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+    PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
@@ -67,17 +68,17 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = FarmerSpacing.lg)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
-            HeroTitle(text = strings.cropNotesTitle, accent = strings.cropNotesTitle.split(" ").getOrNull(1))
+            SubScreenHeader(title = strings.cropNotesTitle, onBack = onBack)
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(FarmerSpacing.s))
 
             LocPill(text = strings.cropNotesSubtitle)
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(FarmerSpacing.s))
 
             SearchField(
                 value = state.searchQuery,
@@ -85,7 +86,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 placeholder = strings.searchNotes
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(Modifier.height(FarmerSpacing.xs))
 
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -104,10 +105,8 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 }
             }
 
-            Spacer(modifier = Modifier.height(6.dp))
-
             when (val notesState = state.notesState) {
-                is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
+                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 120.dp)
                 is UiState.Error -> ErrorState(
                     message = notesState.message.ifBlank { strings.notesLoadError },
                     onRetry = { viewModel.onEvent(CropNoteEvent.Retry) },
@@ -115,10 +114,7 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
                 )
                 is UiState.Success -> {
                     if (state.filteredNotes.isEmpty()) {
-                        EmptyState(
-                            icon = Icons.Default.SearchOff,
-                            title = strings.noNotes
-                        )
+                        EmptyState(icon = Icons.Default.SearchOff, title = strings.noNotes)
                     } else {
                         LazyColumn(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -135,7 +131,6 @@ fun CropNotesScreen(viewModel: CropNotesViewModel = viewModel()) {
     }
 }
 
-/** HTML-style crop note card: avatar + title + status + divider + content + tags + time. */
 @Composable
 fun CropNoteItem(note: CropNote) {
     val context = LocalContext.current
@@ -164,86 +159,41 @@ fun CropNoteItem(note: CropNote) {
                     size = 46.dp,
                     cornerRadius = 15.dp
                 )
-                Spacer(modifier = Modifier.width(12.dp))
+                Spacer(Modifier.width(12.dp))
                 Column(modifier = Modifier.weight(1f)) {
                     Text(
                         text = note.title,
-                        color = colors.textPrimary,
-                        fontSize = 14.5.sp,
-                        fontWeight = FontWeight.Bold
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.textPrimary
                     )
-                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
                         text = note.cropName,
-                        color = colors.textSecondary,
-                        fontSize = 11.5.sp
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.textSecondary
                     )
                 }
-                // Status chip
+            }
+
+            if (note.content.isNotBlank()) {
+                HorizontalDivider(
+                    modifier = Modifier.padding(vertical = 13.dp),
+                    thickness = 1.dp,
+                    color = colors.outline
+                )
                 Text(
-                    text = "ACTIVE",
-                    color = colors.primary,
-                    fontSize = 10.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(8.dp))
-                        .background(colors.softGreen)
-                        .padding(horizontal = 9.dp, vertical = 4.dp)
+                    text = note.content,
+                    color = colors.textSecondary,
+                    style = MaterialTheme.typography.bodySmall
                 )
             }
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 13.dp)
-                    .height(1.dp)
-                    .background(colors.outline)
-            )
-
-            Text(
-                text = note.content,
-                color = colors.textSecondary,
-                fontSize = 12.5.sp,
-                lineHeight = 19.sp
-            )
-
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(7.dp),
-                modifier = Modifier.padding(top = 12.dp)
-            ) {
-                NoteTag("💧 Watered")
-                NoteTag("🧪 Fertilized")
-            }
-
-            Text(
-                text = "Today",
-                color = colors.textTertiary,
-                fontSize = 11.sp,
-                modifier = Modifier.padding(top = 10.dp)
-            )
         }
     }
-}
-
-@Composable
-private fun NoteTag(text: String) {
-    val colors = FarmerTheme.colors
-    Text(
-        text = text,
-        color = colors.textSecondary,
-        fontSize = 10.5.sp,
-        fontWeight = FontWeight.SemiBold,
-        modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(colors.surfaceMuted)
-            .padding(horizontal = 9.dp, vertical = 4.dp)
-    )
 }
 
 @Preview(showBackground = true)
 @Composable
 fun CropNotesScreenPreview() {
-    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
+    AndroidFarmerFriendTheme {
         CropNotesScreen()
     }
 }

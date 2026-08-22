@@ -101,9 +101,15 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                     }
                 )
             }
-            composable(Screen.Disease.route) { DiseaseScreen() }
-            composable(Screen.Schemes.route) { SchemesScreen() }
-            composable(Screen.CropNotes.route) { CropNotesScreen() }
+            composable(Screen.Disease.route) {
+                DiseaseScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Screen.Schemes.route) {
+                SchemesScreen(onBack = { navController.popBackStack() })
+            }
+            composable(Screen.CropNotes.route) {
+                CropNotesScreen(onBack = { navController.popBackStack() })
+            }
             composable(Screen.Language.route) {
                 LanguageScreen(
                     onLanguageChanged = { lang ->

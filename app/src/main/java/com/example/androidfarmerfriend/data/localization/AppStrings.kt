@@ -152,6 +152,8 @@ data class AppStrings(
     val accountSection: String,
     val preferencesSection: String,
     val legalSection: String,
+    val detailsTitle: String,
+    val backLabel: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -301,6 +303,8 @@ data class AppStrings(
             accountSection = "கணக்கு",
             preferencesSection = "விருப்பத்தேர்வுகள்",
             legalSection = "சட்டம் & பற்றி",
+            detailsTitle = "விவரங்கள்",
+            backLabel = "பின்செல்",
         )
 
         val English = AppStrings(
@@ -450,6 +454,8 @@ data class AppStrings(
             accountSection = "Account",
             preferencesSection = "Preferences",
             legalSection = "Legal & About",
+            detailsTitle = "Details",
+            backLabel = "Back",
         )
 
         val Hindi = AppStrings(
@@ -599,6 +605,8 @@ data class AppStrings(
             accountSection = "खाता",
             preferencesSection = "प्राथमिकताएँ",
             legalSection = "कानूनी एवं जानकारी",
+            detailsTitle = "विवरण",
+            backLabel = "वापस",
         )
 
         val Telugu = AppStrings(
@@ -748,6 +756,8 @@ data class AppStrings(
             accountSection = "ఖాతా",
             preferencesSection = "ప్రాధాన్యతలు",
             legalSection = "చట్టం & వివరాలు",
+            detailsTitle = "వివరాలు",
+            backLabel = "వెనుకకు",
         )
 
         val Malayalam = AppStrings(
@@ -897,6 +907,8 @@ data class AppStrings(
             accountSection = "അക്കൗണ്ട്",
             preferencesSection = "മുൻഗണനകൾ",
             legalSection = "നിയമം & കൂടുതൽ",
+            detailsTitle = "വിവരങ്ങൾ",
+            backLabel = "തിരികെ",
         )
 
         val Kannada = AppStrings(
@@ -1046,6 +1058,8 @@ data class AppStrings(
             accountSection = "ಖಾತೆ",
             preferencesSection = "ಆದ್ಯತೆಗಳು",
             legalSection = "ಕಾನೂನು & ಇನ್ನಷ್ಟು",
+            detailsTitle = "ವಿವರಗಳು",
+            backLabel = "ಹಿಂದೆ",
         )
 
         val Marathi = AppStrings(
@@ -1195,6 +1209,8 @@ data class AppStrings(
             accountSection = "खाते",
             preferencesSection = "प्राधान्ये",
             legalSection = "कायदा & अधिक",
+            detailsTitle = "तपशील",
+            backLabel = "मागे",
         )
 
         val Bengali = AppStrings(
@@ -1344,6 +1360,8 @@ data class AppStrings(
             accountSection = "অ্যাকাউন্ট",
             preferencesSection = "পছন্দসমূহ",
             legalSection = "আইন ও আরও",
+            detailsTitle = "বিবরণ",
+            backLabel = "ফিরে যান",
         )
 
         val Punjabi = AppStrings(
@@ -1493,6 +1511,8 @@ data class AppStrings(
             accountSection = "ਖਾਤਾ",
             preferencesSection = "ਤਰਜੀਹਾਂ",
             legalSection = "ਕਾਨੂੰਨੀ & ਹੋਰ",
+            detailsTitle = "ਵੇਰਵੇ",
+            backLabel = "ਪਿੱਛੇ",
         )
 
         val Gujarati = AppStrings(
@@ -1642,6 +1662,8 @@ data class AppStrings(
             accountSection = "ખાતું",
             preferencesSection = "પસંદગીઓ",
             legalSection = "કાનૂની & વધુ",
+            detailsTitle = "વિગતો",
+            backLabel = "પાછળ",
         )
 
         val Odia = AppStrings(
@@ -1791,6 +1813,8 @@ data class AppStrings(
             accountSection = "ଆକାଉଣ୍ଟ",
             preferencesSection = "ପସନ୍ଦଗୁଡ଼ିକ",
             legalSection = "ଆଇନଗତ ଓ ଅଧିକ",
+            detailsTitle = "ବିବରଣୀ",
+            backLabel = "ପଛକୁ",
         )
 }
 }

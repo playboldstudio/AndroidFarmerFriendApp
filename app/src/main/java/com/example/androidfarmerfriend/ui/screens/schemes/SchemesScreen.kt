@@ -20,16 +20,19 @@ import com.example.androidfarmerfriend.data.model.Scheme
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
-import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.SubScreenHeader
 import com.example.androidfarmerfriend.ui.components.RowCard
+import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.SearchField
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
+fun SchemesScreen(
+    onBack: () -> Unit = {},
+    viewModel: SchemesViewModel = viewModel()
+) {
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -59,7 +62,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            HeroTitle(text = strings.schemesTitle)
+            SubScreenHeader(title = strings.schemesTitle, onBack = onBack)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -72,7 +75,7 @@ fun SchemesScreen(viewModel: SchemesViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(14.dp))
 
             when (val schemeState = state.schemesState) {
-                is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
+                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 88.dp, modifier = Modifier.padding(top = 16.dp))
                 is UiState.Error -> ErrorState(
                     message = schemeState.message.ifBlank { strings.schemesLoadError },
                     onRetry = { viewModel.onEvent(SchemeEvent.Retry) },
