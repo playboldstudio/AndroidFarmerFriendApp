@@ -6,8 +6,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material.icons.filled.TrendingDown
+import androidx.compose.material.icons.filled.TrendingFlat
+import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -15,23 +20,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.MarketData
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
 import com.example.androidfarmerfriend.ui.components.PillChipGroup
 import com.example.androidfarmerfriend.ui.components.RowCard
 import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.TrendTag
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import com.example.androidfarmerfriend.ui.theme.TrendRed
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,9 +56,8 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     }
 
     if (showMarketPicker) {
-        val marketsForFilter = MarketData.marketsForCategory(state.selectedFilter)
         MarketPickerSheet(
-            markets = marketsForFilter,
+            markets = MarketData.marketsForCategory(state.selectedFilter),
             selectedMarket = state.selectedMarket,
             onMarketSelected = { market ->
                 viewModel.onEvent(MarketEvent.ChangeMarket(market))
@@ -60,7 +67,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         )
     }
 
-    androidx.compose.material3.pulltorefresh.PullToRefreshBox(
+    PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
@@ -72,20 +79,20 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
             modifier = Modifier
                 .fillMaxSize()
                 .background(colors.background)
-                .padding(horizontal = 16.dp)
+                .padding(horizontal = FarmerSpacing.lg)
         ) {
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
             HeroTitle(text = strings.marketTitle, accent = strings.marketTitle.split(" ").getOrNull(1))
 
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(Modifier.height(FarmerSpacing.s))
 
             LocPill(
                 text = state.selectedMarket.displayName,
                 onClick = { showMarketPicker = true }
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
             SearchField(
                 value = state.searchQuery,
@@ -104,15 +111,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
             )
 
             if (state.selectedFilter == FilterType.GOLD) {
-                Text(
-                    text = "${strings.gold} • Chennai only",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.textTertiary,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = 4.dp),
-                    textAlign = TextAlign.Center
-                )
+                MarketInfoChip(text = "${strings.gold} · ${strings.chennai}")
             }
 
             val crops = state.filteredCrops
@@ -132,11 +131,11 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Center
                 )
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(Modifier.height(FarmerSpacing.s))
             }
 
             when (val cropsState = state.cropsState) {
-                is UiState.Loading -> FullScreenLoading(modifier = Modifier.weight(1f))
+                is UiState.Loading -> ShimmerList(modifier = Modifier.weight(1f))
                 is UiState.Error -> ErrorState(
                     message = cropsState.message.ifBlank { strings.loadError },
                     onRetry = { viewModel.onEvent(MarketEvent.Retry) },
@@ -147,7 +146,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                         EmptyState(
                             icon = Icons.Default.SearchOff,
                             title = strings.noData,
-                            subtitle = "${state.selectedFilter.displayKey(strings)} data not available for ${state.selectedMarket.displayName}.\nTry a different location."
+                            subtitle = "${state.selectedFilter.displayKey(strings)} · ${state.selectedMarket.displayName}"
                         )
                     } else {
                         LazyColumn(
@@ -155,7 +154,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
                             items(state.filteredCrops) { crop ->
-                                MarketCropItem(crop, state.selectedMarket.displayName)
+                                MarketCropItem(crop, state.selectedMarket.displayName, strings)
                             }
                         }
                     }
@@ -165,36 +164,48 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     }
 }
 
-/** Green trend summary card — matches the "MARKET TREND TODAY" card in market.html. */
+@Composable
+private fun MarketInfoChip(text: String) {
+    Text(
+        text = text,
+        color = FarmerTheme.colors.primary,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier
+            .padding(vertical = 2.dp)
+            .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+    )
+}
+
+/** Wholesale-to-retail spread summary; falls back to the day's price range. */
 @Composable
 fun MarketTrendCard(
     crops: List<Crop>,
-    strings: com.example.androidfarmerfriend.data.localization.AppStrings,
+    strings: AppStrings,
     modifier: Modifier = Modifier
 ) {
     val colors = FarmerTheme.colors
     val diffs = crops.mapNotNull { it.priceDiffPercent ?: it.trend.takeIf { d -> d != 0.0 } }
     val rising = diffs.any { it > 0 }
     val falling = diffs.any { it < 0 }
-    // No trend data available → show the price range instead.
     val hasTrendData = diffs.isNotEmpty()
-    val (label, accent, icon) = when {
-        rising && !falling -> Triple(strings.trendRising, colors.primary, "▲")
-        falling && !rising -> Triple(strings.trendFalling, TrendDownColor, "▼")
-        hasTrendData -> Triple(strings.trendStable, colors.textSecondary, "▬")
+
+    val headline = when {
+        rising && !falling -> "▲ ${strings.trendRising}"
+        falling && !rising -> "▼ ${strings.trendFalling}"
+        hasTrendData -> "▬ ${strings.trendStable}"
         else -> {
             val prices = crops.mapNotNull { it.priceValue }.filter { it > 0 }
-            if (prices.isNotEmpty()) {
-                Triple(
-                    "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())}",
-                    colors.primary,
-                    "💰"
-                )
-            } else {
-                Triple("—", colors.textSecondary, "💰")
-            }
+            if (prices.isNotEmpty()) "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())}" else "—"
         }
     }
+    val headlineColor = when {
+        rising && !falling -> colors.primary
+        falling && !rising -> TrendRed
+        else -> colors.textPrimary
+    }
+
     Card(
         modifier = modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
@@ -207,38 +218,57 @@ fun MarketTrendCard(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = strings.marketTrendToday,
-                    color = colors.textSecondary,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.SemiBold
+                    text = strings.marketTrendToday.uppercase(),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.textTertiary
                 )
-                Spacer(modifier = Modifier.height(2.dp))
+                Spacer(Modifier.height(4.dp))
                 Text(
-                    text = if (icon == "💰") label else "$icon $label",
-                    color = accent,
-                    fontSize = if (icon == "💰") 16.sp else 18.sp,
-                    fontWeight = FontWeight.ExtraBold
+                    text = headline,
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = headlineColor
                 )
             }
-            Text(
-                text = "🌾",
-                fontSize = 30.sp
-            )
+            TrendDirectionIcon(rising = rising && !falling, falling = falling && !rising)
         }
     }
 }
 
-private val TrendDownColor = com.example.androidfarmerfriend.ui.theme.TrendRed
+@Composable
+private fun TrendDirectionIcon(rising: Boolean, falling: Boolean) {
+    val colors = FarmerTheme.colors
+    val tint = when {
+        rising -> colors.primary
+        falling -> TrendRed
+        else -> colors.textTertiary
+    }
+    val icon = when {
+        rising -> Icons.Default.TrendingUp
+        falling -> Icons.Default.TrendingDown
+        else -> Icons.Default.TrendingFlat
+    }
+    Box(
+        modifier = Modifier
+            .size(44.dp)
+            .background(colors.softGreen, RoundedCornerShape(15.dp)),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+    }
+}
 
 @Composable
-fun MarketCropItem(crop: Crop, marketName: String = "") {
+fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
     val colors = FarmerTheme.colors
 
     RowCard(
         title = crop.name,
-        subtitle = if (marketName.isNotEmpty()) "📍 $marketName" else null,
+        subtitle = crop.retailPrice.takeIf { it.isNotBlank() }
+            ?.let { "${strings.retailPriceLabel}: ₹$it" }
+            ?: marketName.takeIf { it.isNotEmpty() },
         icon = Icons.Default.ShoppingCart,
         iconTint = colors.primary,
         iconContainer = colors.softMint,
@@ -247,7 +277,7 @@ fun MarketCropItem(crop: Crop, marketName: String = "") {
                 PriceText(price = crop.price)
                 val trend = crop.priceDiffPercent ?: crop.trend.takeIf { it != 0.0 }
                 if (trend != null && trend != 0.0) {
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(Modifier.height(4.dp))
                     TrendTag(percent = trend)
                 }
             }
@@ -255,7 +285,7 @@ fun MarketCropItem(crop: Crop, marketName: String = "") {
     )
 }
 
-/** Price with unit subscript — matches `.price` in the HTML. */
+/** Price with unit subscript. */
 @Composable
 private fun PriceText(price: String) {
     val colors = FarmerTheme.colors
@@ -265,23 +295,21 @@ private fun PriceText(price: String) {
             Text(
                 text = unitMatch.groupValues[1],
                 color = colors.textPrimary,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.3).sp
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold
             )
-            Spacer(modifier = Modifier.width(2.dp))
+            Spacer(Modifier.width(2.dp))
             Text(
                 text = "/ ${unitMatch.groupValues[2]}",
                 color = colors.textTertiary,
-                fontSize = 11.sp,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelMedium
             )
         }
     } else {
         Text(
             text = price,
             color = colors.textPrimary,
-            fontSize = 15.sp,
+            style = MaterialTheme.typography.titleLarge,
             fontWeight = FontWeight.ExtraBold
         )
     }
@@ -290,7 +318,7 @@ private fun PriceText(price: String) {
 @Preview(showBackground = true)
 @Composable
 fun MarketScreenPreview() {
-    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
+    AndroidFarmerFriendTheme {
         MarketScreen()
     }
 }
