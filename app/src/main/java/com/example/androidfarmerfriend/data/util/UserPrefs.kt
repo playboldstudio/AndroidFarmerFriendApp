@@ -8,15 +8,26 @@ class UserPrefs(context: Context) {
         context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE)
 
     var userName: String
-        get() = prefs.getString(KEY_NAME, "விவசாயி") ?: "விவசாயி"
+        get() = prefs.getString(KEY_NAME, DEFAULT_NAME) ?: DEFAULT_NAME
         set(value) = prefs.edit().putString(KEY_NAME, value).apply()
 
     var userPhone: String
-        get() = prefs.getString(KEY_PHONE, "9876543210") ?: "9876543210"
+        get() = prefs.getString(KEY_PHONE, DEFAULT_PHONE) ?: DEFAULT_PHONE
         set(value) = prefs.edit().putString(KEY_PHONE, value).apply()
 
     companion object {
         private const val KEY_NAME = "user_name"
         private const val KEY_PHONE = "user_phone"
+
+        const val DEFAULT_NAME = "Farmer"
+        const val DEFAULT_PHONE = "9876543210"
+
+        val PLACEHOLDER_NAMES = setOf(
+            DEFAULT_NAME, "விவசாயி", "किसान", "రైతు", "കർഷകൻ",
+            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
+        )
+
+        fun isPlaceholderName(name: String): Boolean =
+            name.isBlank() || name.trim() in PLACEHOLDER_NAMES
     }
 }

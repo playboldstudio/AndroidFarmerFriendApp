@@ -5,6 +5,7 @@ import android.content.SharedPreferences
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,22 +16,35 @@ import kotlinx.coroutines.launch
 class ProfileViewModel(application: Application) : AndroidViewModel(application) {
     private val userPrefs = UserPrefs(application)
     private val languagePrefs = LanguagePrefs(application)
+    private val locationPrefs = LocationPrefs(application)
     private val firestore = FirebaseFirestore.getInstance()
 
     private val fcmPrefs: SharedPreferences =
         application.getSharedPreferences("fcm_prefs", Application.MODE_PRIVATE)
 
-    private val _state = MutableStateFlow(
-        ProfileState(
-            userName = userPrefs.userName,
-            userPhone = userPrefs.userPhone,
-            selectedLanguage = languagePrefs.selectedLanguage
-        )
-    )
+    private val _state = MutableStateFlow(initialState())
     val state: StateFlow<ProfileState> = _state.asStateFlow()
 
     private val _navigation = MutableStateFlow<String?>(null)
     val navigation: StateFlow<String?> = _navigation.asStateFlow()
+
+    private fun initialState(): ProfileState {
+        val language = languagePrefs.selectedLanguage
+        return ProfileState(
+            userName = userPrefs.userName,
+            userPhone = userPrefs.userPhone,
+            displayName = displayName(userPrefs.userName, language),
+            locationName = locationPrefs.selectedLocation.name,
+            languageLabel = language.displayEnglish,
+            selectedLanguage = language
+        )
+    }
+
+    /** Placeholder names render as the localized "Guest" label. */
+    private fun displayName(rawName: String, language: com.example.androidfarmerfriend.data.localization.Language): String {
+        val strings = language.strings()
+        return if (UserPrefs.isPlaceholderName(rawName)) strings.guestLabel else rawName.trim()
+    }
 
     fun onEvent(event: ProfileEvent) {
         when (event) {
@@ -50,66 +64,22 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileEvent.StartEditing -> {
                 _state.value = _state.value.copy(
                     isEditing = true,
-                    tempName = _state.value.userName,
-                    tempPhone = _state.value.userPhone
-                        .replace("+91", "")
-                        .replace("91", "")
-                        .replace(" ", "")
-                        .filter { it.isDigit() }
+                    tempName = placeholderAwareSavedName(),
+                    tempPhone = digitsOnly(_state.value.userPhone)
                 )
             }
             is ProfileEvent.CancelEditing -> {
                 _state.value = _state.value.copy(isEditing = false)
             }
             is ProfileEvent.SaveProfile -> {
-                val rawPhone = _state.value.tempPhone.trim()
-                    .removePrefix("+91").removePrefix("91")
-                    .replace("\\s".toRegex(), "")
-                val isValidPhone = rawPhone.length == 10 && rawPhone.all { it.isDigit() }
-
-                if (_state.value.tempName.isBlank()) {
-                    _state.value = _state.value.copy(
-                        message = "Name cannot be empty"
-                    )
-                    return
-                }
-                if (rawPhone.isBlank()) {
-                    _state.value = _state.value.copy(
-                        phoneError = "Phone number is required"
-                    )
-                    return
-                }
-                if (!isValidPhone) {
-                    _state.value = _state.value.copy(
-                        phoneError = "Enter a valid 10-digit mobile number"
-                    )
-                    return
-                }
-
-                val cleanPhone = rawPhone
-                userPrefs.userName = _state.value.tempName
-                userPrefs.userPhone = cleanPhone
-                _state.value = _state.value.copy(
-                    isEditing = false,
-                    userName = _state.value.tempName,
-                    userPhone = cleanPhone,
-                    phoneError = null
-                )
-                saveUserToFirestore(_state.value.tempName, cleanPhone)
+                saveProfile()
             }
             is ProfileEvent.UpdateTempName -> {
                 _state.value = _state.value.copy(tempName = event.name)
             }
             is ProfileEvent.UpdateTempPhone -> {
-                // Auto-strip +91 or 91 prefix, spaces, and limit to 10 digits
-                val cleaned = event.phone
-                    .replace("+91", "")
-                    .replace("91", "")
-                    .replace(" ", "")
-                    .filter { it.isDigit() }
-                    .take(10)
                 _state.value = _state.value.copy(
-                    tempPhone = cleaned,
+                    tempPhone = normalizePhone(event.phone),
                     phoneError = null
                 )
             }
@@ -117,6 +87,45 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 _state.value = _state.value.copy(message = null)
             }
         }
+    }
+
+    private fun placeholderAwareSavedName(): String {
+        val saved = _state.value.userName
+        return if (UserPrefs.isPlaceholderName(saved)) "" else saved
+    }
+
+    private fun saveProfile() {
+        val current = _state.value
+        val rawPhone = normalizePhone(current.tempPhone)
+
+        if (current.tempName.isBlank()) {
+            _state.value = current.copy(message = "Name cannot be empty")
+            return
+        }
+        if (rawPhone.isBlank()) {
+            _state.value = current.copy(phoneError = "Phone number is required")
+            return
+        }
+        if (!isValidIndianMobile(rawPhone)) {
+            _state.value = current.copy(phoneError = "Enter a valid 10-digit mobile number")
+            return
+        }
+
+        userPrefs.userName = current.tempName.trim()
+        userPrefs.userPhone = rawPhone
+
+        _state.value = current.copy(
+            isEditing = false,
+            userName = current.tempName.trim(),
+            userPhone = rawPhone,
+            displayName = displayName(current.tempName.trim(), current.selectedLanguage),
+            phoneError = null
+        )
+        saveUserToFirestore(current.tempName.trim(), rawPhone)
+    }
+
+    fun onNavigated() {
+        _navigation.value = null
     }
 
     private fun saveUserToFirestore(name: String, phone: String) {
@@ -134,7 +143,17 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
         }
     }
 
-    fun onNavigated() {
-        _navigation.value = null
+    companion object {
+        private fun digitsOnly(value: String): String =
+            value.filter { it.isDigit() }.take(10)
+
+        private fun normalizePhone(input: String): String =
+            input.replace("+91", "").replace("91", "", true)
+                .replace("\\s".toRegex(), "")
+                .filter { it.isDigit() }
+                .take(10)
+
+        private fun isValidIndianMobile(phone: String): Boolean =
+            phone.length == 10 && phone.all { it.isDigit() }
     }
 }

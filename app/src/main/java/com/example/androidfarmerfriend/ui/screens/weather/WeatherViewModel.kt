@@ -15,7 +15,7 @@ class WeatherViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _state = MutableStateFlow(WeatherScreenState())
     val state: StateFlow<WeatherScreenState> = _state.asStateFlow()
 
-    private var currentStrings: AppStrings = AppStrings.Tamil
+    private var currentStrings: AppStrings = AppStrings.English
 
     fun setStrings(strings: AppStrings) {
         currentStrings = strings

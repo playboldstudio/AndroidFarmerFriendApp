@@ -148,6 +148,10 @@ data class AppStrings(
     val cancelAction: String,
     val editAction: String,
     val welcomeBack: String,
+    val guestLabel: String,
+    val accountSection: String,
+    val preferencesSection: String,
+    val legalSection: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -293,6 +297,10 @@ data class AppStrings(
             cancelAction = "ரத்து",
             editAction = "திருத்து",
             welcomeBack = "மீண்டும் வருக",
+            guestLabel = "விருந்தினர்",
+            accountSection = "கணக்கு",
+            preferencesSection = "விருப்பத்தேர்வுகள்",
+            legalSection = "சட்டம் & பற்றி",
         )
 
         val English = AppStrings(
@@ -438,6 +446,10 @@ data class AppStrings(
             cancelAction = "Cancel",
             editAction = "Edit",
             welcomeBack = "Welcome back",
+            guestLabel = "Guest",
+            accountSection = "Account",
+            preferencesSection = "Preferences",
+            legalSection = "Legal & About",
         )
 
         val Hindi = AppStrings(
@@ -583,6 +595,10 @@ data class AppStrings(
             cancelAction = "रद्द करें",
             editAction = "संपादित करें",
             welcomeBack = "फिर से स्वागत है",
+            guestLabel = "अतिथि",
+            accountSection = "खाता",
+            preferencesSection = "प्राथमिकताएँ",
+            legalSection = "कानूनी एवं जानकारी",
         )
 
         val Telugu = AppStrings(
@@ -728,6 +744,10 @@ data class AppStrings(
             cancelAction = "రద్దు చేయండి",
             editAction = "సవరించు",
             welcomeBack = "తిరిగి స్వాగతం",
+            guestLabel = "అతిథి",
+            accountSection = "ఖాతా",
+            preferencesSection = "ప్రాధాన్యతలు",
+            legalSection = "చట్టం & వివరాలు",
         )
 
         val Malayalam = AppStrings(
@@ -873,6 +893,10 @@ data class AppStrings(
             cancelAction = "റദ്ദാക്കുക",
             editAction = "എഡിറ്റ് ചെയ്യുക",
             welcomeBack = "വീണ്ടും സ്വാഗതം",
+            guestLabel = "അതിഥി",
+            accountSection = "അക്കൗണ്ട്",
+            preferencesSection = "മുൻഗണനകൾ",
+            legalSection = "നിയമം & കൂടുതൽ",
         )
 
         val Kannada = AppStrings(
@@ -1018,6 +1042,10 @@ data class AppStrings(
             cancelAction = "ರದ್ದುಮಾಡಿ",
             editAction = "ಎಡಿಟ್ ಮಾಡಿ",
             welcomeBack = "ಮರಳಿ ಸ್ವಾಗತ",
+            guestLabel = "ಅತಿಥಿ",
+            accountSection = "ಖಾತೆ",
+            preferencesSection = "ಆದ್ಯತೆಗಳು",
+            legalSection = "ಕಾನೂನು & ಇನ್ನಷ್ಟು",
         )
 
         val Marathi = AppStrings(
@@ -1163,6 +1191,10 @@ data class AppStrings(
             cancelAction = "रद्द करा",
             editAction = "संपादित करा",
             welcomeBack = "पुन्हा स्वागत आहे",
+            guestLabel = "पाहुणे",
+            accountSection = "खाते",
+            preferencesSection = "प्राधान्ये",
+            legalSection = "कायदा & अधिक",
         )
 
         val Bengali = AppStrings(
@@ -1308,6 +1340,10 @@ data class AppStrings(
             cancelAction = "বাতিল করুন",
             editAction = "সম্পাদনা করুন",
             welcomeBack = "আবার স্বাগতম",
+            guestLabel = "অতিথি",
+            accountSection = "অ্যাকাউন্ট",
+            preferencesSection = "পছন্দসমূহ",
+            legalSection = "আইন ও আরও",
         )
 
         val Punjabi = AppStrings(
@@ -1453,6 +1489,10 @@ data class AppStrings(
             cancelAction = "ਰੱਦ ਕਰੋ",
             editAction = "ਸੋਧੋ",
             welcomeBack = "ਦੁਬਾਰਾ ਜੀ ਆਇਆਂ ਨੂੰ",
+            guestLabel = "ਮਹਿਮਾਨ",
+            accountSection = "ਖਾਤਾ",
+            preferencesSection = "ਤਰਜੀਹਾਂ",
+            legalSection = "ਕਾਨੂੰਨੀ & ਹੋਰ",
         )
 
         val Gujarati = AppStrings(
@@ -1598,6 +1638,10 @@ data class AppStrings(
             cancelAction = "રદ કરો",
             editAction = "સંપાદિત કરો",
             welcomeBack = "ફરી સ્વાગત છે",
+            guestLabel = "મહેમાન",
+            accountSection = "ખાતું",
+            preferencesSection = "પસંદગીઓ",
+            legalSection = "કાનૂની & વધુ",
         )
 
         val Odia = AppStrings(
@@ -1743,6 +1787,10 @@ data class AppStrings(
             cancelAction = "ବାତିଲ କରନ୍ତୁ",
             editAction = "ସମ୍ପାଦନା କରନ୍ତୁ",
             welcomeBack = "ପୁଣି ସ୍ୱାଗତ",
+            guestLabel = "ଅତିଥି",
+            accountSection = "ଆକାଉଣ୍ଟ",
+            preferencesSection = "ପସନ୍ଦଗୁଡ଼ିକ",
+            legalSection = "ଆଇନଗତ ଓ ଅଧିକ",
         )
 }
 }

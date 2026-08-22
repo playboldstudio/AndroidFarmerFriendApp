@@ -22,7 +22,7 @@ class FarmerRepository {
 
     private fun todayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
-    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu", strings: AppStrings = AppStrings.Tamil): WeatherInfo? = withContext(Dispatchers.IO) {
+    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu", strings: AppStrings = AppStrings.English): WeatherInfo? = withContext(Dispatchers.IO) {
         try {
             val response = weatherApi.getForecast(latitude = lat, longitude = lon)
             val current = response.current ?: throw Exception("Failed to load weather data")
@@ -127,15 +127,15 @@ class FarmerRepository {
 
     fun getAlerts(): List<Alert> = emptyList()
 
-    suspend fun getSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
+    suspend fun getSchemes(language: Language = Language.ENGLISH): List<Scheme> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchSchemes(language)
     }
 
-    suspend fun getCropNotes(language: Language = Language.TAMIL): List<CropNote> = withContext(Dispatchers.IO) {
+    suspend fun getCropNotes(language: Language = Language.ENGLISH): List<CropNote> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchCropNotes(language)
     }
 
-    suspend fun getDiseases(language: Language = Language.TAMIL): List<Disease> = withContext(Dispatchers.IO) {
+    suspend fun getDiseases(language: Language = Language.ENGLISH): List<Disease> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchDiseases(language)
     }
 

@@ -85,7 +85,7 @@ object WebDataScraper {
     private fun terms(language: Language): SearchTerms =
         searchTerms[language] ?: searchTerms[Language.ENGLISH]!!
 
-    suspend fun fetchCropNotes(language: Language = Language.TAMIL): List<CropNote> = withContext(Dispatchers.IO) {
+    suspend fun fetchCropNotes(language: Language = Language.ENGLISH): List<CropNote> = withContext(Dispatchers.IO) {
         val t = terms(language)
         val host = wikiHost(language)
         val results = searchWikipedia(host, t.agriculture, 10)
@@ -102,7 +102,7 @@ object WebDataScraper {
         }
     }
 
-    suspend fun fetchDiseases(language: Language = Language.TAMIL): List<Disease> = withContext(Dispatchers.IO) {
+    suspend fun fetchDiseases(language: Language = Language.ENGLISH): List<Disease> = withContext(Dispatchers.IO) {
         val t = terms(language)
         val host = wikiHost(language)
         val results = searchWikipedia(host, t.plantDisease, 10)
@@ -117,7 +117,7 @@ object WebDataScraper {
         }
     }
 
-    suspend fun fetchSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
+    suspend fun fetchSchemes(language: Language = Language.ENGLISH): List<Scheme> = withContext(Dispatchers.IO) {
         val t = terms(language)
         val host = wikiHost(language)
         val results = searchWikipedia(host, t.agriculturalScheme, 10)

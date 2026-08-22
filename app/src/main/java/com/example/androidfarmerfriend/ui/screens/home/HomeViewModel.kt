@@ -15,7 +15,7 @@ class HomeViewModel(private val repository: FarmerRepository = FarmerRepository(
     private val _state = MutableStateFlow(HomeState())
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
-    private var strings: AppStrings = AppStrings.Tamil
+    private var strings: AppStrings = AppStrings.English
 
     fun setStrings(strings: AppStrings) {
         this.strings = strings

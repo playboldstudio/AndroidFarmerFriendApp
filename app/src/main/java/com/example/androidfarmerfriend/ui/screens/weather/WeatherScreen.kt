@@ -105,7 +105,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
 }
 
 @Composable
-fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
+fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.English) {
     val colors = FarmerTheme.colors
 
     WeatherHeroCard(

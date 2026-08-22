@@ -136,18 +136,12 @@ fun HomeScreen(
     }
 }
 
-/** The user's name when personalized (blank and default farmer names return null). */
-fun personalizedName(rawName: String): String? {
-    val defaultFarmerNames = setOf(
-        "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
-        "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
-    )
-    val name = rawName.trim()
-    return if (name.isNotBlank() && name !in defaultFarmerNames) name else null
-}
+/** The user's name when personalized; placeholder names render no name. */
+fun personalizedName(rawName: String): String? =
+    rawName.trim().takeIf { !UserPrefs.isPlaceholderName(it) }
 
 @Composable
-fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
+fun FarmerFriendLogo(strings: AppStrings = AppStrings.English) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -184,7 +178,7 @@ fun FarmerFriendLogo(strings: AppStrings = AppStrings.Tamil) {
 }
 
 @Composable
-fun WeatherSummaryCard(weather: WeatherInfo, strings: AppStrings = AppStrings.Tamil) {
+fun WeatherSummaryCard(weather: WeatherInfo, strings: AppStrings = AppStrings.English) {
     WeatherHeroCard(weather = weather, strings = strings)
 }
 
@@ -200,7 +194,7 @@ fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
 data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val container: Color, val route: String)
 
 @Composable
-fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.Tamil) {
+fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.English) {
     val colors = FarmerTheme.colors
     val items = listOf(
         QuickActionItem(strings.navMarket, Icons.Default.BarChart, colors.primary, colors.softMint, Screen.Market.route),

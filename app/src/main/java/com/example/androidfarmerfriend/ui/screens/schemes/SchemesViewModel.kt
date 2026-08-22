@@ -14,7 +14,7 @@ class SchemesViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _state = MutableStateFlow(SchemesState())
     val state: StateFlow<SchemesState> = _state.asStateFlow()
 
-    private var currentLanguage: Language = Language.TAMIL
+    private var currentLanguage: Language = Language.ENGLISH
 
     fun loadData(language: Language = currentLanguage) {
         currentLanguage = language

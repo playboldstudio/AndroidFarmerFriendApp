@@ -14,7 +14,7 @@ class DiseaseViewModel(private val repository: FarmerRepository = FarmerReposito
     private val _state = MutableStateFlow(DiseaseState())
     val state: StateFlow<DiseaseState> = _state.asStateFlow()
 
-    private var currentLanguage: Language = Language.TAMIL
+    private var currentLanguage: Language = Language.ENGLISH
 
     fun loadData(language: Language = currentLanguage) {
         currentLanguage = language
