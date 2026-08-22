@@ -73,6 +73,7 @@ fun ProfileScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(FarmerTheme.colors.background)
+            .imePadding()
     ) {
         Column(
             modifier = Modifier
