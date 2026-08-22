@@ -520,7 +520,8 @@ fun WeatherHeroCard(
     weather: WeatherInfo,
     strings: AppStrings,
     modifier: Modifier = Modifier,
-    centered: Boolean = false
+    centered: Boolean = false,
+    onClick: (() -> Unit)? = null
 ) {
     val colors = FarmerTheme.colors
     val gradient = Brush.linearGradient(
@@ -539,6 +540,7 @@ fun WeatherHeroCard(
             .fillMaxWidth()
             .clip(RoundedCornerShape(24.dp))
             .background(gradient)
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
     ) {
         // Decorative glows
         Box(
@@ -643,6 +645,13 @@ fun WeatherHeroCard(
                         fontSize = 13.sp,
                         fontWeight = FontWeight.SemiBold,
                         modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+                if (weather.feelsLike.isNotBlank()) {
+                    Text(
+                        text = "${strings.feelsLike}: ${weather.feelsLike}",
+                        color = Color.White.copy(alpha = 0.85f),
+                        style = MaterialTheme.typography.labelMedium
                     )
                 }
             }

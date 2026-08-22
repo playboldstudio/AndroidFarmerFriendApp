@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.home
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -9,14 +10,21 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.BarChart
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.LibraryBooks
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -27,22 +35,20 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.WeatherInfo
-import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
-import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.components.EmptyState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.NotificationPermissionBanner
 import com.example.androidfarmerfriend.ui.components.SectionTitle
+import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.TintIconCircle
 import com.example.androidfarmerfriend.ui.components.WeatherHeroCard
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
@@ -53,42 +59,26 @@ fun HomeScreen(
     val state by viewModel.state.collectAsState()
 
     val strings = LocalAppStrings.current
-    val context = LocalContext.current
-    val locationPrefs = remember { LocationPrefs(context) }
-    val userPrefs = remember { UserPrefs(context) }
-    var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
     var showLocationPicker by remember { mutableStateOf(false) }
-
-    val greeting = remember(userPrefs.userName, strings) {
-        val displayName = personalizedName(userPrefs.userName)
-        if (displayName != null) {
-            "${strings.welcomeBack}, $displayName 👋"
-        } else {
-            "${strings.welcomeBack} 👋"
-        }
-    }
 
     LaunchedEffect(Unit) {
         viewModel.setStrings(strings)
-        viewModel.onEvent(HomeEvent.LoadLocation(selectedLocation))
+        viewModel.onEvent(HomeEvent.LoadInitial)
     }
 
     LaunchedEffect(strings) {
         viewModel.setStrings(strings)
     }
 
-    val repository = remember { FarmerRepository() }
-
-    if (showLocationPicker) {
+    val currentLocation = state.selectedLocation
+    if (showLocationPicker && currentLocation != null) {
         LocationPickerSheet(
-            currentLocation = selectedLocation,
+            currentLocation = currentLocation,
             onLocationSelected = { loc ->
-                selectedLocation = loc
-                locationPrefs.selectedLocation = loc
                 showLocationPicker = false
-                viewModel.onEvent(HomeEvent.LoadLocation(loc))
+                viewModel.onEvent(HomeEvent.SelectLocation(loc))
             },
-            onSearch = { query -> repository.searchLocations(query) },
+            onSearch = { query -> viewModel.searchLocations(query) },
             onDismiss = { showLocationPicker = false }
         )
     }
@@ -97,26 +87,29 @@ fun HomeScreen(
         modifier = Modifier
             .fillMaxSize()
             .background(FarmerTheme.colors.background)
-            .padding(horizontal = 16.dp)
+            .padding(horizontal = FarmerSpacing.lg)
             .verticalScroll(rememberScrollState())
     ) {
-        FarmerFriendLogo(strings = strings)
+        HomeHeader(
+            strings = strings,
+            onProfileClick = { onNavigate(Screen.Profile.route) }
+        )
 
-        NotificationPermissionBanner(modifier = Modifier.padding(bottom = 12.dp))
+        NotificationPermissionBanner(modifier = Modifier.padding(bottom = FarmerSpacing.md))
 
-        HeroTitle(text = greeting, accent = personalizedName(userPrefs.userName))
+        HeroTitle(text = state.greeting, accent = state.greetingName)
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(FarmerSpacing.s))
 
         LocPill(
-            text = selectedLocation.name,
+            text = state.selectedLocation?.name.orEmpty(),
             onClick = { showLocationPicker = true }
         )
 
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(Modifier.height(FarmerSpacing.s))
 
         when (val weatherState = state.weatherState) {
-            is UiState.Loading -> FullScreenLoading()
+            is UiState.Loading -> ShimmerList(rowCount = 2, rowHeight = 190.dp)
             is UiState.Error -> EmptyState(
                 icon = Icons.Default.CloudOff,
                 title = strings.weatherNoData
@@ -124,7 +117,8 @@ fun HomeScreen(
             is UiState.Success -> WeatherHeroCard(
                 weather = weatherState.data,
                 strings = strings,
-                modifier = Modifier.padding(top = 16.dp)
+                modifier = Modifier.padding(top = FarmerSpacing.lg),
+                onClick = { onNavigate(Screen.Weather.route) }
             )
         }
 
@@ -132,26 +126,23 @@ fun HomeScreen(
 
         QuickAccessGrid(onNavigate = onNavigate, strings = strings)
 
-        Spacer(modifier = Modifier.height(24.dp))
+        Spacer(Modifier.height(FarmerSpacing.xxl))
     }
 }
 
-/** The user's name when personalized; placeholder names render no name. */
-fun personalizedName(rawName: String): String? =
-    rawName.trim().takeIf { !UserPrefs.isPlaceholderName(it) }
-
 @Composable
-fun FarmerFriendLogo(strings: AppStrings = AppStrings.English) {
+private fun HomeHeader(strings: AppStrings, onProfileClick: () -> Unit) {
+    val colors = FarmerTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 16.dp, bottom = 14.dp),
+            .padding(top = FarmerSpacing.lg, bottom = FarmerSpacing.md),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(42.dp)
-                .background(FarmerTheme.colors.softGreen, RoundedCornerShape(13.dp))
+                .background(colors.softGreen, RoundedCornerShape(13.dp))
         ) {
             Image(
                 painter = painterResource(R.mipmap.ic_launcher_foreground),
@@ -159,39 +150,45 @@ fun FarmerFriendLogo(strings: AppStrings = AppStrings.English) {
                 modifier = Modifier.size(42.dp)
             )
         }
-        Spacer(modifier = Modifier.width(10.dp))
-        Column {
+        Spacer(Modifier.width(10.dp))
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = strings.appName,
-                color = FarmerTheme.colors.primary,
-                fontSize = 19.sp,
-                fontWeight = FontWeight.ExtraBold,
-                letterSpacing = (-0.3).sp
+                style = MaterialTheme.typography.titleLarge,
+                color = colors.primary
             )
             Text(
                 text = strings.farmerFriendTamil,
-                color = FarmerTheme.colors.textSecondary,
-                fontSize = 11.sp
+                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                color = colors.textSecondary
+            )
+        }
+        Box(
+            modifier = Modifier
+                .size(38.dp)
+                .clip(CircleShape)
+                .background(colors.softGreen)
+                .border(1.dp, colors.outline, CircleShape)
+                .clickable(onClick = onProfileClick),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                Icons.Default.Person,
+                contentDescription = strings.navProfile,
+                tint = colors.primary,
+                modifier = Modifier.size(20.dp)
             )
         }
     }
 }
 
-@Composable
-fun WeatherSummaryCard(weather: WeatherInfo, strings: AppStrings = AppStrings.English) {
-    WeatherHeroCard(weather = weather, strings = strings)
-}
-
-@Composable
-fun WeatherStatItem(label: String, value: String, icon: ImageVector) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = FarmerTheme.colors.textSecondary, fontSize = 10.sp)
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(text = value, style = MaterialTheme.typography.bodySmall, fontWeight = FontWeight.Bold, fontSize = 12.sp, color = FarmerTheme.colors.textPrimary)
-    }
-}
-
-data class QuickActionItem(val title: String, val icon: ImageVector, val color: Color, val container: Color, val route: String)
+data class QuickActionItem(
+    val title: String,
+    val icon: ImageVector,
+    val color: Color,
+    val container: Color,
+    val route: String
+)
 
 @Composable
 fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.English) {
@@ -205,15 +202,12 @@ fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = App
         QuickActionItem(strings.cropNotesTitle, Icons.Default.MenuBook, colors.cropBrown, colors.softBrown, Screen.CropNotes.route)
     )
 
-    // Fixed 6-item grid: plain Column-of-Rows (not lazy) so it works inside a
-    // scrollable parent without infinite-height measurement issues.
     Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
         items.chunked(3).forEach { rowItems ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 rowItems.forEach { item ->
                     QuickAccessTile(item, onNavigate, Modifier.weight(1f))
                 }
-                // Keep the row evenly distributed if the last row is short.
                 if (rowItems.size < 3) {
                     repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
                 }
@@ -233,6 +227,7 @@ private fun QuickAccessTile(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = modifier
             .background(colors.surface, RoundedCornerShape(22.dp))
+            .border(1.dp, colors.outline, RoundedCornerShape(22.dp))
             .clickable { onNavigate(item.route) }
             .padding(vertical = 14.dp, horizontal = 4.dp)
     ) {
@@ -243,14 +238,13 @@ private fun QuickAccessTile(
             size = 52.dp,
             cornerRadius = 26.dp
         )
-        Spacer(modifier = Modifier.height(7.dp))
+        Spacer(Modifier.height(7.dp))
         Text(
             text = item.title,
             color = colors.textPrimary,
-            fontSize = 11.sp,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            lineHeight = 13.sp,
             maxLines = 2
         )
     }

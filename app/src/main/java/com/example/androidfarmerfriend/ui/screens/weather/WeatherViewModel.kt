@@ -1,8 +1,10 @@
 package com.example.androidfarmerfriend.ui.screens.weather
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
@@ -11,7 +13,11 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class WeatherViewModel(private val repository: FarmerRepository = FarmerRepository()) : ViewModel() {
+class WeatherViewModel(application: Application) : AndroidViewModel(application) {
+
+    private val repository = FarmerRepository()
+    private val locationPrefs = LocationPrefs(application)
+
     private val _state = MutableStateFlow(WeatherScreenState())
     val state: StateFlow<WeatherScreenState> = _state.asStateFlow()
 
@@ -21,9 +27,17 @@ class WeatherViewModel(private val repository: FarmerRepository = FarmerReposito
         currentStrings = strings
     }
 
+    /** Location search used by the location picker sheet. */
+    suspend fun searchLocations(query: String): List<SelectedLocation> =
+        repository.searchLocations(query)
+
     fun onEvent(event: WeatherEvent) {
         when (event) {
-            is WeatherEvent.LoadLocation -> loadWeather(event.location)
+            is WeatherEvent.LoadInitial -> loadWeather(locationPrefs.selectedLocation)
+            is WeatherEvent.SelectLocation -> {
+                locationPrefs.selectedLocation = event.location
+                loadWeather(event.location)
+            }
             is WeatherEvent.Retry -> {
                 val loc = _state.value.selectedLocation ?: return
                 loadWeather(loc)

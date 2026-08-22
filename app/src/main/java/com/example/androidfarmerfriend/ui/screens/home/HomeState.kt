@@ -5,6 +5,8 @@ import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.util.UiState
 
 data class HomeState(
-    val weatherState: UiState<WeatherInfo> = UiState.Loading,
-    val selectedLocation: SelectedLocation? = null
+    val greeting: String = "",
+    val greetingName: String? = null,
+    val selectedLocation: SelectedLocation? = null,
+    val weatherState: UiState<WeatherInfo> = UiState.Loading
 )
