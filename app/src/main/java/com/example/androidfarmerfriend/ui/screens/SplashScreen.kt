@@ -51,7 +51,7 @@ fun SplashScreen(onReady: () -> Unit = {}, onFinished: () -> Unit) {
             .fillMaxSize()
             .background(
                 Brush.verticalGradient(
-                    listOf(colors.background, colors.surfaceMuted)
+                    listOf(colors.softMint, colors.background)
                 )
             ),
         contentAlignment = Alignment.Center

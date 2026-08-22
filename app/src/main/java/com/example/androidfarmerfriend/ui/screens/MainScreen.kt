@@ -56,6 +56,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             FloatingTabBar(
                 currentRoute = currentDestination?.route,
                 items = items,
+                strings = strings,
                 onTabSelected = { item ->
                     navController.navigate(item.screen.route) {
                         popUpTo(navController.graph.findStartDestination().id) {

@@ -131,7 +131,7 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
         }
     }
 
-    SectionTitle(title = "Details")
+    SectionTitle(title = strings.detailsTitle)
 
     Card(
         modifier = Modifier.fillMaxWidth(),
