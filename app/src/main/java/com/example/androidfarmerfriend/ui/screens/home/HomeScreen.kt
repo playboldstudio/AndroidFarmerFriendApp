@@ -60,21 +60,11 @@ fun HomeScreen(
     var showLocationPicker by remember { mutableStateOf(false) }
 
     val greeting = remember(userPrefs.userName, strings) {
-        val name = userPrefs.userName
-        val defaultFarmerNames = setOf(
-            "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
-            "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
-        )
-        if (name.isNotBlank() && name !in defaultFarmerNames) {
-            val greetingWithoutEmoji = strings.homeGreeting.replace(" 👋", "")
-            val parts = greetingWithoutEmoji.split(",").map { it.trim() }
-            if (parts.size >= 2) {
-                "${parts[0]}, $name! 👋"
-            } else {
-                strings.homeGreeting
-            }
+        val displayName = personalizedName(userPrefs.userName)
+        if (displayName != null) {
+            "${strings.welcomeBack}, $displayName 👋"
         } else {
-            strings.homeGreeting
+            "${strings.welcomeBack} 👋"
         }
     }
 
@@ -114,7 +104,7 @@ fun HomeScreen(
 
         NotificationPermissionBanner(modifier = Modifier.padding(bottom = 12.dp))
 
-        HeroTitle(text = greeting, accent = extractedName(greeting))
+        HeroTitle(text = greeting, accent = personalizedName(userPrefs.userName))
 
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -146,15 +136,14 @@ fun HomeScreen(
     }
 }
 
-/** Returns the personalized name from the greeting, if any. */
-private fun extractedName(greeting: String): String? {
+/** The user's name when personalized (blank and default farmer names return null). */
+fun personalizedName(rawName: String): String? {
     val defaultFarmerNames = setOf(
         "விவசாயி", "Farmer", "किसान", "రైతు", "കർഷകൻ",
         "ರೈತ", "शेतकरी", "কৃষক", "ਕਿਸਾਨ", "ખેડૂત", "ଚାଷୀ"
     )
-    val match = Regex(",\\s*([^,!]+)!?\\s*👋").find(greeting)
-    val candidate = match?.groupValues?.get(1)?.trim()
-    return if (!candidate.isNullOrBlank() && candidate !in defaultFarmerNames) candidate else null
+    val name = rawName.trim()
+    return if (name.isNotBlank() && name !in defaultFarmerNames) name else null
 }
 
 @Composable

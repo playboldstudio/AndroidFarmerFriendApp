@@ -34,7 +34,6 @@ data class AppStrings(
     val loadError: String,
     val noData: String,
     val retry: String,
-    val homeGreeting: String,
     val quickAccess: String,
     val weatherTitle: String,
     val weatherNoData: String,
@@ -139,6 +138,16 @@ data class AppStrings(
     val trendStable: String,
     val farmTipTitle: String,
     val farmTipGeneric: String,
+    // Redesign additions
+    val notifBannerTitle: String,
+    val notifBannerBody: String,
+    val actionAllow: String,
+    val actionOpenSettings: String,
+    val feelsLike: String,
+    val saveAction: String,
+    val cancelAction: String,
+    val editAction: String,
+    val welcomeBack: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -175,7 +184,6 @@ data class AppStrings(
             loadError = "தரவுகளை ஏற்ற முடியவில்லை",
             noData = "தரவுகள் ஏதுமில்லை",
             retry = "மீண்டும் முயற்சிக்க",
-            homeGreeting = "வணக்கம், விவசாயி! 👋",
             quickAccess = "விரைவு அணுகல்",
             weatherTitle = "வானிலை",
             weatherNoData = "வானிலை தரவு இல்லை",
@@ -276,6 +284,15 @@ data class AppStrings(
             trendStable = "விலைகள் நிலையாக உள்ளன",
             farmTipTitle = "பண்ணை உதவிக்குறிப்பு",
             farmTipGeneric = "வானிலை மற்றும் சந்தை விலைகளை தினமும் சரிபார்த்து உங்கள் வேலைகளைத் திட்டமிடுங்கள்.",
+            notifBannerTitle = "மீண்டும் வருக",
+            notifBannerBody = "விலை எச்சரிக்கைகள், வானிலை எச்சரிக்கைகள் மற்றும் திட்டப் புதுப்பிப்புகளைப் பெற அறிவிப்புகளை அனுமதிக்கவும்.",
+            actionAllow = "அனுமதி",
+            actionOpenSettings = "அமைப்புகளைத் திற",
+            feelsLike = "உணரப்படும் வெப்பநிலை",
+            saveAction = "சேமி",
+            cancelAction = "ரத்து",
+            editAction = "திருத்து",
+            welcomeBack = "மீண்டும் வருக",
         )
 
         val English = AppStrings(
@@ -312,7 +329,6 @@ data class AppStrings(
             loadError = "Unable to load data",
             noData = "No data found",
             retry = "Retry",
-            homeGreeting = "Hello, Farmer! 👋",
             quickAccess = "Quick Access",
             weatherTitle = "Weather",
             weatherNoData = "Weather data unavailable",
@@ -413,6 +429,15 @@ data class AppStrings(
             trendStable = "Prices holding steady",
             farmTipTitle = "Farm tip",
             farmTipGeneric = "Stay updated with daily weather and market prices to plan your farm work.",
+            notifBannerTitle = "Welcome back",
+            notifBannerBody = "Allow notifications to get price alerts, weather warnings and scheme updates.",
+            actionAllow = "Allow",
+            actionOpenSettings = "Open settings",
+            feelsLike = "Feels like",
+            saveAction = "Save",
+            cancelAction = "Cancel",
+            editAction = "Edit",
+            welcomeBack = "Welcome back",
         )
 
         val Hindi = AppStrings(
@@ -449,7 +474,6 @@ data class AppStrings(
             loadError = "डेटा लोड नहीं हो सका",
             noData = "कोई डेटा नहीं मिला",
             retry = "पुनः प्रयास करें",
-            homeGreeting = "नमस्ते, किसान! 👋",
             quickAccess = "त्वरित पहुँच",
             weatherTitle = "मौसम",
             weatherNoData = "मौसम डेटा उपलब्ध नहीं",
@@ -550,6 +574,15 @@ data class AppStrings(
             trendStable = "कीमतें स्थिर हैं",
             farmTipTitle = "खेत की टिप",
             farmTipGeneric = "दैनिक मौसम और बाज़ार मूल्य से अपडेट रहकर अपने खेत के काम की योजना बनाएं.",
+            notifBannerTitle = "फिर से स्वागत है",
+            notifBannerBody = "कीमत अलर्ट, मौसम चेतावनियाँ और योजना अपडेट पाने के लिए सूचनाएँ अनुमति दें.",
+            actionAllow = "अनुमति दें",
+            actionOpenSettings = "सेटिंग खोलें",
+            feelsLike = "ऐसा महसूस होता है",
+            saveAction = "सहेजें",
+            cancelAction = "रद्द करें",
+            editAction = "संपादित करें",
+            welcomeBack = "फिर से स्वागत है",
         )
 
         val Telugu = AppStrings(
@@ -586,7 +619,6 @@ data class AppStrings(
             loadError = "డేటా లోడ్ చేయడం సాధ్యం కాలేదు",
             noData = "డేటా కనుగొనబడలేదు",
             retry = "మళ్ళీ ప్రయత్నించండి",
-            homeGreeting = "నమస్కారం, రైతు! 👋",
             quickAccess = "త్వరిత యాక్సెస్",
             weatherTitle = "వాతావరణం",
             weatherNoData = "వాతావరణ డేటా అందుబాటులో లేదు",
@@ -687,6 +719,15 @@ data class AppStrings(
             trendStable = "ధరలు స్థిరంగా ఉన్నాయి",
             farmTipTitle = "పొలం చిట్కా",
             farmTipGeneric = "రోజువారీ వాతావరణం మరియు మార్కెట్ ధరలతో తాజాగా ఉండి మీ పొలం పనులను ప్లాన్ చేయండి.",
+            notifBannerTitle = "తిరిగి స్వాగతం",
+            notifBannerBody = "ధర హెచ్చరికలు, వాతావరణ హెచ్చరికలు మరియు పథకపు నవీకరణల కోసం నోటిఫికేషన్‌లను అనుమతించండి.",
+            actionAllow = "అనుమతించు",
+            actionOpenSettings = "సెట్టింగ్‌లను తెరవండి",
+            feelsLike = "అనిపించే ఉష్ణోగ్రత",
+            saveAction = "సేవ్ చేయండి",
+            cancelAction = "రద్దు చేయండి",
+            editAction = "సవరించు",
+            welcomeBack = "తిరిగి స్వాగతం",
         )
 
         val Malayalam = AppStrings(
@@ -723,7 +764,6 @@ data class AppStrings(
             loadError = "ഡാറ്റ ലോഡ് ചെയ്യാൻ കഴിഞ്ഞില്ല",
             noData = "ഡാറ്റ കണ്ടെത്തിയില്ല",
             retry = "വീണ്ടും ശ്രമിക്കുക",
-            homeGreeting = "നമസ്കാരം, കർഷകാ! 👋",
             quickAccess = "ദ്രുത പ്രവേശനം",
             weatherTitle = "കാലാവസ്ഥ",
             weatherNoData = "കാലാവസ്ഥ ഡാറ്റ ലഭ്യമല്ല",
@@ -824,6 +864,15 @@ data class AppStrings(
             trendStable = "വിലകൾ സ്ഥിരമാണ്",
             farmTipTitle = "ഫാം ടിപ്പ്",
             farmTipGeneric = "ദിവസേനയുള്ള കാലാവസ്ഥയും മാർക്കറ്റ് വിലയും അറിഞ്ഞ് നിങ്ങളുടെ കൃഷിപ്പണികൾ ആസൂത്രണം ചെയ്യുക.",
+            notifBannerTitle = "വീണ്ടും സ്വാഗതം",
+            notifBannerBody = "വില അലേർട്ടുകൾ, കാലാവസ്ഥാ മുന്നറിയിപ്പുകൾ, പദ്ധതി അപ്ഡേറ്റുകൾ എന്നിവ ലഭിക്കാൻ അറിയിപ്പുകൾ അനുവദിക്കുക.",
+            actionAllow = "അനുവദിക്കുക",
+            actionOpenSettings = "ക്രമീകരണങ്ങൾ തുറക്കുക",
+            feelsLike = "അനുഭവപ്പെടുന്ന താപനില",
+            saveAction = "സേവ് ചെയ്യുക",
+            cancelAction = "റദ്ദാക്കുക",
+            editAction = "എഡിറ്റ് ചെയ്യുക",
+            welcomeBack = "വീണ്ടും സ്വാഗതം",
         )
 
         val Kannada = AppStrings(
@@ -860,7 +909,6 @@ data class AppStrings(
             loadError = "ಡೇಟಾ ಲೋಡ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ",
             noData = "ಡೇಟಾ ಕಂಡುಬಂದಿಲ್ಲ",
             retry = "ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
-            homeGreeting = "ನಮಸ್ಕಾರ, ರೈತ! 👋",
             quickAccess = "ತ್ವರಿತ ಪ್ರವೇಶ",
             weatherTitle = "ಹವಾಮಾನ",
             weatherNoData = "ಹವಾಮಾನ ಡೇಟಾ ಲಭ್ಯವಿಲ್ಲ",
@@ -961,6 +1009,15 @@ data class AppStrings(
             trendStable = "ಬೆಲೆಗಳು ಸ್ಥಿರವಾಗಿವೆ",
             farmTipTitle = "ಕೃಷಿ ಸಲಹೆ",
             farmTipGeneric = "ದೈನಂದಿನ ಹವಾಮಾನ ಮತ್ತು ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳೊಂದಿಗೆ ಅಪ್‌ಡೇಟ್ ಆಗಿರಿ ಮತ್ತು ನಿಮ್ಮ ಕೃಷಿ ಕೆಲಸವನ್ನು ಯೋಜಿಸಿ.",
+            notifBannerTitle = "ಮರಳಿ ಸ್ವಾಗತ",
+            notifBannerBody = "ಬೆಲೆ ಎಚ್ಚರಿಕೆಗಳು, ಹವಾಮಾನ ಎಚ್ಚರಿಕೆಗಳು ಮತ್ತು ಯೋಜನೆ ಅಪ್‌ಡೇಟ್‌ಗಳನ್ನು ಪಡೆಯಲು ಅಧಿಸೂಚನೆಗಳನ್ನು ಅನುಮತಿಸಿ.",
+            actionAllow = "ಅನುಮತಿಸಿ",
+            actionOpenSettings = "ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ತೆರೆಯಿರಿ",
+            feelsLike = "ಅನಿಸುವ ತಾಪಮಾನ",
+            saveAction = "ಉಳಿಸಿ",
+            cancelAction = "ರದ್ದುಮಾಡಿ",
+            editAction = "ಎಡಿಟ್ ಮಾಡಿ",
+            welcomeBack = "ಮರಳಿ ಸ್ವಾಗತ",
         )
 
         val Marathi = AppStrings(
@@ -997,7 +1054,6 @@ data class AppStrings(
             loadError = "डेटा लोड करता आला नाही",
             noData = "डेटा सापडला नाही",
             retry = "पुन्हा प्रयत्न करा",
-            homeGreeting = "नमस्कार, शेतकरी! 👋",
             quickAccess = "झटपट प्रवेश",
             weatherTitle = "हवामान",
             weatherNoData = "हवामान डेटा उपलब्ध नाही",
@@ -1098,6 +1154,15 @@ data class AppStrings(
             trendStable = "भाव स्थिर आहेत",
             farmTipTitle = "शेत टीप",
             farmTipGeneric = "रोजच्या हवामान आणि बाजार भावांवर अपडेट राहून आपल्या शेतीचे नियोजन करा.",
+            notifBannerTitle = "पुन्हा स्वागत आहे",
+            notifBannerBody = "किंमत सूचना, हवामान इशाऱ्या आणि योजना अपडेट्ससाठी सूचनांना परवानगी द्या.",
+            actionAllow = "परवानगी द्या",
+            actionOpenSettings = "सेटिंग्ज उघडा",
+            feelsLike = "जाणवणारे तापमान",
+            saveAction = "जतन करा",
+            cancelAction = "रद्द करा",
+            editAction = "संपादित करा",
+            welcomeBack = "पुन्हा स्वागत आहे",
         )
 
         val Bengali = AppStrings(
@@ -1134,7 +1199,6 @@ data class AppStrings(
             loadError = "ডেটা লোড করা যায়নি",
             noData = "কোনো ডেটা পাওয়া যায়নি",
             retry = "আবার চেষ্টা করুন",
-            homeGreeting = "নমস্কার, কৃষক! 👋",
             quickAccess = "দ্রুত প্রবেশ",
             weatherTitle = "আবহাওয়া",
             weatherNoData = "আবহাওয়ার ডেটা পাওয়া যায়নি",
@@ -1235,6 +1299,15 @@ data class AppStrings(
             trendStable = "দাম স্থির আছে",
             farmTipTitle = "খামারের টিপ",
             farmTipGeneric = "দৈনিক আবহাওয়া ও বাজার মূল্য দিয়ে আপডেট থাকুন এবং আপনার খামারের কাজের পরিকল্পনা করুন.",
+            notifBannerTitle = "আবার স্বাগতম",
+            notifBannerBody = "মূল্য সতর্কতা, আবহাওয়া সতর্কতা এবং প্রকল্প আপডেট পেতে বিজ্ঞপ্তির অনুমতি দিন.",
+            actionAllow = "অনুমতি দিন",
+            actionOpenSettings = "সেটিংস খুলুন",
+            feelsLike = "অনুভূত তাপমাত্রা",
+            saveAction = "সংরক্ষণ করুন",
+            cancelAction = "বাতিল করুন",
+            editAction = "সম্পাদনা করুন",
+            welcomeBack = "আবার স্বাগতম",
         )
 
         val Punjabi = AppStrings(
@@ -1271,7 +1344,6 @@ data class AppStrings(
             loadError = "ਡੇਟਾ ਲੋਡ ਨਹੀਂ ਹੋ ਸਕਿਆ",
             noData = "ਕੋਈ ਡੇਟਾ ਨਹੀਂ ਮਿਲਿਆ",
             retry = "ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
-            homeGreeting = "ਸਤ ਸ੍ਰੀ ਅਕਾਲ, ਕਿਸਾਨ! 👋",
             quickAccess = "ਤੇਜ਼ ਪਹੁੰਚ",
             weatherTitle = "ਮੌਸਮ",
             weatherNoData = "ਮੌਸਮ ਡੇਟਾ ਉਪਲਬਧ ਨਹੀਂ",
@@ -1372,6 +1444,15 @@ data class AppStrings(
             trendStable = "ਕੀਮਤਾਂ ਸਥਿਰ ਹਨ",
             farmTipTitle = "ਖੇਤ ਦੀ ਟਿਪ",
             farmTipGeneric = "ਰੋਜ਼ਾਨਾ ਮੌਸਮ ਅਤੇ ਮਾਰਕੀਟ ਕੀਮਤਾਂ ਨਾਲ ਅਪਡੇਟ ਰਹੋ ਅਤੇ ਆਪਣੇ ਖੇਤੀ ਕੰਮ ਦੀ ਯੋਜਨਾ ਬਣਾਓ.",
+            notifBannerTitle = "ਦੁਬਾਰਾ ਜੀ ਆਇਆਂ ਨੂੰ",
+            notifBannerBody = "ਕੀਮਤ ਅਲਰਟ, ਮੌਸਮ ਚਿਤਾਵਨੀਆਂ ਅਤੇ ਸਕੀਮ ਅੱਪਡੇਟ ਲਈ ਸੂਚਨਾਵਾਂ ਦੀ ਇਜਾਜ਼ਤ ਦਿਓ.",
+            actionAllow = "ਇਜਾਜ਼ਤ ਦਿਓ",
+            actionOpenSettings = "ਸੈਟਿੰਗਾਂ ਖੋਲ੍ਹੋ",
+            feelsLike = "ਮਹਿਸੂਸ ਹੋਣ ਵਾਲਾ ਤਾਪਮਾਨ",
+            saveAction = "ਸੇਵ ਕਰੋ",
+            cancelAction = "ਰੱਦ ਕਰੋ",
+            editAction = "ਸੋਧੋ",
+            welcomeBack = "ਦੁਬਾਰਾ ਜੀ ਆਇਆਂ ਨੂੰ",
         )
 
         val Gujarati = AppStrings(
@@ -1408,7 +1489,6 @@ data class AppStrings(
             loadError = "ડેટા લોડ થયો નથી",
             noData = "કોઈ ડેટા મળ્યો નથી",
             retry = "ફરી પ્રયાસ કરો",
-            homeGreeting = "નમસ્તે, ખેડૂત! 👋",
             quickAccess = "ઝડપી ઍક્સેસ",
             weatherTitle = "હવામાન",
             weatherNoData = "હવામાન ડેટા ઉપલબ્ધ નથી",
@@ -1509,6 +1589,15 @@ data class AppStrings(
             trendStable = "કિંમતો સ્થિર છે",
             farmTipTitle = "ફાર્મ ટિપ",
             farmTipGeneric = "રોજિંદા હવામાન અને બજાર ભાવ સાથે અપડેટ રહો અને તમારા ખેતરના કામનું આયોજન કરો.",
+            notifBannerTitle = "ફરી સ્વાગત છે",
+            notifBannerBody = "કિંમત એલર્ટ, હવામાન ચેતવણીઓ અને યોજના અપડેટ માટે સૂચનાઓની મંજૂરી આપો.",
+            actionAllow = "મંજૂરી આપો",
+            actionOpenSettings = "સેટિંગ્સ ખોલો",
+            feelsLike = "લાગતું તાપમાન",
+            saveAction = "સાચવો",
+            cancelAction = "રદ કરો",
+            editAction = "સંપાદિત કરો",
+            welcomeBack = "ફરી સ્વાગત છે",
         )
 
         val Odia = AppStrings(
@@ -1545,7 +1634,6 @@ data class AppStrings(
             loadError = "ଡେଟା ଲୋଡ୍ ହୋଇପାରିଲା ନାହିଁ",
             noData = "କୌଣସି ଡେଟା ମିଳିଲା ନାହିଁ",
             retry = "ପୁଣି ଚେଷ୍ଟା କରନ୍ତୁ",
-            homeGreeting = "ନମସ୍କାର, ଚାଷୀ! 👋",
             quickAccess = "ଶୀଘ୍ର ପ୍ରବେଶ",
             weatherTitle = "ପାଗ",
             weatherNoData = "ପାଗ ଡେଟା ଉପଲବ୍ଧ ନାହିଁ",
@@ -1646,6 +1734,15 @@ data class AppStrings(
             trendStable = "ଦର ସ୍ଥିର ଅଛି",
             farmTipTitle = "କ୍ଷେତ ଟିପ୍ସ",
             farmTipGeneric = "ଦୈନିକ ପାଗ ଏବଂ ବଜାର ମୂଲ୍ୟ ସହିତ ଅପଡେଟ୍ ରୁହନ୍ତୁ ଏବଂ ଆପଣଙ୍କ କୃଷି କାର୍ଯ୍ୟ ଯୋଜନା କରନ୍ତୁ.",
+            notifBannerTitle = "ପୁଣି ସ୍ୱାଗତ",
+            notifBannerBody = "ମୂଲ୍ୟ ସତର୍କତା, ପାଣିପାଗ ଚେତାବନୀ ଏବଂ ଯୋଜନା ଅପଡେଟ ପାଇଁ ବିଜ୍ଞପ୍ତି ଅନୁମତି ଦିଅନ୍ତୁ.",
+            actionAllow = "ଅନୁମତି ଦିଅନ୍ତୁ",
+            actionOpenSettings = "ସେଟିଂ ଖୋଲନ୍ତୁ",
+            feelsLike = "ଅନୁଭବ ହେଉଥିବା ତାପମାତ୍ରା",
+            saveAction = "ସେଭ୍ କରନ୍ତୁ",
+            cancelAction = "ବାତିଲ କରନ୍ତୁ",
+            editAction = "ସମ୍ପାଦନା କରନ୍ତୁ",
+            welcomeBack = "ପୁଣି ସ୍ୱାଗତ",
         )
 }
 }

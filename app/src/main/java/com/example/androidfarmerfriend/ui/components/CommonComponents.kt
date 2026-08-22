@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.ui.theme.TrendRed
@@ -101,9 +102,7 @@ fun HeroTitle(
     Text(
         text = annotated,
         color = colors.textPrimary,
-        fontSize = 26.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = (-0.5).sp,
+        style = MaterialTheme.typography.headlineMedium,
         modifier = modifier
     )
 }
@@ -169,8 +168,7 @@ fun LocPill(
         Text(
             text = text,
             color = colors.textSecondary,
-            fontSize = 12.5.sp,
-            fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.labelMedium
         )
         Spacer(modifier = Modifier.width(3.dp))
         Icon(
@@ -200,16 +198,14 @@ fun SectionTitle(
         Text(
             text = title,
             color = colors.textPrimary,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.3).sp,
+            style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.weight(1f)
         )
         if (actionText != null && onAction != null) {
             Text(
                 text = actionText,
                 color = colors.primary,
-                fontSize = 12.5.sp,
+                style = MaterialTheme.typography.labelMedium,
                 fontWeight = FontWeight.SemiBold,
                 modifier = Modifier.clickable(onClick = onAction)
             )
@@ -245,7 +241,7 @@ fun SearchField(
                 Text(
                     text = placeholder,
                     color = colors.textTertiary,
-                    fontSize = 14.5.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             BasicTextField(
@@ -254,7 +250,7 @@ fun SearchField(
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(
                     color = colors.textPrimary,
-                    fontSize = 14.5.sp
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 ),
                 cursorBrush = SolidColor(colors.primary),
                 modifier = Modifier.fillMaxWidth()
@@ -316,7 +312,7 @@ fun PillChip(
     Text(
         text = text,
         color = fg,
-        fontSize = 12.5.sp,
+        style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
@@ -398,9 +394,7 @@ fun RowCard(
                 Text(
                     text = title,
                     color = colors.textPrimary,
-                    fontSize = 14.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.2).sp,
+                    style = MaterialTheme.typography.titleSmall,
                     maxLines = 2
                 )
                 if (subtitle != null) {
@@ -408,7 +402,7 @@ fun RowCard(
                     Text(
                         text = subtitle,
                         color = colors.textSecondary,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         maxLines = 2
                     )
                 }
@@ -433,8 +427,10 @@ fun TrendTag(percent: Double?) {
     Text(
         text = text,
         color = if (up) colors.primary else TrendRed,
-        fontSize = 11.5.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.labelMedium.copy(
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold
+        ),
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(if (up) colors.softGreen else colors.softRed)
@@ -452,7 +448,7 @@ fun AlertChip(
     Text(
         text = text.uppercase(),
         color = color,
-        fontSize = 10.5.sp,
+        style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -494,16 +490,14 @@ fun MenuRow(
         Text(
             text = title,
             color = colors.textPrimary,
-            fontSize = 14.5.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelLarge,
             modifier = Modifier.weight(1f)
         )
         if (trailing != null) {
             Text(
                 text = trailing,
                 color = colors.textSecondary,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold
+                style = MaterialTheme.typography.labelMedium
             )
             Spacer(modifier = Modifier.width(4.dp))
         }
@@ -669,10 +663,8 @@ private fun HeroTemperature(value: String, unit: String, large: Boolean) {
         Text(
             text = value,
             color = Color.White,
-            fontSize = if (large) 66.sp else 58.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-2).sp,
-            lineHeight = if (large) 70.sp else 64.sp
+            style = if (large) MaterialTheme.typography.displayLarge
+                    else MaterialTheme.typography.displayMedium
         )
         if (unit.isNotEmpty()) {
             Text(
@@ -733,15 +725,13 @@ private fun HeroStat(icon: ImageVector, value: String, label: String) {
             Text(
                 text = value,
                 color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                style = MaterialTheme.typography.titleSmall
             )
         }
         Text(
             text = label.uppercase(),
             color = Color.White.copy(alpha = 0.8f),
-            fontSize = 10.5.sp,
-            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
             modifier = Modifier.padding(top = 2.dp)
         )
     }
@@ -780,7 +770,7 @@ fun DayPill(
         Text(
             text = day,
             color = fgSub,
-            fontSize = 11.sp,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold
         )
         Icon(
@@ -792,8 +782,10 @@ fun DayPill(
         Text(
             text = temp,
             color = fg,
-            fontSize = 12.5.sp,
-            fontWeight = FontWeight.ExtraBold
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
         )
     }
 }
@@ -815,15 +807,14 @@ fun FarmTipCard(title: String, body: String, modifier: Modifier = Modifier) {
             Text(
                 text = "🌱  $title",
                 color = colors.primary,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = body,
                 color = colors.textSecondary,
-                fontSize = 12.5.sp,
-                lineHeight = 18.sp
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -849,13 +840,13 @@ fun EmptyState(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(48.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = colors.textSecondary, fontSize = 15.sp)
+            Text(title, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     subtitle,
                     color = colors.textTertiary,
-                    fontSize = 12.5.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
@@ -873,12 +864,12 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
     ) {
         Icon(Icons.Default.Refresh, contentDescription = null, tint = TrendRed, modifier = Modifier.size(48.dp))
         Spacer(modifier = Modifier.height(10.dp))
-        Text(message, color = colors.textSecondary, fontSize = 15.sp)
+        Text(message, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(14.dp))
         Text(
-            text = "Retry",
+            text = LocalAppStrings.current.retry,
             color = colors.onPrimary,
-            fontSize = 14.sp,
+            style = MaterialTheme.typography.labelLarge,
             fontWeight = FontWeight.Bold,
             modifier = Modifier
                 .clip(RoundedCornerShape(16.dp))
@@ -903,72 +894,5 @@ fun FullScreenLoading(modifier: Modifier = Modifier) {
             modifier = Modifier.size(40.dp),
             strokeWidth = 4.dp
         )
-    }
-}
-
-/* ------------------------------------------------------------------ */
-/* Legacy ScreenHeader (kept; can still be used by sub-screens)        */
-/* ------------------------------------------------------------------ */
-@Composable
-fun ScreenHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-    showSearch: Boolean = true,
-    subtitle: String? = null,
-    isHome: Boolean = false,
-    isSearchActive: Boolean = false,
-    onSearchClick: (() -> Unit)? = null,
-    onLocationClick: (() -> Unit)? = null
-) {
-    val colors = FarmerTheme.colors
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = if (isHome) colors.primary else colors.textPrimary,
-                fontSize = 20.sp,
-                modifier = Modifier.weight(1f)
-            )
-            if (showSearch) {
-                Icon(
-                    if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                    contentDescription = if (isSearchActive) "Close search" else "Search",
-                    tint = colors.textPrimary,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { onSearchClick?.invoke() }
-                )
-            }
-        }
-        if (subtitle != null) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .then(if (onLocationClick != null) Modifier.clickable { onLocationClick() } else Modifier)
-            ) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.textSecondary
-                )
-                Icon(
-                    Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = colors.textSecondary
-                )
-            }
-        }
     }
 }
