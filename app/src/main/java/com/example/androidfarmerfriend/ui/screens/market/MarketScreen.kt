@@ -16,6 +16,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -25,6 +26,7 @@ import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.MarketData
+import coil.compose.SubcomposeAsyncImage
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
@@ -272,6 +274,7 @@ fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
         icon = Icons.Default.ShoppingCart,
         iconTint = colors.primary,
         iconContainer = colors.softMint,
+        leading = { CropThumbnail(crop) },
         end = {
             Column(horizontalAlignment = Alignment.End) {
                 PriceText(price = crop.price)
@@ -281,6 +284,43 @@ fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
                     TrendTag(percent = trend)
                 }
             }
+        }
+    )
+}
+
+/** Product photo when available; falls back to the category icon tile. */
+@Composable
+private fun CropThumbnail(crop: Crop) {
+    val colors = FarmerTheme.colors
+    if (crop.imageUrl.isBlank()) {
+        Icon(
+            Icons.Default.ShoppingCart,
+            contentDescription = null,
+            tint = colors.primary,
+            modifier = Modifier
+                .size(46.dp)
+                .background(colors.softMint, RoundedCornerShape(15.dp))
+                .padding(12.dp)
+        )
+        return
+    }
+    SubcomposeAsyncImage(
+        model = crop.imageUrl,
+        contentDescription = crop.nameEng.ifBlank { crop.name },
+        modifier = Modifier
+            .size(46.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(colors.surfaceMuted),
+        loading = {
+            Box(Modifier.matchParentSize().background(colors.softMint))
+        },
+        error = {
+            Icon(
+                Icons.Default.ShoppingCart,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.matchParentSize().padding(12.dp)
+            )
         }
     )
 }

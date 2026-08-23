@@ -361,6 +361,7 @@ fun RowCard(
     icon: ImageVector? = null,
     iconTint: Color = FarmerTheme.colors.primary,
     iconContainer: Color = FarmerTheme.colors.softGreen,
+    leading: (@Composable () -> Unit)? = null,
     end: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -380,7 +381,10 @@ fun RowCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (icon != null) {
+            if (leading != null) {
+                leading()
+                Spacer(modifier = Modifier.width(13.dp))
+            } else if (icon != null) {
                 TintIconCircle(
                     icon = icon,
                     tint = iconTint,

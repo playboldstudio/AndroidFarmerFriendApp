@@ -22,8 +22,16 @@ data class VegetableItem(
     val price: Any?,
     val retailprice: Any?,
     val units: String?,
-    val id: String?
+    val id: String?,
+    val table: ItemImageTable? = null
 )
+
+/** Relative product-image path served by vegetablemarketprice.com. */
+data class ItemImageTable(val imageUrl: String? = null) {
+    companion object {
+        const val BASE_URL = "https://vegetablemarketprice.com/"
+    }
+}
 
 data class FruitItem(
     val columnNameEng: String?,

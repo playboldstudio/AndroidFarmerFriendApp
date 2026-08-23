@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.api.ItemImageTable
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
@@ -160,7 +161,8 @@ class FarmerRepository {
             trend = 0.0,
             category = "vegetable",
             units = units ?: "kg",
-            retailPrice = retail
+            retailPrice = retail,
+            imageUrl = table?.imageUrl?.let { ItemImageTable.BASE_URL + it }.orEmpty()
         )
     }
 
