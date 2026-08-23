@@ -16,6 +16,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Landscape
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material.icons.filled.Notifications
@@ -163,6 +164,8 @@ fun ProfileScreen(
                 )
             }
 
+            LogoutRow(label = strings.logout, onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) })
+
             VersionFooter(
                 label = "${strings.appName} v${BuildConfig.VERSION_NAME}",
                 tagline = strings.appTagline
@@ -173,6 +176,56 @@ fun ProfileScreen(
             hostState = snackbarHostState,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+    }
+
+    if (state.showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(ProfileEvent.DismissLogout) },
+            title = { Text(strings.logoutTitle) },
+            text = { Text(strings.logoutMessage) },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onEvent(ProfileEvent.SignOut) }) {
+                    Text(strings.yes, color = FarmerTheme.colors.alertRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onEvent(ProfileEvent.DismissLogout) }) {
+                    Text(strings.no)
+                }
+            }
+        )
+    }
+}
+
+@Composable
+private fun LogoutRow(label: String, onClick: () -> Unit) {
+    val colors = FarmerTheme.colors
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = FarmerSpacing.lg),
+        shape = RoundedCornerShape(24.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.softRed)
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable(onClick = onClick)
+                .padding(horizontal = 18.dp, vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TintedIconTile(
+                icon = Icons.Default.Logout,
+                tint = colors.alertRed,
+                container = colors.surface
+            )
+            Spacer(Modifier.width(FarmerSpacing.md))
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.alertRed
+            )
+        }
     }
 }
 

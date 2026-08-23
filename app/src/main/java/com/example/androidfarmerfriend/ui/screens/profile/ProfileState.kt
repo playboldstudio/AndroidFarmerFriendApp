@@ -13,5 +13,6 @@ data class ProfileState(
     val tempPhone: String = "",
     val phoneError: String? = null,
     val selectedLanguage: Language = Language.ENGLISH,
+    val showLogoutDialog: Boolean = false,
     val message: String? = null
 )

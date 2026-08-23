@@ -8,6 +8,9 @@ sealed interface ProfileEvent {
     data object NavigateToPrivacy : ProfileEvent
     data object NavigateToTerms : ProfileEvent
     data object NavigateToSettings : ProfileEvent
+    data object ConfirmLogout : ProfileEvent
+    data object DismissLogout : ProfileEvent
+    data object SignOut : ProfileEvent
     
     // Edit Profile Events
     data object StartEditing : ProfileEvent

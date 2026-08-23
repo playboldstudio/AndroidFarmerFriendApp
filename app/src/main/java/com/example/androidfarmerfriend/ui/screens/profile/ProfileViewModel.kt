@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.util.UserPrefs
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -85,6 +86,16 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             }
             is ProfileEvent.DismissMessage -> {
                 _state.value = _state.value.copy(message = null)
+            }
+            is ProfileEvent.ConfirmLogout -> {
+                _state.value = _state.value.copy(showLogoutDialog = true)
+            }
+            is ProfileEvent.DismissLogout -> {
+                _state.value = _state.value.copy(showLogoutDialog = false)
+            }
+            is ProfileEvent.SignOut -> {
+                _state.value = _state.value.copy(showLogoutDialog = false)
+                FirebaseAuth.getInstance().signOut()
             }
         }
     }

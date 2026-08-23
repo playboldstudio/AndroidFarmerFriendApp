@@ -6,6 +6,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.DisposableEffect
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -15,10 +16,12 @@ import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
+import com.google.firebase.auth.FirebaseAuth
 import com.example.androidfarmerfriend.ui.components.BottomNavItem
 import com.example.androidfarmerfriend.ui.components.FloatingTabBar
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.screens.home.HomeScreen
+import com.example.androidfarmerfriend.ui.screens.auth.AuthScreen
 import com.example.androidfarmerfriend.ui.screens.market.MarketScreen
 import com.example.androidfarmerfriend.ui.screens.alerts.AlertsScreen
 import com.example.androidfarmerfriend.ui.screens.weather.WeatherScreen
@@ -39,7 +42,19 @@ fun MainScreen(onRestart: () -> Unit = {}) {
     var currentLang by remember { mutableStateOf(languagePrefs.selectedLanguage) }
     val strings = currentLang.strings()
 
+    val auth = remember { FirebaseAuth.getInstance() }
+    var signedIn by remember { mutableStateOf(auth.currentUser != null) }
+    DisposableEffect(Unit) {
+        val listener = FirebaseAuth.AuthStateListener { signedIn = it.currentUser != null }
+        auth.addAuthStateListener(listener)
+        onDispose { auth.removeAuthStateListener(listener) }
+    }
+
     CompositionLocalProvider(LocalAppStrings provides strings) {
+        if (!signedIn) {
+            AuthScreen()
+            return@CompositionLocalProvider
+        }
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Market,

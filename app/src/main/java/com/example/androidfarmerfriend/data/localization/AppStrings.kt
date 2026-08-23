@@ -154,6 +154,10 @@ data class AppStrings(
     val legalSection: String,
     val detailsTitle: String,
     val backLabel: String,
+    val emailField: String,
+    val passwordField: String,
+    val signInAction: String,
+    val signUpAction: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -305,6 +309,10 @@ data class AppStrings(
             legalSection = "சட்டம் & பற்றி",
             detailsTitle = "விவரங்கள்",
             backLabel = "பின்செல்",
+            emailField = "மின்னஞ்சல்",
+            passwordField = "கடவுச்சொல்",
+            signInAction = "உள்நுழை",
+            signUpAction = "பதிவு செய்",
         )
 
         val English = AppStrings(
@@ -456,6 +464,10 @@ data class AppStrings(
             legalSection = "Legal & About",
             detailsTitle = "Details",
             backLabel = "Back",
+            emailField = "Email",
+            passwordField = "Password",
+            signInAction = "Sign In",
+            signUpAction = "Sign Up",
         )
 
         val Hindi = AppStrings(
@@ -607,6 +619,10 @@ data class AppStrings(
             legalSection = "कानूनी एवं जानकारी",
             detailsTitle = "विवरण",
             backLabel = "वापस",
+            emailField = "ईमेल",
+            passwordField = "पासवर्ड",
+            signInAction = "साइन इन",
+            signUpAction = "साइन अप",
         )
 
         val Telugu = AppStrings(
@@ -758,6 +774,10 @@ data class AppStrings(
             legalSection = "చట్టం & వివరాలు",
             detailsTitle = "వివరాలు",
             backLabel = "వెనుకకు",
+            emailField = "ఇమెయిల్",
+            passwordField = "పాస్‌వర్డ్",
+            signInAction = "సైన్ ఇన్",
+            signUpAction = "సైన్ అప్",
         )
 
         val Malayalam = AppStrings(
@@ -909,6 +929,10 @@ data class AppStrings(
             legalSection = "നിയമം & കൂടുതൽ",
             detailsTitle = "വിവരങ്ങൾ",
             backLabel = "തിരികെ",
+            emailField = "ഇമെയിൽ",
+            passwordField = "പാസ്‌വേഡ്",
+            signInAction = "സൈൻ ഇൻ",
+            signUpAction = "സൈൻ അപ്പ്",
         )
 
         val Kannada = AppStrings(
@@ -1060,6 +1084,10 @@ data class AppStrings(
             legalSection = "ಕಾನೂನು & ಇನ್ನಷ್ಟು",
             detailsTitle = "ವಿವರಗಳು",
             backLabel = "ಹಿಂದೆ",
+            emailField = "ಇಮೇಲ್",
+            passwordField = "ಪಾಸ್‌ವರ್ಡ್",
+            signInAction = "ಸೈನ್ ಇನ್",
+            signUpAction = "ಸೈನ್ ಅಪ್",
         )
 
         val Marathi = AppStrings(
@@ -1211,6 +1239,10 @@ data class AppStrings(
             legalSection = "कायदा & अधिक",
             detailsTitle = "तपशील",
             backLabel = "मागे",
+            emailField = "ईमेल",
+            passwordField = "पासवर्ड",
+            signInAction = "साइन इन",
+            signUpAction = "साइन अप",
         )
 
         val Bengali = AppStrings(
@@ -1362,6 +1394,10 @@ data class AppStrings(
             legalSection = "আইন ও আরও",
             detailsTitle = "বিবরণ",
             backLabel = "ফিরে যান",
+            emailField = "ইমেইল",
+            passwordField = "পাসওয়ার্ড",
+            signInAction = "সাইন ইন",
+            signUpAction = "সাইন আপ",
         )
 
         val Punjabi = AppStrings(
@@ -1513,6 +1549,10 @@ data class AppStrings(
             legalSection = "ਕਾਨੂੰਨੀ & ਹੋਰ",
             detailsTitle = "ਵੇਰਵੇ",
             backLabel = "ਪਿੱਛੇ",
+            emailField = "ਈਮੇਲ",
+            passwordField = "ਪਾਸਵਰਡ",
+            signInAction = "ਸਾਈਨ ਇਨ",
+            signUpAction = "ਸਾਈਨ ਅੱਪ",
         )
 
         val Gujarati = AppStrings(
@@ -1664,6 +1704,10 @@ data class AppStrings(
             legalSection = "કાનૂની & વધુ",
             detailsTitle = "વિગતો",
             backLabel = "પાછળ",
+            emailField = "ઈમેલ",
+            passwordField = "પાસવર્ડ",
+            signInAction = "સાઇન ઇન",
+            signUpAction = "સાઇન અપ",
         )
 
         val Odia = AppStrings(
@@ -1815,6 +1859,10 @@ data class AppStrings(
             legalSection = "ଆଇନଗତ ଓ ଅଧିକ",
             detailsTitle = "ବିବରଣୀ",
             backLabel = "ପଛକୁ",
+            emailField = "ଇମେଲ୍",
+            passwordField = "ପାସୱାର୍ଡ",
+            signInAction = "ସାଇନ୍ ଇନ୍",
+            signUpAction = "ସାଇନ୍ ଅପ୍",
         )
 }
 }

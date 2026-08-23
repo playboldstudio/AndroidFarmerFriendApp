@@ -74,6 +74,7 @@ dependencies {
     implementation(libs.androidx.browser)
     implementation(libs.jsoup)
     implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
     implementation(libs.firebase.crashlytics)
     implementation(libs.firebase.analytics)
     implementation(libs.firebase.messaging)
