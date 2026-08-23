@@ -68,23 +68,23 @@ class FarmerRepository {
         }
     }
 
-    suspend fun getVegetablePrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getVegetablePrices(location, todayDate())
+    suspend fun getVegetablePrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getVegetablePrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getFruitPrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getFruitPrices(location, todayDate())
+    suspend fun getFruitPrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getFruitPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getNonVegPrices(location: String = "bangalore"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getNonVegPrices(location, todayDate())
+    suspend fun getNonVegPrices(location: String = "bangalore", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getNonVegPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getGoldPrices(location, todayDate())
+    suspend fun getGoldPrices(location: String = "chennai", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getGoldPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
@@ -245,6 +245,18 @@ class FarmerRepository {
             is Number -> p.toDouble()
             else -> 0.0
         }
+        val avgVal = when (val a = avg) {
+            is Double -> a
+            is Int -> a.toDouble()
+            is String -> a.toDoubleOrNull()
+            is Number -> a.toDouble()
+            else -> null
+        }
+        val diffPercent = if (avgVal != null && avgVal > 0.0 && priceVal > 0.0) {
+            ((priceVal - avgVal) / avgVal) * 100.0
+        } else {
+            null
+        }
         val cityName = city ?: "Chennai"
         return Crop(
             id = "egg_$cityName".hashCode(),
@@ -254,7 +266,9 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "egg",
-            units = "piece"
+            units = "piece",
+            prevPrice = avgVal,
+            priceDiffPercent = diffPercent
         )
     }
 }
