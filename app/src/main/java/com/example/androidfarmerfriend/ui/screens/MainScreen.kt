@@ -1,9 +1,13 @@
 package com.example.androidfarmerfriend.ui.screens
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.runtime.DisposableEffect
@@ -21,6 +25,7 @@ import com.example.androidfarmerfriend.ui.components.BottomNavItem
 import com.example.androidfarmerfriend.ui.components.FloatingTabBar
 import com.example.androidfarmerfriend.ui.navigation.Screen
 import com.example.androidfarmerfriend.ui.screens.home.HomeScreen
+import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.screens.auth.AuthScreen
 import com.example.androidfarmerfriend.ui.screens.market.MarketScreen
 import com.example.androidfarmerfriend.ui.screens.alerts.AlertsScreen
@@ -44,17 +49,35 @@ fun MainScreen(onRestart: () -> Unit = {}) {
 
     val auth = remember { FirebaseAuth.getInstance() }
     var signedIn by remember { mutableStateOf(auth.currentUser != null) }
+    var showAuthOverlay by remember { mutableStateOf(false) }
+    var pendingAfterAuth by remember { mutableStateOf<(() -> Unit)?>(null) }
+
     DisposableEffect(Unit) {
         val listener = FirebaseAuth.AuthStateListener { signedIn = it.currentUser != null }
         auth.addAuthStateListener(listener)
         onDispose { auth.removeAuthStateListener(listener) }
     }
 
-    CompositionLocalProvider(LocalAppStrings provides strings) {
-        if (!signedIn) {
-            AuthScreen()
-            return@CompositionLocalProvider
+    // Sign-in is optional: the app runs as guest; gated features call
+    // requestSignIn and their action runs after a successful sign-in.
+    fun requestSignIn(onSuccess: () -> Unit) {
+        pendingAfterAuth = onSuccess
+        showAuthOverlay = true
+    }
+
+    LaunchedEffect(signedIn) {
+        if (signedIn && showAuthOverlay) {
+            showAuthOverlay = false
+            pendingAfterAuth?.invoke()
+            pendingAfterAuth = null
         }
+    }
+
+    CompositionLocalProvider(
+        LocalAppStrings provides strings,
+        AuthBridge.LocalIsSignedIn provides signedIn,
+        AuthBridge.LocalRequestSignIn provides ::requestSignIn
+    ) {
     val items = listOf(
         BottomNavItem.Home,
         BottomNavItem.Market,
@@ -146,6 +169,29 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             }
         }
     }
+
+        if (showAuthOverlay) {
+            AuthOverlayHost(onDismiss = {
+                showAuthOverlay = false
+                pendingAfterAuth = null
+            })
+        }
+    }
+}
+
+@Composable
+private fun AuthOverlayHost(onDismiss: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.Black.copy(alpha = 0.45f))
+    ) {
+        Surface(
+            modifier = Modifier.fillMaxSize(),
+            color = MaterialTheme.colorScheme.background
+        ) {
+            AuthScreen(onDismissed = onDismiss)
+        }
     }
 }
 

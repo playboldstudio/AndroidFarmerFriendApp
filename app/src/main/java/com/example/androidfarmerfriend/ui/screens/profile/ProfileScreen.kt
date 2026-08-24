@@ -41,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.BuildConfig
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
+import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
@@ -54,6 +55,8 @@ fun ProfileScreen(
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val snackbarHostState = remember { SnackbarHostState() }
+    val isSignedIn = AuthBridge.LocalIsSignedIn.current
+    val requestSignIn = AuthBridge.LocalRequestSignIn.current
 
     val navEvent by viewModel.navigation.collectAsState()
     LaunchedEffect(navEvent) {
@@ -87,6 +90,14 @@ fun ProfileScreen(
             HeroTitle(text = strings.profileTitle)
 
             Spacer(Modifier.height(FarmerSpacing.md))
+
+            if (!isSignedIn) {
+                SignInPromoCard(
+                    title = strings.signInAction,
+                    body = strings.guestLabel,
+                    onClick = { requestSignIn {} }
+                )
+            }
 
             IdentityCard(
                 state = state,
@@ -164,7 +175,9 @@ fun ProfileScreen(
                 )
             }
 
-            LogoutRow(label = strings.logout, onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) })
+            if (isSignedIn) {
+                LogoutRow(label = strings.logout, onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) })
+            }
 
             VersionFooter(
                 label = "${strings.appName} v${BuildConfig.VERSION_NAME}",
@@ -533,6 +546,47 @@ private fun VersionFooter(label: String, tagline: String) {
             color = colors.textTertiary.copy(alpha = 0.7f),
             modifier = Modifier.padding(top = 2.dp)
         )
+    }
+}
+
+@Composable
+private fun SignInPromoCard(title: String, body: String, onClick: () -> Unit) {
+    val colors = FarmerTheme.colors
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.softBlue)
+    ) {
+        Row(
+            modifier = Modifier
+                .clickable(onClick = onClick)
+                .padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TintedIconTile(
+                icon = Icons.Default.Person,
+                tint = colors.weatherBlue,
+                container = colors.surface
+            )
+            Spacer(Modifier.width(FarmerSpacing.md))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = colors.textPrimary
+                )
+                Text(
+                    text = body,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.textSecondary
+                )
+            }
+            Icon(
+                Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                contentDescription = null,
+                tint = colors.textTertiary
+            )
+        }
     }
 }
 

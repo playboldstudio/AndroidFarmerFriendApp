@@ -1,13 +1,17 @@
 package com.example.androidfarmerfriend.ui.screens.auth
 
+import android.annotation.SuppressLint
+import android.content.Context
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Visibility
 import androidx.compose.material.icons.filled.VisibilityOff
 import androidx.compose.material3.*
@@ -16,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -24,19 +30,34 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.activity.ComponentActivity
+import androidx.credentials.CustomCredential
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
+import androidx.credentials.exceptions.GetCredentialException
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.launch
 
 @Composable
-fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
+fun AuthScreen(
+    onDismissed: (() -> Unit)? = null,
+    viewModel: AuthViewModel = viewModel()
+) {
     val state by viewModel.state.collectAsState()
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
     var passwordVisible by remember { mutableStateOf(false) }
+    val googleClientId = remember { serverClientId(context) }
 
     Box(
         modifier = Modifier
@@ -44,6 +65,17 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
             .background(Brush.verticalGradient(listOf(colors.softMint, colors.background)))
             .imePadding()
     ) {
+        if (onDismissed != null) {
+            IconButton(
+                onClick = onDismissed,
+                modifier = Modifier
+                    .align(Alignment.TopEnd)
+                    .padding(FarmerSpacing.lg)
+            ) {
+                Icon(Icons.Default.Close, contentDescription = null, tint = colors.textSecondary)
+            }
+        }
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -51,7 +83,7 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                 .verticalScroll(rememberScrollState()),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(Modifier.height(72.dp))
+            Spacer(Modifier.height(64.dp))
 
             Image(
                 painter = painterResource(R.mipmap.ic_launcher_foreground),
@@ -167,9 +199,71 @@ fun AuthScreen(viewModel: AuthViewModel = viewModel()) {
                 }
             }
 
+            if (googleClientId != null) {
+                Spacer(Modifier.height(FarmerSpacing.md))
+                OutlinedButton(
+                    onClick = {
+                        scope.launch {
+                            signInWithGoogle(
+                                context = context,
+                                clientId = googleClientId,
+                                onSuccess = { idToken -> viewModel.onEvent(AuthEvent.GoogleSignedIn(idToken)) },
+                                onError = { message -> viewModel.onEvent(AuthEvent.SetError(message)) }
+                            )
+                        }
+                    },
+                    enabled = !state.isLoading,
+                    shape = RoundedCornerShape(16.dp),
+                    contentPadding = PaddingValues(vertical = 12.dp),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text("G", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = Color(0xFFDB4437))
+                    Spacer(Modifier.width(FarmerSpacing.s))
+                    Text("Continue with Google", fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
+                }
+            }
+
             Spacer(Modifier.height(FarmerSpacing.xxl))
         }
     }
+}
+
+/** Fires the Credential Manager Google flow and forwards the id token. */
+private suspend fun signInWithGoogle(
+    context: Context,
+    clientId: String,
+    onSuccess: (String) -> Unit,
+    onError: (String) -> Unit
+) {
+    try {
+        val manager = CredentialManager.create(context)
+        val option = GetGoogleIdOption.Builder()
+            .setFilterByAuthorizedAccounts(false)
+            .setServerClientId(clientId)
+            .setAutoSelectEnabled(false)
+            .build()
+        val request = GetCredentialRequest.Builder().addCredentialOption(option).build()
+        val response = manager.getCredential(context, request)
+        val credential = response.credential as? CustomCredential
+        if (credential?.type == GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL) {
+            val token = GoogleIdTokenCredential.createFrom(credential.data).idToken
+            onSuccess(token)
+        } else {
+            onError("Google sign-in failed")
+        }
+    } catch (e: androidx.credentials.exceptions.GetCredentialCancellationException) {
+        // User closed the account picker — nothing to do.
+    } catch (e: GetCredentialException) {
+        onError(e.message ?: "No Google account available")
+    } catch (e: Exception) {
+        onError(e.message ?: "Google sign-in failed")
+    }
+}
+
+@SuppressLint("DiscouragedApi")
+private fun serverClientId(context: Context): String? {
+    val id = context.resources.getIdentifier("default_web_client_id", "string", context.packageName)
+    return if (id != 0) context.getString(id) else null
 }
 
 @Composable
@@ -198,7 +292,8 @@ private fun ModeOption(selected: Boolean, label: String, modifier: Modifier, onC
     Box(
         modifier = modifier
             .clip(RoundedCornerShape(12.dp))
-            .background(if (selected) colors.primary else androidx.compose.ui.graphics.Color.Transparent)
+            .background(if (selected) colors.primary else Color.Transparent)
+            .clickable(onClick = onClick)
             .padding(vertical = 10.dp),
         contentAlignment = Alignment.Center
     ) {

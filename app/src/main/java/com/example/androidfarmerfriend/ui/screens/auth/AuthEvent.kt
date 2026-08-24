@@ -6,5 +6,7 @@ sealed interface AuthEvent {
     data class UpdatePhone(val value: String) : AuthEvent
     data class UpdateEmail(val value: String) : AuthEvent
     data class UpdatePassword(val value: String) : AuthEvent
+    data class GoogleSignedIn(val idToken: String) : AuthEvent
+    data class SetError(val message: String) : AuthEvent
     data object Submit : AuthEvent
 }

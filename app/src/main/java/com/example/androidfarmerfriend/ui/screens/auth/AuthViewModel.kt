@@ -26,7 +26,36 @@ class AuthViewModel(application: Application) : AndroidViewModel(application) {
             is AuthEvent.UpdatePhone -> _state.value = _state.value.copy(phone = event.value)
             is AuthEvent.UpdateEmail -> _state.value = _state.value.copy(email = event.value.trim())
             is AuthEvent.UpdatePassword -> _state.value = _state.value.copy(password = event.value)
+            is AuthEvent.SetError -> _state.value = _state.value.copy(error = event.message)
+            is AuthEvent.GoogleSignedIn -> signInWithGoogle(event.idToken)
             is AuthEvent.Submit -> submit()
+        }
+    }
+
+    private fun signInWithGoogle(idToken: String) {
+        _state.value = _state.value.copy(isLoading = true, error = null)
+        viewModelScope.launch {
+            try {
+                val credential = com.google.firebase.auth.GoogleAuthProvider.getCredential(idToken, null)
+                val result = auth.signInWithCredential(credential).await()
+                val user = result.user
+                if (user != null) {
+                    // Ensure a profile doc exists for first-time Google users.
+                    firestore.collection("users").document(user.uid)
+                        .set(
+                            hashMapOf(
+                                "name" to (user.displayName ?: ""),
+                                "email" to (user.email ?: ""),
+                                "createdAt" to System.currentTimeMillis()
+                            ),
+                            com.google.firebase.firestore.SetOptions.merge()
+                        )
+                        .await()
+                }
+                _state.value = _state.value.copy(isLoading = false, error = null)
+            } catch (e: Exception) {
+                _state.value = _state.value.copy(isLoading = false, error = e.message ?: "Google sign-in failed")
+            }
         }
     }
 

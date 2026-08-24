@@ -34,6 +34,7 @@ import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.MarketData
 import coil.compose.SubcomposeAsyncImage
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.HeroTitle
@@ -134,20 +135,23 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 ) {
                     MarketTrendCard(crops = crops, strings = strings, modifier = Modifier.weight(1f))
                     Spacer(Modifier.width(FarmerSpacing.s))
+                    val requestSignIn = AuthBridge.LocalRequestSignIn.current
                     ShareRateCardButton(
                         onClick = {
-                            scope.launch {
-                                val bitmap = withContext(Dispatchers.Default) {
-                                    RateCardRenderer.render(
-                                        context = context,
-                                        title = strings.marketTitle,
-                                        dateLabel = state.fetchDate,
-                                        marketName = state.selectedMarket.displayName,
-                                        filterLabel = state.selectedFilter.displayKey(strings),
-                                        crops = state.filteredCrops
-                                    )
+                            requestSignIn {
+                                scope.launch {
+                                    val bitmap = withContext(Dispatchers.Default) {
+                                        RateCardRenderer.render(
+                                            context = context,
+                                            title = strings.marketTitle,
+                                            dateLabel = state.fetchDate,
+                                            marketName = state.selectedMarket.displayName,
+                                            filterLabel = state.selectedFilter.displayKey(strings),
+                                            crops = state.filteredCrops
+                                        )
+                                    }
+                                    RateCardSharer.share(context, bitmap)
                                 }
-                                RateCardSharer.share(context, bitmap)
                             }
                         },
                         contentDescription = strings.shareAction
