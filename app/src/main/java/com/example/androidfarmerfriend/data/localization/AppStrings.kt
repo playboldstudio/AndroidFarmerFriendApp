@@ -158,6 +158,13 @@ data class AppStrings(
     val passwordField: String,
     val signInAction: String,
     val signUpAction: String,
+    val updateAvailableTitle: String,
+    val updateAvailableBody: String,
+    val updateDownloadingTitle: String,
+    val updateReadyTitle: String,
+    val updateRestartBody: String,
+    val updateRestartAction: String,
+    val shareAction: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -313,6 +320,13 @@ data class AppStrings(
             passwordField = "கடவுச்சொல்",
             signInAction = "உள்நுழை",
             signUpAction = "பதிவு செய்",
+            updateAvailableTitle = "புதிய பதிப்பு கிடைக்கிறது",
+            updateAvailableBody = "சமீபத்திய விலைகள் மற்றும் திருத்தங்களுக்கு இப்போது புதுப்பிக்கவும்.",
+            updateDownloadingTitle = "பதிவிறக்குகிறது…",
+            updateReadyTitle = "புதுப்பிப்பு தயார்",
+            updateRestartBody = "புதிய பதிப்பை நிறுவ மறுதொடக்கம் செய்யவும்.",
+            updateRestartAction = "மறுதொடக்கம்",
+            shareAction = "பங்கிடு"
         )
 
         val English = AppStrings(
@@ -468,6 +482,13 @@ data class AppStrings(
             passwordField = "Password",
             signInAction = "Sign In",
             signUpAction = "Sign Up",
+            updateAvailableTitle = "New version available",
+            updateAvailableBody = "Update now for the latest prices and fixes.",
+            updateDownloadingTitle = "Downloading update…",
+            updateReadyTitle = "Update ready",
+            updateRestartBody = "Restart to finish installing the new version.",
+            updateRestartAction = "Restart",
+            shareAction = "Share"
         )
 
         val Hindi = AppStrings(
@@ -623,6 +644,13 @@ data class AppStrings(
             passwordField = "पासवर्ड",
             signInAction = "साइन इन",
             signUpAction = "साइन अप",
+            updateAvailableTitle = "नया संस्करण उपलब्ध है",
+            updateAvailableBody = "नई कीमतों और सुधारों के लिए अभी अपडेट करें.",
+            updateDownloadingTitle = "अपडेट डाउनलोड हो रहा है…",
+            updateReadyTitle = "अपडेट तैयार",
+            updateRestartBody = "नया संस्करण स्थापित करने के लिए पुनः आरंभ करें.",
+            updateRestartAction = "पुनः आरंभ",
+            shareAction = "साझा करें"
         )
 
         val Telugu = AppStrings(
@@ -778,6 +806,13 @@ data class AppStrings(
             passwordField = "పాస్‌వర్డ్",
             signInAction = "సైన్ ఇన్",
             signUpAction = "సైన్ అప్",
+            updateAvailableTitle = "కొత్త వెర్షన్ అందుబాటులో ఉంది",
+            updateAvailableBody = "తాజా ధరలు మరియు మరమ్మతుల కోసం ఇప్పుడే అప్‌డేట్ చేయండి.",
+            updateDownloadingTitle = "అప్‌డేట్ డౌన్‌లోడ్ అవుతోంది…",
+            updateReadyTitle = "అప్‌డేట్ సిద్ధంగా ఉంది",
+            updateRestartBody = "కొత్త వెర్షన్‌ను ఇన్‌స్టాల్ చేయడానికి పునఃప్రారంభించండి.",
+            updateRestartAction = "పునఃప్రారంభించు",
+            shareAction = "షేర్ చేయండి"
         )
 
         val Malayalam = AppStrings(
@@ -933,6 +968,13 @@ data class AppStrings(
             passwordField = "പാസ്‌വേഡ്",
             signInAction = "സൈൻ ഇൻ",
             signUpAction = "സൈൻ അപ്പ്",
+            updateAvailableTitle = "പുതിയ പതിപ്പ് ലഭ്യമാണ്",
+            updateAvailableBody = "ഏറ്റവും പുതിയ വിലകൾക്കും തിരുത്തലുകൾക്കുമായി ഇപ്പോൾ അപ്ഡേറ്റ് ചെയ്യുക.",
+            updateDownloadingTitle = "അപ്ഡേറ്റ് ഡൗൺലോഡ് ചെയ്യുന്നു…",
+            updateReadyTitle = "അപ്ഡേറ്റ് തയ്യാർ",
+            updateRestartBody = "പുതിയ പതിപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ പുനരാരംഭിക്കുക.",
+            updateRestartAction = "പുനരാരംഭിക്കുക",
+            shareAction = "പങ്കിക്കുക"
         )
 
         val Kannada = AppStrings(
@@ -1088,6 +1130,13 @@ data class AppStrings(
             passwordField = "ಪಾಸ್‌ವರ್ಡ್",
             signInAction = "ಸೈನ್ ಇನ್",
             signUpAction = "ಸೈನ್ ಅಪ್",
+            updateAvailableTitle = "ಹೊಸ ಆವೃತ್ತಿ ಲಭ್ಯವಿದೆ",
+            updateAvailableBody = "ಹೊಸ ಬೆಲೆಗಳು ಮತ್ತು ದೋಷನಿವಾರಣೆಗಾಗಿ ಈಗ ಅಪ್‌ಡೇಟ್ ಮಾಡಿ.",
+            updateDownloadingTitle = "ಅಪ್‌ಡೇಟ್ ಡೌನ್‌ಲೋಡ್ ಆಗುತ್ತಿದೆ…",
+            updateReadyTitle = "ಅಪ್‌ಡೇಟ್ ಸಿದ್ಧ",
+            updateRestartBody = "ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಪುನರಾರಂಭಿಸಿ.",
+            updateRestartAction = "ಪುನರಾರಂಭಿಸಿ",
+            shareAction = "ಹಂಚಿಕೊಳ್ಳಿ"
         )
 
         val Marathi = AppStrings(
@@ -1243,6 +1292,13 @@ data class AppStrings(
             passwordField = "पासवर्ड",
             signInAction = "साइन इन",
             signUpAction = "साइन अप",
+            updateAvailableTitle = "नवीन आवृत्ती उपलब्ध आहे",
+            updateAvailableBody = "नवीन किंमती व दुरुस्तीसाठी आता अपडेट करा.",
+            updateDownloadingTitle = "अपडेट डाउनलोड होत आहे…",
+            updateReadyTitle = "अपडेट तयार",
+            updateRestartBody = "नवीन आवृत्ती स्थापित करण्यासाठी रीस्टार्ट करा.",
+            updateRestartAction = "रीस्टार्ट",
+            shareAction = "शेअर करा"
         )
 
         val Bengali = AppStrings(
@@ -1398,6 +1454,13 @@ data class AppStrings(
             passwordField = "পাসওয়ার্ড",
             signInAction = "সাইন ইন",
             signUpAction = "সাইন আপ",
+            updateAvailableTitle = "নতুন সংস্করণ উপলব্ধ",
+            updateAvailableBody = "সর্বশেষ মূল্য ও সংশোধনীর জন্য এখনই আপডেট করুন.",
+            updateDownloadingTitle = "আপডেট ডাউনলোড হচ্ছে…",
+            updateReadyTitle = "আপডেট প্রস্তুত",
+            updateRestartBody = "নতুন সংস্করণ ইনস্টল করতে রিস্টার্ট করুন.",
+            updateRestartAction = "রিস্টার্ট",
+            shareAction = "শেয়ার করুন"
         )
 
         val Punjabi = AppStrings(
@@ -1553,6 +1616,13 @@ data class AppStrings(
             passwordField = "ਪਾਸਵਰਡ",
             signInAction = "ਸਾਈਨ ਇਨ",
             signUpAction = "ਸਾਈਨ ਅੱਪ",
+            updateAvailableTitle = "ਨਵਾਂ ਵਰਜ਼ਨ ਉਪਲਬਧ ਹੈ",
+            updateAvailableBody = "ਨਵੀਆਂ ਕੀਮਤਾਂ ਅਤੇ ਸੁਧਾਰਾਂ ਲਈ ਹੁਣੇ ਅੱਪਡੇਟ ਕਰੋ.",
+            updateDownloadingTitle = "ਅੱਪਡੇਟ ਡਾਊਨਲੋਡ ਹੋ ਰਿਹਾ ਹੈ…",
+            updateReadyTitle = "ਅੱਪਡੇਟ ਤਿਆਰ",
+            updateRestartBody = "ਨਵਾਂ ਵਰਜ਼ਨ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਰੀਸਟਾਰਟ ਕਰੋ.",
+            updateRestartAction = "ਰੀਸਟਾਰਟ",
+            shareAction = "ਸ਼ੇਅਰ ਕਰੋ"
         )
 
         val Gujarati = AppStrings(
@@ -1708,6 +1778,13 @@ data class AppStrings(
             passwordField = "પાસવર્ડ",
             signInAction = "સાઇન ઇન",
             signUpAction = "સાઇન અપ",
+            updateAvailableTitle = "નવું સંસ્કરણ ઉપલબ્ધ છે",
+            updateAvailableBody = "નવી કિંમતો અને સુધારા માટે હમણાં અપડેટ કરો.",
+            updateDownloadingTitle = "અપડેટ ડાઉનલોડ થઈ રહ્યું છે…",
+            updateReadyTitle = "અપડેટ તૈયાર",
+            updateRestartBody = "નવું સંસ્કરણ ઇન્સ્ટોલ કરવા ફરી શરૂ કરો.",
+            updateRestartAction = "ફરી શરૂ કરો",
+            shareAction = "શેર કરો"
         )
 
         val Odia = AppStrings(
@@ -1863,6 +1940,13 @@ data class AppStrings(
             passwordField = "ପାସୱାର୍ଡ",
             signInAction = "ସାଇନ୍ ଇନ୍",
             signUpAction = "ସାଇନ୍ ଅପ୍",
+            updateAvailableTitle = "ନୂଆ ସଂସ୍କରଣ ଉପଲବ୍ଧ",
+            updateAvailableBody = "ନୂଆ ମୂଲ୍ୟ ଓ ଫିକ୍ସ ପାଇଁ ଏବେ ଅପଡେଟ୍ କରନ୍ତୁ.",
+            updateDownloadingTitle = "ଅପଡେଟ୍ ଡାଉନଲୋଡ୍ ହେଉଛି…",
+            updateReadyTitle = "ଅପଡେଟ୍ ପ୍ରସ୍ତୁତ",
+            updateRestartBody = "ନୂଆ ସଂସ୍କରଣ ସ୍ଥାପନ କରିବା ପାଇଁ ପୁନଃଆରମ୍ଭ କରନ୍ତୁ.",
+            updateRestartAction = "ପୁନଃଆରମ୍ଭ",
+            shareAction = "ଅଂଶୀଦାର କରନ୍ତୁ"
         )
 }
 }
