@@ -1,12 +1,14 @@
 package com.example.androidfarmerfriend.ui.screens.market
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.TrendingDown
 import androidx.compose.material.icons.filled.TrendingFlat
@@ -14,6 +16,7 @@ import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -22,6 +25,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Crop
@@ -42,6 +48,8 @@ import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.ui.theme.TrendRed
+import com.example.androidfarmerfriend.util.RateCardRenderer
+import com.example.androidfarmerfriend.util.RateCardSharer
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,9 +57,11 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
     var showMarketPicker by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
 
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData()
@@ -118,11 +128,31 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
             val crops = state.filteredCrops
             if (crops.isNotEmpty()) {
-                MarketTrendCard(
-                    crops = crops,
-                    strings = strings,
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier.padding(bottom = 14.dp)
-                )
+                ) {
+                    MarketTrendCard(crops = crops, strings = strings, modifier = Modifier.weight(1f))
+                    Spacer(Modifier.width(FarmerSpacing.s))
+                    ShareRateCardButton(
+                        onClick = {
+                            scope.launch {
+                                val bitmap = withContext(Dispatchers.Default) {
+                                    RateCardRenderer.render(
+                                        context = context,
+                                        title = strings.marketTitle,
+                                        dateLabel = state.fetchDate,
+                                        marketName = state.selectedMarket.displayName,
+                                        filterLabel = state.selectedFilter.displayKey(strings),
+                                        crops = state.filteredCrops
+                                    )
+                                }
+                                RateCardSharer.share(context, bitmap)
+                            }
+                        },
+                        contentDescription = strings.shareAction
+                    )
+                }
             }
 
             if (state.fetchDate.isNotEmpty()) {
@@ -163,6 +193,24 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun ShareRateCardButton(onClick: () -> Unit, contentDescription: String) {
+    Box(
+        modifier = Modifier
+            .size(48.dp)
+            .background(FarmerTheme.colors.softGreen, RoundedCornerShape(16.dp))
+            .clickable(onClick = onClick),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(
+            Icons.Default.Share,
+            contentDescription = contentDescription,
+            tint = FarmerTheme.colors.primary,
+            modifier = Modifier.size(22.dp)
+        )
     }
 }
 
