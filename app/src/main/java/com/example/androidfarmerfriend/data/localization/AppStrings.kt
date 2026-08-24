@@ -165,6 +165,16 @@ data class AppStrings(
     val updateRestartBody: String,
     val updateRestartAction: String,
     val shareAction: String,
+    val guestSubtitle: String,
+    val signinCardTitle: String,
+    val signinCardBody: String,
+    val orLabel: String,
+    val unlockTitle: String,
+    val unlockShare: String,
+    val unlockSync: String,
+    val unlockAlerts: String,
+    val soonLabel: String,
+    val onLabel: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -326,7 +336,17 @@ data class AppStrings(
             updateReadyTitle = "புதுப்பிப்பு தயார்",
             updateRestartBody = "புதிய பதிப்பை நிறுவ மறுதொடக்கம் செய்யவும்.",
             updateRestartAction = "மறுதொடக்கம்",
-            shareAction = "பங்கிடு"
+            shareAction = "பங்கிடு",
+            guestSubtitle = "சுதந்திரமாக உலாவுகிறீர்கள் — கீழே உள்நுழையுங்கள்",
+            signinCardTitle = "உங்கள் பண்ணை தகவல்களை உடன் வைத்திருங்கள்",
+            signinCardBody = "விலை அட்டைகளைப் பங்கிடவும், சுயவிவரத்தை ஒத்திசைக்கவும், தனிப்பயன் எச்சரிக்கைகளைப் பெறவும் இலவச கணக்கை உருவாக்குங்கள்.",
+            orLabel = "OR",
+            unlockTitle = "இலவசம் — திறக்கப்படுவது என்ன?",
+            unlockShare = "விலை அட்டைகளைப் பங்கிடுங்கள்",
+            unlockSync = "சாதனங்களில் சுயவிவர ஒத்திசைவு",
+            unlockAlerts = "தனிப்பயன் விலை மற்றும் வானிலை எச்சரிக்கைகள்",
+            soonLabel = "விரைவில்",
+            onLabel = "ஆன்"
         )
 
         val English = AppStrings(
@@ -488,7 +508,17 @@ data class AppStrings(
             updateReadyTitle = "Update ready",
             updateRestartBody = "Restart to finish installing the new version.",
             updateRestartAction = "Restart",
-            shareAction = "Share"
+            shareAction = "Share",
+            guestSubtitle = "Browsing freely — sign in below",
+            signinCardTitle = "Keep your farm data with you",
+            signinCardBody = "Create a free account to share rate cards, sync your profile and get personalised alerts.",
+            orLabel = "OR",
+            unlockTitle = "What you unlock — free forever",
+            unlockShare = "Share rate cards to WhatsApp, Instagram & X",
+            unlockSync = "Profile synced across devices",
+            unlockAlerts = "Personal price & weather alerts",
+            soonLabel = "Soon",
+            onLabel = "On"
         )
 
         val Hindi = AppStrings(
@@ -650,7 +680,17 @@ data class AppStrings(
             updateReadyTitle = "अपडेट तैयार",
             updateRestartBody = "नया संस्करण स्थापित करने के लिए पुनः आरंभ करें.",
             updateRestartAction = "पुनः आरंभ",
-            shareAction = "साझा करें"
+            shareAction = "साझा करें",
+            guestSubtitle = "स्वतंत्र रूप से ब्राउज़ करें — नीचे साइन इन करें",
+            signinCardTitle = "अपना खेती डेटा हमेशा साथ रखें",
+            signinCardBody = "रेट कार्ड साझा करने, प्रोफ़ाइल सिंक करने और व्यक्तिगत अलर्ट पाने के लिए मुफ़्त खाता बनाएँ.",
+            orLabel = "या",
+            unlockTitle = "मुफ़्त में क्या अनलॉक होगा",
+            unlockShare = "रेट कार्ड साझा करें",
+            unlockSync = "सभी डिवाइस पर प्रोफ़ाइल सिंक",
+            unlockAlerts = "व्यक्तिगत कीमत व मौसम अलर्ट",
+            soonLabel = "जल्द आ रहा है",
+            onLabel = "ऑन"
         )
 
         val Telugu = AppStrings(
@@ -812,7 +852,17 @@ data class AppStrings(
             updateReadyTitle = "అప్‌డేట్ సిద్ధంగా ఉంది",
             updateRestartBody = "కొత్త వెర్షన్‌ను ఇన్‌స్టాల్ చేయడానికి పునఃప్రారంభించండి.",
             updateRestartAction = "పునఃప్రారంభించు",
-            shareAction = "షేర్ చేయండి"
+            shareAction = "షేర్ చేయండి",
+            guestSubtitle = "స్వేచ్ఛగా బ్రౌజ్ చేస్తున్నారు — క్రింద సైన్ ఇన్ చేయండి",
+            signinCardTitle = "మీ వ్యవసాయ సమాచారాన్ని మీతో ఉంచుకోండి",
+            signinCardBody = "రేటు కార్డులను షేర్ చేయడానికి, ప్రొఫైల్‌ను సింక్ చేయడానికి మరియు వ్యక్తిగత అలర్ట్‌ల కోసం ఉచిత ఖాతా సృష్టించండి.",
+            orLabel = "లేదా",
+            unlockTitle = "ఉచితంగా అన్‌లాక్ అయ్యేవి",
+            unlockShare = "రేటు కార్డులను షేర్ చేయండి",
+            unlockSync = "పరికరాల్లో ప్రొఫైల్ సింక్",
+            unlockAlerts = "వ్యక్తిగత ధర & వాతావరణ అలర్ట్‌లు",
+            soonLabel = "త్వరలో",
+            onLabel = "ఆన్"
         )
 
         val Malayalam = AppStrings(
@@ -974,7 +1024,17 @@ data class AppStrings(
             updateReadyTitle = "അപ്ഡേറ്റ് തയ്യാർ",
             updateRestartBody = "പുതിയ പതിപ്പ് ഇൻസ്റ്റാൾ ചെയ്യാൻ പുനരാരംഭിക്കുക.",
             updateRestartAction = "പുനരാരംഭിക്കുക",
-            shareAction = "പങ്കിക്കുക"
+            shareAction = "പങ്കിക്കുക",
+            guestSubtitle = "സ്വതന്ത്രമായി ബ്രൗസ് ചെയ്യുക — താഴെ സൈൻ ഇൻ ചെയ്യുക",
+            signinCardTitle = "കാർഷിക വിവരങ്ങൾ കൂടെ സൂക്ഷിക്കുക",
+            signinCardBody = "റേറ്റ് കാർഡുകൾ പങ്കിടാനും പ്രൊഫൈൽ സിങ്ക് ചെയ്യാനും വ്യക്തിപരമായ അലേർട്ടുകൾക്കും സൗജന്യ അക്കൗണ്ട് ഉണ്ടാക്കുക.",
+            orLabel = "അല്ലെങ്കിൽ",
+            unlockTitle = "സൗജന്യമായി അൺലോക്ക് ചെയ്യുന്നത്",
+            unlockShare = "റേറ്റ് കാർഡുകൾ പങ്കിക്കുക",
+            unlockSync = "ഉപകരണങ്ങളിൽ പ്രൊഫൈൽ സിങ്ക്",
+            unlockAlerts = "വ്യക്തിപരമായ വില & കാലാവസ്ഥ അലേർട്ടുകൾ",
+            soonLabel = "ഉടൻ",
+            onLabel = "ഓൺ"
         )
 
         val Kannada = AppStrings(
@@ -1136,7 +1196,17 @@ data class AppStrings(
             updateReadyTitle = "ಅಪ್‌ಡೇಟ್ ಸಿದ್ಧ",
             updateRestartBody = "ಹೊಸ ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲು ಪುನರಾರಂಭಿಸಿ.",
             updateRestartAction = "ಪುನರಾರಂಭಿಸಿ",
-            shareAction = "ಹಂಚಿಕೊಳ್ಳಿ"
+            shareAction = "ಹಂಚಿಕೊಳ್ಳಿ",
+            guestSubtitle = "ಮುಕ್ತವಾಗಿ ಬ್ರೌಸ್ ಮಾಡುತ್ತಿದ್ದೀರಿ — ಕೆಳಗೆ ಸೈನ್ ಇನ್ ಮಾಡಿ",
+            signinCardTitle = "ನಿಮ್ಮ ಕೃಷಿ ಮಾಹಿತಿಯನ್ನು ಹೊಂದಿರಿ",
+            signinCardBody = "ದರ ಕಾರ್ಡ್‌ಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಲು, ಪ್ರೊಫೈಲ್ ಸಿಂಕ್ ಮಾಡಲು ಮತ್ತು ವೈಯಕ್ತಿಕ ಎಚ್ಚರಿಕೆಗಳಿಗಾಗಿ ಉಚಿತ ಖಾತೆ ತೆರೆಯಿರಿ.",
+            orLabel = "ಅಥವಾ",
+            unlockTitle = "ಉಚಿತವಾಗಿ ಅನ್‌ಲಾಕ್ ಆಗುವುದು",
+            unlockShare = "ದರ ಕಾರ್ಡ್‌ಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
+            unlockSync = "ಸಾಧನಗಳಲ್ಲಿ ಪ್ರೊಫೈಲ್ ಸಿಂಕ್",
+            unlockAlerts = "ವೈಯಕ್ತಿಕ ಬೆಲೆ ಮತ್ತು ಹವಾಮಾನ ಎಚ್ಚರಿಕೆಗಳು",
+            soonLabel = "ಶೀಘ್ರ",
+            onLabel = "ಆನ್"
         )
 
         val Marathi = AppStrings(
@@ -1298,7 +1368,17 @@ data class AppStrings(
             updateReadyTitle = "अपडेट तयार",
             updateRestartBody = "नवीन आवृत्ती स्थापित करण्यासाठी रीस्टार्ट करा.",
             updateRestartAction = "रीस्टार्ट",
-            shareAction = "शेअर करा"
+            shareAction = "शेअर करा",
+            guestSubtitle = "मोकळ्या पद्धतीने ब्राउझ करत आहात — खाली साइन इन करा",
+            signinCardTitle = "तुमची शेती माहिती सोबत ठेवा",
+            signinCardBody = "रेट कार्ड शेअर करण्यासाठी, प्रोफाइल सिंक करण्यासाठी आणि वैयक्तिक सूचनांसाठी मोफत खाते तयार करा.",
+            orLabel = "किंवा",
+            unlockTitle = "मोफत काय अनलॉक होते",
+            unlockShare = "रेट कार्ड शेअर करा",
+            unlockSync = "उपकरणांवर प्रोफाइल सिंक",
+            unlockAlerts = "वैयक्तिक किंमत व हवामान सूचना",
+            soonLabel = "लवकरच",
+            onLabel = "चालू"
         )
 
         val Bengali = AppStrings(
@@ -1460,7 +1540,17 @@ data class AppStrings(
             updateReadyTitle = "আপডেট প্রস্তুত",
             updateRestartBody = "নতুন সংস্করণ ইনস্টল করতে রিস্টার্ট করুন.",
             updateRestartAction = "রিস্টার্ট",
-            shareAction = "শেয়ার করুন"
+            shareAction = "শেয়ার করুন",
+            guestSubtitle = "অবাধে ব্রাউজ করছেন — নিচে সাইন ইন করুন",
+            signinCardTitle = "আপনার খামারের তথ্য সঙ্গে রাখুন",
+            signinCardBody = "রেট কার্ড শেয়ার, প্রোফাইল সিঙ্ক ও ব্যক্তিগত অ্যালার্টের জন্য ফ্রি অ্যাকাউন্ট তৈরি করুন.",
+            orLabel = "অথবা",
+            unlockTitle = "ফ্রিতে যা পাবেন",
+            unlockShare = "রেট কার্ড শেয়ার করুন",
+            unlockSync = "ডিভাইসে প্রোফাইল সিঙ্ক",
+            unlockAlerts = "ব্যক্তিগত মূল্য ও আবহাওয়া অ্যালার্ট",
+            soonLabel = "শীঘ্রই",
+            onLabel = "চালু"
         )
 
         val Punjabi = AppStrings(
@@ -1622,7 +1712,17 @@ data class AppStrings(
             updateReadyTitle = "ਅੱਪਡੇਟ ਤਿਆਰ",
             updateRestartBody = "ਨਵਾਂ ਵਰਜ਼ਨ ਇੰਸਟਾਲ ਕਰਨ ਲਈ ਰੀਸਟਾਰਟ ਕਰੋ.",
             updateRestartAction = "ਰੀਸਟਾਰਟ",
-            shareAction = "ਸ਼ੇਅਰ ਕਰੋ"
+            shareAction = "ਸ਼ੇਅਰ ਕਰੋ",
+            guestSubtitle = "ਖੁੱਲ੍ਹ ਕੇ ਬਰਾਊਜ਼ ਕਰ ਰਹੇ ਹੋ — ਹੇਠਾਂ ਸਾਈਨ ਇਨ ਕਰੋ",
+            signinCardTitle = "ਆਪਣਾ ਖੇਤੀ ਡਾਟਾ ਨਾਲ ਰੱਖੋ",
+            signinCardBody = "ਰੇਟ ਕਾਰਡ ਸਾਂਝੇ ਕਰਨ, ਪ੍ਰੋਫਾਈਲ ਸਿੰਕ ਕਰਨ ਅਤੇ ਨਿੱਜੀ ਅਲਰਟ ਲਈ ਮੁਫ਼ਤ ਖਾਤਾ ਬਣਾਓ.",
+            orLabel = "ਜਾਂ",
+            unlockTitle = "ਮੁਫ਼ਤ ਵਿੱਚ ਕੀ ਮਿਲਦਾ ਹੈ",
+            unlockShare = "ਰੇਟ ਕਾਰਡ ਸਾਂਝੇ ਕਰੋ",
+            unlockSync = "ਡਿਵਾਈਸਾਂ 'ਤੇ ਪ੍ਰੋਫਾਈਲ ਸਿੰਕ",
+            unlockAlerts = "ਨਿੱਜੀ ਕੀਮਤ ਅਤੇ ਮੌਸਮ ਅਲਰਟ",
+            soonLabel = "ਜਲਦੀ",
+            onLabel = "ਚਾਲੂ"
         )
 
         val Gujarati = AppStrings(
@@ -1784,7 +1884,17 @@ data class AppStrings(
             updateReadyTitle = "અપડેટ તૈયાર",
             updateRestartBody = "નવું સંસ્કરણ ઇન્સ્ટોલ કરવા ફરી શરૂ કરો.",
             updateRestartAction = "ફરી શરૂ કરો",
-            shareAction = "શેર કરો"
+            shareAction = "શેર કરો",
+            guestSubtitle = "મુક્તપણે બ્રાઉઝ કરી રહ્યા છો — નીચે સાઇન ઇન કરો",
+            signinCardTitle = "તમારો ખેતી ડેટા સાથે રાખો",
+            signinCardBody = "રેટ કાર્ડ શેર કરવા, પ્રોફાઇલ સિંક કરવા અને વ્યક્તિગત એલર્ટ માટે ફ્રી એકાઉન્ટ બનાવો.",
+            orLabel = "અથવા",
+            unlockTitle = "ફ્રીમાં શું અનલોક થાય",
+            unlockShare = "રેટ કાર્ડ શેર કરો",
+            unlockSync = "ડિવાઇસ પર પ્રોફાઇલ સિંક",
+            unlockAlerts = "વ્યક્તિગત કિંમત અને હવામાન એલર્ટ",
+            soonLabel = "ટૂંક સમયમાં",
+            onLabel = "ચાલુ"
         )
 
         val Odia = AppStrings(
@@ -1946,7 +2056,17 @@ data class AppStrings(
             updateReadyTitle = "ଅପଡେଟ୍ ପ୍ରସ୍ତୁତ",
             updateRestartBody = "ନୂଆ ସଂସ୍କରଣ ସ୍ଥାପନ କରିବା ପାଇଁ ପୁନଃଆରମ୍ଭ କରନ୍ତୁ.",
             updateRestartAction = "ପୁନଃଆରମ୍ଭ",
-            shareAction = "ଅଂଶୀଦାର କରନ୍ତୁ"
+            shareAction = "ଅଂଶୀଦାର କରନ୍ତୁ",
+            guestSubtitle = "ମୁକ୍ତ ଭାବରେ ବ୍ରାଉଜ୍ କରୁଛନ୍ତି — ତଳେ ସାଇନ୍ ଇନ୍ କରନ୍ତୁ",
+            signinCardTitle = "ଆପଣଙ୍କ ଚାଷ ତଥ୍ୟ ସହ ରଖନ୍ତୁ",
+            signinCardBody = "ଦର କାର୍ଡ ଅଂଶୀଦାର, ପ୍ରୋଫାଇଲ୍ ସିଙ୍କ ଓ ବ୍ୟକ୍ତିଗତ ଆଲର୍ଟ ପାଇଁ ମାଗଣା ଆକାଉଣ୍ଟ ତିଆରି କରନ୍ତୁ.",
+            orLabel = "ଅଥବା",
+            unlockTitle = "ମାଗଣାରେ ଯାହା ମିଳିବ",
+            unlockShare = "ଦର କାର୍ଡ ଅଂଶୀଦାର କରନ୍ତୁ",
+            unlockSync = "ଡିଭାଇସରେ ପ୍ରୋଫାଇଲ୍ ସିଙ୍କ",
+            unlockAlerts = "ବ୍ୟକ୍ତିଗତ ମୂଲ୍ୟ ଓ ପାଣିପାଗ ଆଲର୍ଟ",
+            soonLabel = "ଶୀଘ୍ର",
+            onLabel = "ଚାଲୁ"
         )
 }
 }

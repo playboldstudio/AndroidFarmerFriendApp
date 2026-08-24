@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer Friend — Profile Redesign Concept</title>
+<style>
+  :root{
+    --bg:#F7F6F3; --surface:#FFFFFF; --muted:#F1F0EC;
+    --text:#1C1C1E; --text2:#5A5A5E; --text3:#9A9A9E;
+    --outline:#EDECE7;
+    --green:#2E7D32; --green-deep:#1B5E20; --green-bright:#4CAF50;
+    --soft-green:#E8F3E6; --soft-mint:#E6F6E8;
+    --blue:#2196F3; --soft-blue:#E7F0FD;
+    --purple:#9C27B0; --soft-purple:#F4E8FA;
+    --brown:#795548; --soft-brown:#F0EAE6;
+    --red:#E53935; --soft-red:#FDE8E8;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    background:#E9E7E2; font-family:-apple-system,"Segoe UI",Roboto,"Noto Sans Tamil",sans-serif;
+    padding:40px 24px; display:flex; gap:36px; justify-content:center; flex-wrap:wrap;
+  }
+  .frame-label{ text-align:center; font-weight:700; color:#444; margin-bottom:12px; font-size:14px }
+  .frame-sub{ display:block; font-weight:400; color:#888; font-size:12px; margin-top:3px }
+  .phone{
+    width:380px; background:var(--bg); border-radius:38px; overflow:hidden;
+    box-shadow:0 24px 60px rgba(0,0,0,.18); position:relative; height:820px;
+    display:flex; flex-direction:column;
+  }
+  .statusbar{ height:34px; display:flex; justify-content:space-between; align-items:center;
+    padding:0 22px; font-size:12px; font-weight:600; color:var(--text) }
+  .content{ flex:1; overflow-y:auto; padding:6px 16px 90px }
+  .content::-webkit-scrollbar{ width:0 }
+
+  h1.hero{ font-size:26px; letter-spacing:-.5px; color:var(--text); margin:10px 0 14px }
+  h1.hero span{ color:var(--green) }
+
+  /* ---------- Hero identity ---------- */
+  .identity{
+    background:linear-gradient(120deg,var(--soft-mint),var(--soft-green));
+    border-radius:24px; padding:20px; display:flex; align-items:center; gap:14px;
+    position:relative; overflow:hidden;
+  }
+  .identity::after{ content:""; position:absolute; right:-46px; top:-56px; width:150px;height:150px;
+    border-radius:50%; background:rgba(255,255,255,.45) }
+  .avatar-lg{ width:72px;height:72px;border-radius:50%;background:var(--surface);
+    border:3px solid rgba(46,125,50,.35); display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-weight:800;color:var(--green); z-index:1; flex:none }
+  .avatar-lg svg{width:32px;height:32px;fill:var(--green)}
+  .id-info{ z-index:1; flex:1; min-width:0 }
+  .id-name{ font-size:19px; font-weight:800; color:var(--green-deep); display:flex; align-items:center; gap:6px;
+    white-space:nowrap; overflow:hidden }
+  .check{ width:16px;height:16px; fill:var(--green-bright); flex:none }
+  .id-sub{ font-size:12.5px; color:var(--text2); margin-top:4px;
+    white-space:nowrap; overflow:hidden; text-overflow:ellipsis }
+  .btn-edit{ margin-left:auto; z-index:1; background:var(--green); color:#fff; font-size:13px;
+    font-weight:600; padding:9px 14px; border-radius:12px; display:flex; align-items:center; gap:5px; flex:none;
+    align-self:center }
+  .btn-edit svg{width:14px;height:14px;fill:#fff}
+
+  /* ---------- Sign-in card (guest) ---------- */
+  .signin-card{ background:var(--surface); border-radius:24px; padding:20px; margin-top:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.05) }
+  .signin-title{ font-size:15.5px; font-weight:800; color:var(--text) }
+  .signin-body{ font-size:12.5px; color:var(--text2); margin-top:4px; line-height:1.45 }
+  .btn-google{
+    margin-top:14px; width:100%; display:flex; align-items:center; justify-content:center; gap:9px;
+    border:1.5px solid var(--outline); border-radius:14px; padding:12px; font-size:14px; font-weight:700;
+    color:var(--text); background:#fff; cursor:pointer;
+  }
+  .g-logo{ width:19px;height:19px; }
+  .or-row{ display:flex; align-items:center; gap:12px; margin:14px 0; color:var(--text3); font-size:11.5px; font-weight:600 }
+  .or-row::before,.or-row::after{ content:""; flex:1; height:1px; background:var(--outline) }
+  .btn-email{ width:100%; background:var(--green); color:#fff; text-align:center; border:none;
+    border-radius:14px; padding:13px; font-size:14px; font-weight:700; cursor:pointer }
+
+  /* ---------- Unlock teaser ---------- */
+  .unlock-card{ background:linear-gradient(135deg,#FFFDF5,#FFF6E0); border-radius:20px;
+    padding:16px; margin-top:14px; border:1px dashed #E8C96A }
+  .unlock-head{ font-size:13.5px; font-weight:800; color:#8A6A12; display:flex; gap:7px; align-items:center }
+  .unlock-row{ display:flex; gap:11px; align-items:center; margin-top:11px; font-size:12.5px; color:#6B5A20 }
+  .unlock-row b{ color:#5C4B12; font-weight:700 }
+  .lock-dot{ width:30px;height:30px;border-radius:10px;background:#FBEECB;display:flex;
+    align-items:center;justify-content:center; flex:none }
+  .lock-dot svg{width:15px;height:15px;fill:#C9A23B}
+
+  /* ---------- Menu sections ---------- */
+  .sec-label{ font-size:11.5px; font-weight:700; letter-spacing:.8px; color:var(--text3);
+    text-transform:uppercase; margin:20px 2px 8px }
+  .menu-card{ background:var(--surface); border-radius:24px; padding:4px 18px;
+    box-shadow:0 1px 3px rgba(0,0,0,.04) }
+  .row{ display:flex; align-items:center; gap:13px; padding:14px 0; cursor:pointer }
+  .row+.row{ border-top:1px solid var(--outline) }
+  .tile{ width:36px;height:36px;border-radius:12px; display:flex;align-items:center;justify-content:center; flex:none }
+  .tile svg{width:19px;height:19px}
+  .t-green{background:var(--soft-mint)} .t-green svg{fill:var(--green)}
+  .t-blue{background:var(--soft-blue)} .t-blue svg{fill:var(--blue)}
+  .t-purple{background:var(--soft-purple)} .t-purple svg{fill:var(--purple)}
+  .t-brown{background:var(--soft-brown)} .t-brown svg{fill:var(--brown)}
+  .t-red{background:var(--soft-red)} .t-red svg{fill:var(--red)}
+  .row-title{ font-size:14.5px; font-weight:600; color:var(--text); flex:1 }
+  .trail{ font-size:12.5px; font-weight:600; color:var(--text2) }
+  .chev{ width:16px;height:16px; fill:var(--text3) }
+  .danger .row-title{ color:var(--red) }
+
+  .footer{ text-align:center; padding:26px 0 8px; font-size:10.5px; color:var(--text3) }
+  .footer div+div{ opacity:.65; margin-top:2px }
+
+  /* ---------- Tab bar ---------- */
+  .tabbar{ position:absolute; left:14px; right:14px; bottom:14px; background:var(--surface);
+    border:1px solid var(--outline); border-radius:26px; box-shadow:0 8px 24px rgba(0,0,0,.12);
+    display:flex; justify-content:space-evenly; padding:8px 4px }
+  .tab{ display:flex; flex-direction:column; align-items:center; gap:3px; font-size:9.5px;
+    font-weight:600; color:var(--text3); padding:2px 10px }
+  .tab svg{ width:22px;height:22px; fill:currentColor }
+  .tab.active{ color:var(--green) }
+  .tab.active .pill{ background:var(--soft-green); border-radius:14px; padding:6px 18px; margin:-6px -18px -2px }
+
+  /* ---------- Auth overlay frame ---------- */
+  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.45); z-index:5 }
+  .auth-sheet{ position:absolute; left:0; right:0; bottom:0; top:70px; background:var(--bg);
+    z-index:6; border-radius:28px 28px 38px 38px; padding:18px 20px; overflow-y:auto }
+  .grab{ width:38px;height:5px;border-radius:3px;background:var(--outline);margin:2px auto 12px }
+  .auth-close{ position:absolute; right:16px; top:14px; width:32px;height:32px;border-radius:10px;
+    background:var(--muted); display:flex;align-items:center;justify-content:center; color:var(--text2) }
+  .auth-head{ text-align:center; margin-top:6px }
+  .auth-logo{ width:74px;height:74px; border-radius:20px; background:var(--soft-green);
+    display:flex;align-items:center;justify-content:center; margin:0 auto 10px }
+  .auth-logo img{ width:60px;height:60px }
+  .auth-title{ font-size:24px; font-weight:800; color:var(--green-deep); letter-spacing:-.4px }
+  .auth-sub{ font-size:12px; color:var(--text2); margin-top:3px }
+  .seg{ display:flex; background:var(--muted); border-radius:15px; padding:4px; margin:18px 0 }
+  .seg div{ flex:1; text-align:center; padding:10px; border-radius:11px; font-size:13.5px; font-weight:600; color:var(--text2) }
+  .seg .on{ background:var(--green); color:#fff; font-weight:700 }
+  .field{ margin-bottom:12px }
+  .field label{ display:block; font-size:11.5px; font-weight:600; color:var(--text2); margin-bottom:5px }
+  .field .inp{ background:var(--surface); border:1.5px solid var(--outline); border-radius:14px;
+    padding:13px 14px; font-size:14px; color:var(--text); display:flex; justify-content:space-between; align-items:center }
+  .field .inp.ph{ color:var(--text3) }
+  .eye{ color:var(--text3); font-size:12px }
+  .auth-cta{ width:100%; background:var(--green); color:#fff; border:none; border-radius:15px;
+    padding:14px; font-size:14.5px; font-weight:700; margin-top:8px }
+  .divider-or{ display:flex;align-items:center;gap:12px; color:var(--text3); font-size:11px;
+    font-weight:600; margin:16px 0 }
+  .divider-or::before,.divider-or::after{ content:""; flex:1; height:1px; background:var(--outline) }
+</style>
+</head>
+<body>
+
+<!-- ======================= 1 · GUEST STATE ======================= -->
+<div>
+  <div class="frame-label">① Guest — browsing freely<span class="frame-sub">no edit · sign-in offered · limited menus</span></div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>▲ ●▮</span></div>
+    <div class="content">
+      <h1 class="hero">Profile</h1>
+
+      <div class="identity">
+        <div class="avatar-lg">
+          <svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg>
+        </div>
+        <div class="id-info">
+          <div class="id-name">Guest</div>
+          <div class="id-sub">Browsing freely — sign in below</div>
+        </div>
+      </div>
+
+      <div class="signin-card">
+        <div class="signin-title">Keep your farm data with you</div>
+        <div class="signin-body">Create a free account to share rate cards, sync your profile and get personalised alerts.</div>
+        <button class="btn-google">
+          <svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.4 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7a14.5 14.5 0 0 1 0-9.4l-7.8-6.1a24 24 0 0 0 0 21.6l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.4-5.5l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.3 0-11.7-3.9-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+          Continue with Google
+        </button>
+        <div class="or-row">OR</div>
+        <button class="btn-email">Sign in with Email</button>
+      </div>
+
+      <div class="unlock-card">
+        <div class="unlock-head">🔒 What you unlock — free forever</div>
+        <div class="unlock-row"><div class="lock-dot"><svg viewBox="0 0 24 24"><path d="M18 16v-5a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2zm-6 6a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2z"/></svg></div><div><b>Share rate cards</b> to WhatsApp, Instagram &amp; X</div></div>
+        <div class="unlock-row"><div class="lock-dot"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.7 8 11 4.6-1.3 8-6 8-11V5l-8-3z"/></svg></div><div><b>Profile synced</b> safely across your devices</div></div>
+        <div class="unlock-row"><div class="lock-dot"><svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-4.5-5.8V4a1.5 1.5 0 0 0-3 0v1.2A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div><div><b>Personal price &amp; weather alerts</b> for your market</div></div>
+      </div>
+
+      <div class="sec-label">Preferences</div>
+      <div class="menu-card">
+        <div class="row">
+          <div class="tile t-blue"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 6h-2.9a15.6 15.6 0 0 0-1.4-3.6A8 8 0 0 1 18.9 8zM12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4zM4.3 14a8.2 8.2 0 0 1 0-4h3.3a16.6 16.6 0 0 0 0 4H4.3zm.8 2h2.9c.3 1.3.8 2.5 1.4 3.6A8 8 0 0 1 5.1 16zm2.9-8H5.1a8 8 0 0 1 4.3-3.6C8.8 5.5 8.3 6.7 8 10zM12 20c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4zm2.3-6H9.7a14.6 14.6 0 0 1 0-4h4.6a14.6 14.6 0 0 1 0 4zm.4 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 0 1-4.3 3.6zm1.7-5.6a16.6 16.6 0 0 0 0-4h3.3a8.2 8.2 0 0 1 0 4h-3.3z"/></svg></div>
+          <div class="row-title">Language</div><div class="trail">English</div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="sec-label">Legal &amp; About</div>
+      <div class="menu-card">
+        <div class="row">
+          <div class="tile t-brown"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.8 8 11 4.6-1.2 8-6 8-11V5l-8-3z"/></svg></div>
+          <div class="row-title">Privacy Policy</div><svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="row">
+          <div class="tile t-blue"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+          <div class="row-title">Terms of Use</div><svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="footer"><div>Farmer Friend v1.2.0</div><div>விவசாயர்களின் நண்பன்</div></div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 2 2 12h3v8z"/></svg>Home</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M5 21V9H1v12h4zm6 0V3h-4v18h4zm6 0v-8h-4v8h4zm6 0V7h-4v14h4z"/></svg>Market</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M6.5 19a4.5 4.5 0 0 1-.4-9A7 7 0 0 1 19.7 12 4 4 0 0 1 19 20H6.5z"/></svg>Weather</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-4.5-5.8V4a1.5 1.5 0 0 0-3 0v1.2A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</div>
+      <div class="tab active"><span class="pill"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></span>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= 2 · SIGNED-IN STATE ======================= -->
+<div>
+  <div class="frame-label">② Signed in — full account<span class="frame-sub">edit enabled · sync badge · sign out</span></div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>▲ ●▮</span></div>
+    <div class="content">
+      <h1 class="hero">Pro<span>file</span></h1>
+
+      <div class="identity">
+        <div class="avatar-lg">SK</div>
+        <div class="id-info">
+          <div class="id-name">Suresh Kumar
+            <svg class="check" viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.8 8 11 4.6-1.2 8-6 8-11V5l-8-3zm-1.1 14.6-3.5-3.5 1.4-1.4 2.1 2.1 4.9-4.9 1.4 1.4-6.3 6.3z"/></svg>
+          </div>
+          <div class="id-sub">+91 98765 43210</div>
+        </div>
+        <div class="btn-edit"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.8 9.94l-3.75-3.75L3 17.25zM20.7 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>Edit</div>
+      </div>
+
+      <div class="sec-label">Account</div>
+      <div class="menu-card">
+        <div class="row">
+          <div class="tile t-green"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></div>
+          <div class="row-title">My Details</div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="row">
+          <div class="tile t-green"><svg viewBox="0 0 24 24"><path d="m14 6-3.9 3.9a3 3 0 0 0 0 4.2l.9.9L15 11l6 6V4a2 2 0 0 0-2-2h-3l-2 4zM3 9l4-4v14l-4 4z"/></svg></div>
+          <div class="row-title">My Lands</div>
+          <span class="trail" style="color:var(--text3)">Soon</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="row danger">
+          <div class="tile t-red"><svg viewBox="0 0 24 24"><path d="M17 7l-1.4 1.4A4.98 4.98 0 0 1 17 12a5 5 0 1 1-5-5c.7 0 1.4.2 2 .4L15.5 6A7 7 0 1 0 19 12c0-1.9-.8-3.7-2-5zm-5 3h-2v5h2v-5z" transform="rotate(180 12 12) translate(0 1)"/></svg></div>
+          <div class="row-title">Sign Out</div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="sec-label">Preferences</div>
+      <div class="menu-card">
+        <div class="row">
+          <div class="tile t-blue"><svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm6.9 6h-2.9a15.6 15.6 0 0 0-1.4-3.6A8 8 0 0 1 18.9 8zM12 4c.8 1.2 1.5 2.5 1.9 4h-3.8c.4-1.5 1.1-2.8 1.9-4zM4.3 14a8.2 8.2 0 0 1 0-4h3.3a16.6 16.6 0 0 0 0 4H4.3zm.8 2h2.9c.3 1.3.8 2.5 1.4 3.6A8 8 0 0 1 5.1 16zm2.9-8H5.1a8 8 0 0 1 4.3-3.6C8.8 5.5 8.3 6.7 8 10zM12 20c-.8-1.2-1.5-2.5-1.9-4h3.8c-.4 1.5-1.1 2.8-1.9 4zm2.3-6H9.7a14.6 14.6 0 0 1 0-4h4.6a14.6 14.6 0 0 1 0 4zm.4 5.6c.6-1.1 1.1-2.3 1.4-3.6h2.9a8 8 0 0 1-4.3 3.6zm1.7-5.6a16.6 16.6 0 0 0 0-4h3.3a8.2 8.2 0 0 1 0 4h-3.3z"/></svg></div>
+          <div class="row-title">Language</div><div class="trail">English</div>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="row">
+          <div class="tile t-purple"><svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-4.5-5.8V4a1.5 1.5 0 0 0-3 0v1.2A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg></div>
+          <div class="row-title">Notifications</div>
+          <span class="trail" style="color:var(--green)">On</span>
+          <svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="sec-label">Legal &amp; About</div>
+      <div class="menu-card">
+        <div class="row">
+          <div class="tile t-brown"><svg viewBox="0 0 24 24"><path d="M12 2 4 5v6c0 5 3.4 9.8 8 11 4.6-1.2 8-6 8-11V5l-8-3z"/></svg></div>
+          <div class="row-title">Privacy Policy</div><svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+        <div class="row">
+          <div class="tile t-blue"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg></div>
+          <div class="row-title">Terms of Use</div><svg class="chev" viewBox="0 0 24 24"><path d="m8.6 16.6 4.6-4.6-4.6-4.6L10 6l6 6-6 6z"/></svg>
+        </div>
+      </div>
+
+      <div class="footer"><div>Farmer Friend v1.2.0</div><div>விவசாயர்களின் நண்பன்</div></div>
+    </div>
+
+    <div class="tabbar">
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 2 2 12h3v8z"/></svg>Home</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M5 21V9H1v12h4zm6 0V3h-4v18h4zm6 0v-8h-4v8h4zm6 0V7h-4v14h4z"/></svg>Market</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M6.5 19a4.5 4.5 0 0 1-.4-9A7 7 0 0 1 19.7 12 4 4 0 0 1 19 20H6.5z"/></svg>Weather</div>
+      <div class="tab"><svg viewBox="0 0 24 24"><path d="M12 22a2 2 0 0 0 2-2h-4a2 2 0 0 0 2 2zm6-6v-5a6 6 0 0 0-4.5-5.8V4a1.5 1.5 0 0 0-3 0v1.2A6 6 0 0 0 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>Alerts</div>
+      <div class="tab active"><span class="pill"><svg viewBox="0 0 24 24"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></span>Profile</div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================= 3 · AUTH OVERLAY ======================= -->
+<div>
+  <div class="frame-label">③ Sign-in overlay<span class="frame-sub">shown when a gated action needs auth</span></div>
+  <div class="phone">
+    <div class="statusbar"><span>9:41</span><span>▲ ●▮</span></div>
+    <div class="content" style="filter:blur(1px)">
+      <h1 class="hero">Pro<span>file</span></h1>
+      <div class="identity"><div class="avatar-lg"><svg viewBox="0 0 24 24" style="opacity:.6"><path d="M12 12c2.7 0 4.8-2.1 4.8-4.8S14.7 2.4 12 2.4 7.2 4.5 7.2 7.2 9.3 12 12 12zm0 2.4c-3.2 0-9.6 1.6-9.6 4.8v2.4h19.2v-2.4c0-3.2-6.4-4.8-9.6-4.8z"/></svg></div>
+        <div class="id-info"><div class="id-name">Guest</div><div class="id-sub">Browsing as guest</div></div></div>
+      <div style="height:420px"></div>
+    </div>
+    <div class="scrim"></div>
+    <div class="auth-sheet">
+      <div class="grab"></div>
+      <div class="auth-close">✕</div>
+      <div class="auth-head">
+        <div class="auth-logo"><img src="https://img.icons8.com/fluency/96/wheat.png" alt=""></div>
+        <div class="auth-title">Welcome back</div>
+        <div class="auth-sub">Share rate cards &amp; sync your profile</div>
+      </div>
+      <div class="seg"><div class="on">Sign In</div><div>Sign Up</div></div>
+      <div class="field"><label>EMAIL</label><div class="inp ph">you@example.com</div></div>
+      <div class="field"><label>PASSWORD</label><div class="inp ph">••••••••<span class="eye">👁</span></div></div>
+      <button class="auth-cta">Sign In</button>
+      <div class="divider-or">OR</div>
+      <button class="btn-google">
+        <svg class="g-logo" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9 3.5l6.7-6.7C35.6 2.4 30.2 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.8 6.1C12.3 13.4 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.4 28.7a14.5 14.5 0 0 1 0-9.4l-7.8-6.1a24 24 0 0 0 0 21.6l7.8-6.1z"/><path fill="#34A853" d="M24 48c6.2 0 11.4-2 15.4-5.5l-7.5-5.8c-2.1 1.4-4.8 2.3-7.9 2.3-6.3 0-11.7-3.9-13.6-9.3l-7.8 6.1C6.5 42.6 14.6 48 24 48z"/></svg>
+        Continue with Google
+      </button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
