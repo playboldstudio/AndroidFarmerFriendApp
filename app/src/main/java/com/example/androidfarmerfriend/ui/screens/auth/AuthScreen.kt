@@ -199,14 +199,19 @@ fun AuthScreen(
                 }
             }
 
-            if (googleClientId != null) {
+            run {
                 Spacer(Modifier.height(FarmerSpacing.md))
                 OutlinedButton(
                     onClick = {
                         scope.launch {
+                            val clientId = googleClientId
+                            if (clientId == null) {
+                                viewModel.onEvent(AuthEvent.SetError("Google sign-in unavailable — add SHA-1 in Firebase and update google-services.json"))
+                                return@launch
+                            }
                             signInWithGoogle(
                                 context = context,
-                                clientId = googleClientId,
+                                clientId = clientId,
                                 onSuccess = { idToken -> viewModel.onEvent(AuthEvent.GoogleSignedIn(idToken)) },
                                 onError = { message -> viewModel.onEvent(AuthEvent.SetError(message)) }
                             )
@@ -221,6 +226,32 @@ fun AuthScreen(
                     Spacer(Modifier.width(FarmerSpacing.s))
                     Text("Continue with Google", fontWeight = FontWeight.SemiBold, color = colors.textPrimary)
                 }
+            }
+
+            Spacer(Modifier.height(FarmerSpacing.lg))
+
+            Row(
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(
+                    text = if (state.mode == AuthMode.SIGN_IN) "New here?" else "Already registered?",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = colors.textSecondary
+                )
+                Spacer(Modifier.width(FarmerSpacing.xs))
+                Text(
+                    text = if (state.mode == AuthMode.SIGN_IN) strings.signUpAction else strings.signInAction,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primary,
+                    modifier = Modifier.clickable {
+                        viewModel.onEvent(
+                            AuthEvent.SetMode(if (state.mode == AuthMode.SIGN_IN) AuthMode.SIGN_UP else AuthMode.SIGN_IN)
+                        )
+                    }
+                )
             }
 
             Spacer(Modifier.height(FarmerSpacing.xxl))

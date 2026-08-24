@@ -252,10 +252,13 @@ private fun ForecastRangeList(forecast: List<ForecastDay>) {
                             .background(FarmerTheme.colors.surfaceMuted)
                     )
                     Row(modifier = Modifier.fillMaxSize()) {
-                        Spacer(Modifier.weight(startFraction))
+                        val barFraction = (endFraction - startFraction).coerceIn(0.06f, 1f)
+                        if (startFraction > 0.01f) {
+                            Spacer(Modifier.weight(startFraction))
+                        }
                         Box(
                             modifier = Modifier
-                                .weight((endFraction - startFraction).coerceAtLeast(0.02f))
+                                .weight(barFraction)
                                 .fillMaxHeight()
                                 .clip(RoundedCornerShape(3.dp))
                                 .background(
@@ -264,7 +267,9 @@ private fun ForecastRangeList(forecast: List<ForecastDay>) {
                                     )
                                 )
                         )
-                        Spacer(Modifier.weight((1f - endFraction).coerceAtLeast(0.001f)))
+                        if (endFraction < 0.99f) {
+                            Spacer(Modifier.weight(1f - endFraction))
+                        }
                     }
                 }
                 Text(
