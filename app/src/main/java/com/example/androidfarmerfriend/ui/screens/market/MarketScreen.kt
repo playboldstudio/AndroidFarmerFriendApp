@@ -20,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -63,6 +64,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
     val context = androidx.compose.ui.platform.LocalContext.current
+    val requestSignIn = AuthBridge.LocalRequestSignIn.current
 
     LaunchedEffect(Unit) {
         viewModel.loadInitialData()
@@ -96,14 +98,47 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         ) {
             Spacer(Modifier.height(FarmerSpacing.lg))
 
-            HeroTitle(text = strings.marketTitle, accent = strings.marketTitle.split(" ").getOrNull(1))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                HeroTitle(
+                    text = strings.marketTitle,
+                    accent = strings.marketTitle.split(" ").getOrNull(1),
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                if (state.fetchDate.isNotEmpty()) {
+                    Spacer(Modifier.width(FarmerSpacing.s))
+                    FreshnessChip(text = state.fetchDate.uppercase())
+                }
+            }
 
             Spacer(Modifier.height(FarmerSpacing.s))
 
-            LocPill(
-                text = state.selectedMarket.displayName,
-                onClick = { showMarketPicker = true }
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                LocPill(
+                    text = state.selectedMarket.displayName,
+                    onClick = { showMarketPicker = true }
+                )
+                Spacer(Modifier.weight(1f))
+                ShareRateCardButton(
+                    onClick = {
+                        requestSignIn {
+                            scope.launch {
+                                val bitmap = withContext(Dispatchers.Default) {
+                                    RateCardRenderer.render(
+                                        context = context,
+                                        title = strings.marketTitle,
+                                        dateLabel = state.fetchDate,
+                                        marketName = state.selectedMarket.displayName,
+                                        filterLabel = state.selectedFilter.displayKey(strings),
+                                        crops = state.filteredCrops
+                                    )
+                                }
+                                RateCardSharer.share(context, bitmap)
+                            }
+                        }
+                    },
+                    contentDescription = strings.shareAction
+                )
+            }
 
             Spacer(Modifier.height(FarmerSpacing.lg))
 
@@ -114,10 +149,10 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
             )
 
             PillChipGroup(
-                filters = FilterType.entries.map { it.displayKey(strings) },
-                selectedFilter = state.selectedFilter.displayKey(strings),
+                filters = FilterType.entries.map { "${it.emoji()} ${it.displayKey(strings)}" },
+                selectedFilter = state.selectedFilter.displayKey(strings).let { "${state.selectedFilter.emoji()} $it" },
                 onFilterSelected = { display ->
-                    FilterType.entries.find { it.displayKey(strings) == display }?.let {
+                    FilterType.entries.find { "${it.emoji()} ${it.displayKey(strings)}" == display }?.let {
                         viewModel.onEvent(MarketEvent.SelectFilter(it))
                     }
                 }
@@ -129,34 +164,12 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
 
             val crops = state.filteredCrops
             if (crops.isNotEmpty()) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(bottom = 14.dp)
-                ) {
-                    MarketTrendCard(crops = crops, strings = strings, modifier = Modifier.weight(1f))
-                    Spacer(Modifier.width(FarmerSpacing.s))
-                    val requestSignIn = AuthBridge.LocalRequestSignIn.current
-                    ShareRateCardButton(
-                        onClick = {
-                            requestSignIn {
-                                scope.launch {
-                                    val bitmap = withContext(Dispatchers.Default) {
-                                        RateCardRenderer.render(
-                                            context = context,
-                                            title = strings.marketTitle,
-                                            dateLabel = state.fetchDate,
-                                            marketName = state.selectedMarket.displayName,
-                                            filterLabel = state.selectedFilter.displayKey(strings),
-                                            crops = state.filteredCrops
-                                        )
-                                    }
-                                    RateCardSharer.share(context, bitmap)
-                                }
-                            }
-                        },
-                        contentDescription = strings.shareAction
-                    )
-                }
+                MarketTrendCard(
+                    crops = crops,
+                    filter = state.selectedFilter,
+                    strings = strings,
+                    modifier = Modifier.padding(top = 4.dp, bottom = 14.dp)
+                )
             }
 
             if (state.fetchDate.isNotEmpty()) {
@@ -232,86 +245,82 @@ private fun MarketInfoChip(text: String) {
     )
 }
 
-/** Wholesale-to-retail spread summary; falls back to the day's price range. */
+/** Compact single-line summary: today's price range (or NECC rate) for the filter. */
 @Composable
 fun MarketTrendCard(
     crops: List<Crop>,
+    filter: FilterType,
     strings: AppStrings,
     modifier: Modifier = Modifier
 ) {
     val colors = FarmerTheme.colors
-    val diffs = crops.mapNotNull { it.priceDiffPercent ?: it.trend.takeIf { d -> d != 0.0 } }
-    val rising = diffs.any { it > 0 }
-    val falling = diffs.any { it < 0 }
-    val hasTrendData = diffs.isNotEmpty()
-
-    val headline = when {
-        rising && !falling -> "▲ ${strings.trendRising}"
-        falling && !rising -> "▼ ${strings.trendFalling}"
-        hasTrendData -> "▬ ${strings.trendStable}"
-        else -> {
-            val prices = crops.mapNotNull { it.priceValue }.filter { it > 0 }
-            if (prices.isNotEmpty()) "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())}" else "—"
-        }
-    }
-    val headlineColor = when {
-        rising && !falling -> colors.primary
-        falling && !rising -> TrendRed
-        else -> colors.textPrimary
+    val prices = crops.mapNotNull { it.priceValue }.filter { it > 0 }
+    val unit = crops.firstOrNull()?.units ?: "kg"
+    val value = if (prices.isNotEmpty()) {
+        "₹${"%.0f".format(prices.min())} – ₹${"%.0f".format(prices.max())} / $unit"
+    } else {
+        "—"
     }
 
     Card(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
+        shape = RoundedCornerShape(16.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.surface),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.outline)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
+                .padding(horizontal = 14.dp, vertical = 11.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Box(
+                modifier = Modifier
+                    .size(34.dp)
+                    .background(colors.softGreen, RoundedCornerShape(11.dp)),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(text = filter.emoji(), fontSize = 15.sp)
+            }
+            Spacer(Modifier.width(10.dp))
+            Column {
                 Text(
                     text = strings.marketTrendToday.uppercase(),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.textTertiary
                 )
-                Spacer(Modifier.height(4.dp))
                 Text(
-                    text = headline,
-                    style = MaterialTheme.typography.titleMedium,
+                    text = value,
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = headlineColor
+                    color = colors.textPrimary
                 )
             }
-            TrendDirectionIcon(rising = rising && !falling, falling = falling && !rising)
+            Spacer(Modifier.weight(1f))
+            Text(text = filter.emoji(), fontSize = 20.sp)
         }
     }
 }
 
+private fun FilterType.emoji(): String = when (this) {
+    FilterType.VEGETABLES -> "🥬"
+    FilterType.FRUITS -> "🍎"
+    FilterType.NONVEG -> "🍗"
+    FilterType.GOLD -> "🥇"
+    FilterType.EGG -> "🥚"
+}
+
 @Composable
-private fun TrendDirectionIcon(rising: Boolean, falling: Boolean) {
-    val colors = FarmerTheme.colors
-    val tint = when {
-        rising -> colors.primary
-        falling -> TrendRed
-        else -> colors.textTertiary
-    }
-    val icon = when {
-        rising -> Icons.Default.TrendingUp
-        falling -> Icons.Default.TrendingDown
-        else -> Icons.Default.TrendingFlat
-    }
-    Box(
+private fun FreshnessChip(text: String) {
+    Text(
+        text = "📅 $text",
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Bold,
+        color = FarmerTheme.colors.primary,
         modifier = Modifier
-            .size(44.dp)
-            .background(colors.softGreen, RoundedCornerShape(15.dp)),
-        contentAlignment = Alignment.Center
-    ) {
-        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
-    }
+            .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    )
 }
 
 @Composable

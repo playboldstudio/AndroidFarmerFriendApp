@@ -22,6 +22,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.util.UiState
@@ -32,6 +33,7 @@ import com.example.androidfarmerfriend.ui.components.PillChip
 import com.example.androidfarmerfriend.ui.components.SearchField
 import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.SubScreenHeader
+import com.example.androidfarmerfriend.ui.components.urlHostLabel
 import com.example.androidfarmerfriend.ui.components.TintIconCircle
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
@@ -121,7 +123,7 @@ fun CropNotesScreen(
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
                             items(state.filteredNotes) { note ->
-                                CropNoteItem(note = note)
+                                CropNoteItem(note = note, strings = strings)
                             }
                         }
                     }
@@ -132,7 +134,7 @@ fun CropNotesScreen(
 }
 
 @Composable
-fun CropNoteItem(note: CropNote) {
+fun CropNoteItem(note: CropNote, strings: AppStrings) {
     val context = LocalContext.current
     val colors = FarmerTheme.colors
 
@@ -183,8 +185,30 @@ fun CropNoteItem(note: CropNote) {
                 Text(
                     text = note.content,
                     color = colors.textSecondary,
-                    style = MaterialTheme.typography.bodySmall
+                    style = MaterialTheme.typography.bodySmall,
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
+                Spacer(Modifier.height(10.dp))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(
+                        text = "${strings.readMoreLabel} ›",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = colors.primary,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (note.sourceUrl.isNotBlank()) {
+                        Text(
+                            text = urlHostLabel(note.sourceUrl),
+                            style = MaterialTheme.typography.labelSmall,
+                            color = colors.textTertiary
+                        )
+                    }
+                }
             }
         }
     }

@@ -750,6 +750,115 @@ private fun HeroStat(icon: ImageVector, value: String, label: String) {
     }
 }
 
+/**
+ * Compact left-aligned weather summary used on Home and Weather tabs.
+ */
+@Composable
+fun CompactWeatherCard(
+    weather: WeatherInfo,
+    strings: AppStrings,
+    modifier: Modifier = Modifier,
+    onClick: (() -> Unit)? = null
+) {
+    val colors = FarmerTheme.colors
+    Column(
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.linearGradient(listOf(colors.primaryBright, colors.primary, colors.primaryDeep))
+            )
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = weather.condition,
+                    color = Color.White.copy(alpha = 0.95f),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
+                )
+                Spacer(Modifier.height(2.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
+                    Text(
+                        text = weather.temperature,
+                        color = Color.White,
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 44.sp,
+                        letterSpacing = (-2).sp
+                    )
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.padding(bottom = 4.dp)) {
+                        if (weather.feelsLike.isNotBlank()) {
+                            Text(
+                                text = strings.feelsLike + " " + weather.feelsLike,
+                                color = Color.White.copy(alpha = 0.92f),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        if (weather.todayHigh.isNotEmpty() && weather.todayLow.isNotEmpty()) {
+                            Text(
+                                text = "H:" + weather.todayHigh + " · L:" + weather.todayLow,
+                                color = Color.White.copy(alpha = 0.92f),
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                    }
+                }
+            }
+            Icon(
+                weatherIconFor(weather.weatherCode),
+                contentDescription = null,
+                tint = Color.White,
+                modifier = Modifier.size(38.dp)
+            )
+        }
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            WeatherChipText("💧 " + strings.rain + " " + weather.rainChance)
+            WeatherChipText("💦 " + strings.humidity + " " + weather.humidity)
+            WeatherChipText("🍃 " + strings.wind + " " + weather.windSpeed)
+        }
+    }
+}
+
+/** Human-readable host of a source URL, e.g. "ta.wikipedia.org". */
+fun urlHostLabel(url: String): String = try {
+    android.net.Uri.parse(url).host.orEmpty().removePrefix("www.").ifBlank { "" }
+} catch (_: Exception) {
+    ""
+}
+
+/** Small section title used across tab screens. */
+@Composable
+fun SectionHeaderCompat(title: String, modifier: Modifier = Modifier) {    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        color = FarmerTheme.colors.textPrimary,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 22.dp, bottom = 12.dp)
+    )
+}
+
+@Composable
+fun WeatherChipText(text: String) {
+    Text(
+        text = text,
+        color = Color.White,
+        style = MaterialTheme.typography.labelSmall,
+        fontWeight = FontWeight.Bold,
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White.copy(alpha = 0.18f))
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    )
+}
+
 /* ------------------------------------------------------------------ */
 /* Forecast day pill                                                   */
 /* ------------------------------------------------------------------ */
@@ -760,7 +869,8 @@ fun DayPill(
     day: String,
     weatherCode: Int,
     temp: String,
-    selected: Boolean
+    selected: Boolean,
+    onClick: (() -> Unit)? = null
 ) {
     val colors = FarmerTheme.colors
     val bg = if (selected) colors.primary else colors.surface
@@ -776,6 +886,7 @@ fun DayPill(
                 else BorderStroke(1.dp, colors.outline),
                 RoundedCornerShape(20.dp)
             )
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)

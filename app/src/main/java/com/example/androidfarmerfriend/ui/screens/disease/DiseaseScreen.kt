@@ -3,9 +3,9 @@ package com.example.androidfarmerfriend.ui.screens.disease
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -25,6 +25,7 @@ import com.example.androidfarmerfriend.ui.components.SubScreenHeader
 import com.example.androidfarmerfriend.ui.components.RowCard
 import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.urlHostLabel
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
@@ -115,18 +116,36 @@ fun DiseaseItem(disease: Disease) {
         iconTint = colors.diseaseOrange,
         iconContainer = colors.softOrange,
         end = {
-            Icon(
-                Icons.Default.OpenInNew,
-                contentDescription = null,
-                tint = colors.textTertiary,
-                modifier = Modifier.size(20.dp)
-            )
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                if (disease.sourceUrl.isNotBlank()) {
+                    SourceChip(url = disease.sourceUrl)
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Icon(
+                    Icons.Default.OpenInNew,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         },
         onClick = {
             if (disease.sourceUrl.isNotBlank()) {
                 WebSearchUtil.openUrl(context, disease.sourceUrl)
             }
         }
+    )
+}
+
+@Composable
+private fun SourceChip(url: String) {
+    Text(
+        text = urlHostLabel(url),
+        style = MaterialTheme.typography.labelSmall,
+        color = FarmerTheme.colors.textTertiary,
+        modifier = Modifier
+            .background(FarmerTheme.colors.surfaceMuted, RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
     )
 }
 

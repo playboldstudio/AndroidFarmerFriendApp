@@ -73,10 +73,10 @@ fun AlertsScreen(
         LocPill(text = state.locationName)
 
         PillChipGroup(
-            filters = AlertFilterType.entries.map { it.displayKey(strings) },
-            selectedFilter = state.selectedFilter.displayKey(strings),
+            filters = AlertFilterType.entries.map { "${it.emoji()} ${it.displayKey(strings)}" },
+            selectedFilter = "${state.selectedFilter.emoji()} ${state.selectedFilter.displayKey(strings)}",
             onFilterSelected = { display ->
-                AlertFilterType.entries.find { it.displayKey(strings) == display }?.let {
+                AlertFilterType.entries.find { "${it.emoji()} ${it.displayKey(strings)}" == display }?.let {
                     viewModel.onEvent(AlertEvent.SelectFilter(it))
                 }
             }
@@ -142,6 +142,14 @@ private fun UnreadBadge(count: Int) {
     )
 }
 
+/** Emoji per filter chip. */
+private fun AlertFilterType.emoji(): String = when (this) {
+    AlertFilterType.ALL -> "🔔"
+    AlertFilterType.PRICE -> "💰"
+    AlertFilterType.WEATHER -> "🌦️"
+    AlertFilterType.CROP -> "🌾"
+}
+
 private data class AlertVisuals(
     val icon: ImageVector,
     val tint: Color,
@@ -178,25 +186,26 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
                 .padding(14.dp),
             verticalAlignment = Alignment.Top
         ) {
-            Box {
-                TintedIconTile(iconVec, iconTint, iconContainer)
-                if (!alert.isRead) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.TopEnd)
-                            .size(10.dp)
-                            .clip(CircleShape)
-                            .background(colors.alertRed)
-                    )
-                }
-            }
+            TintedIconTile(iconVec, iconTint, iconContainer)
             Spacer(Modifier.width(13.dp))
             Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = alert.title.ifBlank { label },
-                    style = MaterialTheme.typography.titleSmall,
-                    color = colors.textPrimary
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = alert.title.ifBlank { label },
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.textPrimary,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (!alert.isRead) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(colors.alertRed)
+                        )
+                    }
+                }
                 Spacer(Modifier.height(2.dp))
                 Text(
                     text = alert.message,

@@ -175,6 +175,12 @@ data class AppStrings(
     val unlockAlerts: String,
     val soonLabel: String,
     val onLabel: String,
+    val fullForecastLabel: String,
+    val todaysMarketTitle: String,
+    val viewAllLabel: String,
+    val nextDaysLabel: String,
+    val rangeTitle: String,
+    val readMoreLabel: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -346,7 +352,13 @@ data class AppStrings(
             unlockSync = "சாதனங்களில் சுயவிவர ஒத்திசைவு",
             unlockAlerts = "தனிப்பயன் விலை மற்றும் வானிலை எச்சரிக்கைகள்",
             soonLabel = "விரைவில்",
-            onLabel = "ஆன்"
+            onLabel = "ஆன்",
+            fullForecastLabel = "முழு வானிலை அறிக்கை",
+            todaysMarketTitle = "இன்றைய சந்தை",
+            viewAllLabel = "எல்லாம் பார்",
+            nextDaysLabel = "அடுத்த நாட்கள்",
+            rangeTitle = "5 நாள் வீச்சு",
+            readMoreLabel = "முழு குறிப்பைப் படிக்க"
         )
 
         val English = AppStrings(
@@ -518,7 +530,13 @@ data class AppStrings(
             unlockSync = "Profile synced across devices",
             unlockAlerts = "Personal price & weather alerts",
             soonLabel = "Soon",
-            onLabel = "On"
+            onLabel = "On",
+            fullForecastLabel = "Full forecast",
+            todaysMarketTitle = "Today's Market",
+            viewAllLabel = "View all",
+            nextDaysLabel = "Next days",
+            rangeTitle = "5-Day Range",
+            readMoreLabel = "Read full note"
         )
 
         val Hindi = AppStrings(
@@ -690,7 +708,13 @@ data class AppStrings(
             unlockSync = "सभी डिवाइस पर प्रोफ़ाइल सिंक",
             unlockAlerts = "व्यक्तिगत कीमत व मौसम अलर्ट",
             soonLabel = "जल्द आ रहा है",
-            onLabel = "ऑन"
+            onLabel = "ऑन",
+            fullForecastLabel = "पूरा पूर्वानुमान",
+            todaysMarketTitle = "आज की मंडी",
+            viewAllLabel = "सभी देखें",
+            nextDaysLabel = "अगले दिन",
+            rangeTitle = "5-दिन की सीमा",
+            readMoreLabel = "पूरी जानकारी पढ़ें"
         )
 
         val Telugu = AppStrings(
@@ -862,7 +886,13 @@ data class AppStrings(
             unlockSync = "పరికరాల్లో ప్రొఫైల్ సింక్",
             unlockAlerts = "వ్యక్తిగత ధర & వాతావరణ అలర్ట్‌లు",
             soonLabel = "త్వరలో",
-            onLabel = "ఆన్"
+            onLabel = "ఆన్",
+            fullForecastLabel = "పూర్తి ఫోర్‌కాస్ట్",
+            todaysMarketTitle = "ఈ రోజు మార్కెట్",
+            viewAllLabel = "అన్నీ చూడండి",
+            nextDaysLabel = "రాబోయే రోజులు",
+            rangeTitle = "5 రోజుల పరిధి",
+            readMoreLabel = "పూర్తి నోట్ చదవండి"
         )
 
         val Malayalam = AppStrings(
@@ -1034,7 +1064,13 @@ data class AppStrings(
             unlockSync = "ഉപകരണങ്ങളിൽ പ്രൊഫൈൽ സിങ്ക്",
             unlockAlerts = "വ്യക്തിപരമായ വില & കാലാവസ്ഥ അലേർട്ടുകൾ",
             soonLabel = "ഉടൻ",
-            onLabel = "ഓൺ"
+            onLabel = "ഓൺ",
+            fullForecastLabel = "പൂർണ്ണ പ്രവചനം",
+            todaysMarketTitle = "ഇന്നത്തെ മാർക്കറ്റ്",
+            viewAllLabel = "എല്ലാം കാണുക",
+            nextDaysLabel = "അടുത്ത ദിവസങ്ങൾ",
+            rangeTitle = "5-ദിവസ പരിധി",
+            readMoreLabel = "മുഴുവൻ കുറിപ്പും വായിക്കുക"
         )
 
         val Kannada = AppStrings(
@@ -1206,7 +1242,13 @@ data class AppStrings(
             unlockSync = "ಸಾಧನಗಳಲ್ಲಿ ಪ್ರೊಫೈಲ್ ಸಿಂಕ್",
             unlockAlerts = "ವೈಯಕ್ತಿಕ ಬೆಲೆ ಮತ್ತು ಹವಾಮಾನ ಎಚ್ಚರಿಕೆಗಳು",
             soonLabel = "ಶೀಘ್ರ",
-            onLabel = "ಆನ್"
+            onLabel = "ಆನ್",
+            fullForecastLabel = "ಪೂರ್ಣ ಮುನ್ಸೂಚನೆ",
+            todaysMarketTitle = "ಇಂದಿನ ಮಾರುಕಟ್ಟೆ",
+            viewAllLabel = "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
+            nextDaysLabel = "ಮುಂದಿನ ದಿನಗಳು",
+            rangeTitle = "5 ದಿನದ ವ್ಯಾಪ್ತಿ",
+            readMoreLabel = "ಪೂರ್ಣ ಟಿಪ್ಪಣಿ ಓದಿ"
         )
 
         val Marathi = AppStrings(
@@ -1378,7 +1420,13 @@ data class AppStrings(
             unlockSync = "उपकरणांवर प्रोफाइल सिंक",
             unlockAlerts = "वैयक्तिक किंमत व हवामान सूचना",
             soonLabel = "लवकरच",
-            onLabel = "चालू"
+            onLabel = "चालू",
+            fullForecastLabel = "संपूर्ण अंदाज",
+            todaysMarketTitle = "आजचे बाजारभाव",
+            viewAllLabel = "सर्व पहा",
+            nextDaysLabel = "पुढील दिवस",
+            rangeTitle = "५-दिवसांचा तप्ती",
+            readMoreLabel = "संपूर्ण टीप वाचा"
         )
 
         val Bengali = AppStrings(
@@ -1550,7 +1598,13 @@ data class AppStrings(
             unlockSync = "ডিভাইসে প্রোফাইল সিঙ্ক",
             unlockAlerts = "ব্যক্তিগত মূল্য ও আবহাওয়া অ্যালার্ট",
             soonLabel = "শীঘ্রই",
-            onLabel = "চালু"
+            onLabel = "চালু",
+            fullForecastLabel = "পূর্ণ পূর্বাভাস",
+            todaysMarketTitle = "আজকের বাজার",
+            viewAllLabel = "সব দেখুন",
+            nextDaysLabel = "আগামী দিন",
+            rangeTitle = "৫ দিনের পরিসর",
+            readMoreLabel = "সম্পূর্ণ পড়ুন"
         )
 
         val Punjabi = AppStrings(
@@ -1722,7 +1776,13 @@ data class AppStrings(
             unlockSync = "ਡਿਵਾਈਸਾਂ 'ਤੇ ਪ੍ਰੋਫਾਈਲ ਸਿੰਕ",
             unlockAlerts = "ਨਿੱਜੀ ਕੀਮਤ ਅਤੇ ਮੌਸਮ ਅਲਰਟ",
             soonLabel = "ਜਲਦੀ",
-            onLabel = "ਚਾਲੂ"
+            onLabel = "ਚਾਲੂ",
+            fullForecastLabel = "ਪੂਰੀ ਭਵਿੱਖਬਾਣੀ",
+            todaysMarketTitle = "ਅੱਜ ਦਾ ਬਾਜ਼ਾਰ",
+            viewAllLabel = "ਸਭ ਵੇਖੋ",
+            nextDaysLabel = "ਅਗਲੇ ਦਿਨ",
+            rangeTitle = "੫-ਦਿਨ ਰੇਂਜ",
+            readMoreLabel = "ਪੂਰੀ ਨੋਟ ਪੜ੍ਹੋ"
         )
 
         val Gujarati = AppStrings(
@@ -1894,7 +1954,13 @@ data class AppStrings(
             unlockSync = "ડિવાઇસ પર પ્રોફાઇલ સિંક",
             unlockAlerts = "વ્યક્તિગત કિંમત અને હવામાન એલર્ટ",
             soonLabel = "ટૂંક સમયમાં",
-            onLabel = "ચાલુ"
+            onLabel = "ચાલુ",
+            fullForecastLabel = "સંપૂર્ણ આગાહી",
+            todaysMarketTitle = "આજનું બજાર",
+            viewAllLabel = "બધું જુઓ",
+            nextDaysLabel = "આગામી દિવસો",
+            rangeTitle = "૫-દિવસની રેન્જ",
+            readMoreLabel = "સંપૂર્ણ નોંધ વાંચો"
         )
 
         val Odia = AppStrings(
@@ -2066,7 +2132,13 @@ data class AppStrings(
             unlockSync = "ଡିଭାଇସରେ ପ୍ରୋଫାଇଲ୍ ସିଙ୍କ",
             unlockAlerts = "ବ୍ୟକ୍ତିଗତ ମୂଲ୍ୟ ଓ ପାଣିପାଗ ଆଲର୍ଟ",
             soonLabel = "ଶୀଘ୍ର",
-            onLabel = "ଚାଲୁ"
+            onLabel = "ଚାଲୁ",
+            fullForecastLabel = "ସମ୍ପୂର୍ଣ୍ଣ ପୂର୍ବାନୁମାନ",
+            todaysMarketTitle = "ଆଜିର ବଜାର",
+            viewAllLabel = "ସବୁ ଦେଖନ୍ତୁ",
+            nextDaysLabel = "ଆସନ୍ତା ଦିନ",
+            rangeTitle = "୫-ଦିନିକ ପରିସର",
+            readMoreLabel = "ସମ୍ପୂର୍ଣ୍ଣ ପଢ଼ନ୍ତୁ"
         )
 }
 }

@@ -49,11 +49,27 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val saved = locationPrefs.selectedLocation
         refreshGreeting()
         loadWeather(saved)
+        loadMarketPreview(saved)
     }
 
     private fun selectLocation(location: SelectedLocation) {
         locationPrefs.selectedLocation = location
         loadWeather(location)
+        loadMarketPreview(location)
+    }
+
+    /** Top vegetable rates near the selected location for the home strip. */
+    private fun loadMarketPreview(location: SelectedLocation) {
+        viewModelScope.launch {
+            try {
+                val slug = location.marketName.lowercase().replace(" ", "")
+                val crops = repository.getVegetablePrices(slug)
+                    .ifEmpty { repository.getVegetablePrices("koyambedu") }
+                _state.value = _state.value.copy(marketPreview = crops.take(4))
+            } catch (_: Exception) {
+                // Preview is optional; home works without it.
+            }
+        }
     }
 
     private fun refreshGreeting() {

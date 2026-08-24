@@ -2,7 +2,10 @@ package com.example.androidfarmerfriend.ui.screens.schemes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -24,6 +27,7 @@ import com.example.androidfarmerfriend.ui.components.SubScreenHeader
 import com.example.androidfarmerfriend.ui.components.RowCard
 import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.urlHostLabel
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
@@ -114,12 +118,25 @@ fun SchemeItem(scheme: Scheme) {
         iconTint = colors.alertGreen,
         iconContainer = colors.softLavender,
         end = {
-            Icon(
-                Icons.Default.OpenInNew,
-                contentDescription = null,
-                tint = colors.textTertiary,
-                modifier = Modifier.size(20.dp)
-            )
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                if (scheme.sourceUrl.isNotBlank()) {
+                    Text(
+                        text = urlHostLabel(scheme.sourceUrl),
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.textTertiary,
+                        modifier = Modifier
+                            .background(colors.surfaceMuted, RoundedCornerShape(6.dp))
+                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Icon(
+                    Icons.Default.OpenInNew,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         },
         onClick = {
             if (scheme.sourceUrl.isNotBlank()) {
