@@ -1,9 +1,12 @@
 package com.example.androidfarmerfriend.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
@@ -14,15 +17,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.location.Locations
 import com.example.androidfarmerfriend.data.location.SelectedLocation
-import com.example.androidfarmerfriend.ui.theme.FarmerGreenPrimary
-import com.example.androidfarmerfriend.ui.theme.GrayText
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -35,7 +38,6 @@ fun LocationPickerSheet(
     var searchQuery by remember { mutableStateOf("") }
     var searchResults by remember { mutableStateOf<List<SelectedLocation>>(emptyList()) }
     var isSearching by remember { mutableStateOf(false) }
-    val scope = rememberCoroutineScope()
 
     LaunchedEffect(searchQuery) {
         if (searchQuery.length < 2) {
@@ -49,6 +51,9 @@ fun LocationPickerSheet(
         isSearching = false
     }
 
+    val locStrings = LocalAppStrings.current
+    val colors = FarmerTheme.colors
+
     val displayLocations = if (searchQuery.length >= 2) {
         searchResults
     } else {
@@ -57,95 +62,145 @@ fun LocationPickerSheet(
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        containerColor = MaterialTheme.colorScheme.surface
+        containerColor = colors.surface,
+        shape = RoundedCornerShape(28.dp),
+        dragHandle = {
+            Box(
+                modifier = Modifier
+                    .padding(top = 12.dp, bottom = 4.dp)
+                    .size(width = 36.dp, height = 5.dp)
+                    .clip(RoundedCornerShape(3.dp))
+                    .background(colors.outline)
+            )
+        }
     ) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(bottom = 32.dp)
+                .padding(bottom = 24.dp)
         ) {
             Text(
-                text = "இருப்பிடத்தைத் தேர்ந்தெடுக்கவும்",
-                style = MaterialTheme.typography.titleLarge,
+                text = locStrings.selectLocation,
+                fontSize = 22.sp,
                 fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(horizontal = 24.dp, vertical = 16.dp),
-                color = MaterialTheme.colorScheme.onSurface
+                letterSpacing = (-0.3).sp,
+                color = colors.textPrimary,
+                modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp)
             )
 
-            OutlinedTextField(
-                value = searchQuery,
-                onValueChange = { searchQuery = it },
+            // Search field
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 24.dp, vertical = 8.dp),
-                placeholder = { Text("நகரம் அல்லது பகுதியைத் தேடவும்...", color = GrayText, fontSize = 14.sp) },
-                leadingIcon = {
-                    if (isSearching) {
-                        CircularProgressIndicator(modifier = Modifier.size(20.dp), strokeWidth = 2.dp)
-                    } else {
-                        Icon(Icons.Default.Search, contentDescription = null, tint = GrayText)
+                    .padding(horizontal = 20.dp)
+                    .height(48.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(colors.surfaceMuted)
+                    .clickable { /* focus handled by BasicTextField */ }
+                    .padding(horizontal = 14.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                if (isSearching) {
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(18.dp),
+                        strokeWidth = 2.dp,
+                        color = colors.primary
+                    )
+                } else {
+                    Icon(
+                        Icons.Default.Search,
+                        contentDescription = null,
+                        tint = colors.textTertiary,
+                        modifier = Modifier.size(18.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.width(9.dp))
+                Box(modifier = Modifier.weight(1f)) {
+                    if (searchQuery.isEmpty()) {
+                        Text(
+                            text = locStrings.searchLocationHint,
+                            color = colors.textTertiary,
+                            fontSize = 15.sp
+                        )
                     }
-                },
-                trailingIcon = {
-                    if (searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { searchQuery = "" }) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    focusedContainerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
+                    androidx.compose.foundation.text.BasicTextField(
+                        value = searchQuery,
+                        onValueChange = { searchQuery = it },
+                        singleLine = true,
+                        textStyle = LocalTextStyle.current.copy(
+                            color = colors.textPrimary,
+                            fontSize = 15.sp
+                        ),
+                        cursorBrush = androidx.compose.ui.graphics.SolidColor(colors.primary),
+                        modifier = Modifier.fillMaxWidth()
+                    )
+                }
+                if (searchQuery.isNotEmpty()) {
+                    Icon(
+                        Icons.Default.Close,
+                        contentDescription = "Clear",
+                        tint = colors.textTertiary,
+                        modifier = Modifier
+                            .size(16.dp)
+                            .clip(CircleShape)
+                            .clickable { searchQuery = "" }
+                    )
+                }
+            }
 
-            HorizontalDivider(
-                color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                modifier = Modifier.padding(top = 8.dp)
-            )
+            Spacer(modifier = Modifier.height(8.dp))
 
             LazyColumn(
                 modifier = Modifier.fillMaxWidth(),
-                contentPadding = PaddingValues(vertical = 8.dp)
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
             ) {
                 items(displayLocations) { location ->
                     val isSelected = location.name == currentLocation.name
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(RoundedCornerShape(14.dp))
+                            .background(
+                                if (isSelected) colors.softGreen else colors.surface
+                            )
                             .clickable {
                                 onLocationSelected(location)
                                 onDismiss()
                             }
-                            .padding(horizontal = 24.dp, vertical = 14.dp),
+                            .padding(horizontal = 14.dp, vertical = 13.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            if (searchQuery.length >= 2) Icons.Default.MyLocation else Icons.Default.LocationOn,
-                            contentDescription = null,
-                            modifier = Modifier.size(20.dp),
-                            tint = if (isSelected) FarmerGreenPrimary else GrayText
-                        )
+                        Box(
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(
+                                    if (isSelected) colors.softMint else colors.surfaceMuted
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                if (searchQuery.length >= 2) Icons.Default.MyLocation else Icons.Default.LocationOn,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                                tint = if (isSelected) colors.primary else colors.textSecondary
+                            )
+                        }
                         Spacer(modifier = Modifier.width(12.dp))
                         Text(
                             text = location.name,
-                            style = MaterialTheme.typography.bodyLarge,
-                            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
-                            color = if (isSelected) FarmerGreenPrimary else MaterialTheme.colorScheme.onSurface,
+                            fontSize = 15.sp,
+                            fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
+                            color = if (isSelected) colors.primary else colors.textPrimary,
                             modifier = Modifier.weight(1f)
                         )
                         if (isSelected) {
                             Icon(
                                 Icons.Default.Check,
                                 contentDescription = null,
-                                modifier = Modifier.size(20.dp),
-                                tint = FarmerGreenPrimary
+                                modifier = Modifier.size(18.dp),
+                                tint = colors.primary
                             )
                         }
                     }
@@ -154,10 +209,10 @@ fun LocationPickerSheet(
                 if (searchQuery.length >= 2 && !isSearching && searchResults.isEmpty()) {
                     item {
                         Text(
-                            text = "முடிவுகள் எதுவும் இல்லை",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = GrayText,
-                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 24.dp)
+                            text = locStrings.noResults,
+                            color = colors.textSecondary,
+                            fontSize = 14.sp,
+                            modifier = Modifier.padding(horizontal = 16.dp, vertical = 24.dp)
                         )
                     }
                 }

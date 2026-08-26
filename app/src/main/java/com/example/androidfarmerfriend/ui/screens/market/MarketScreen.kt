@@ -1,243 +1,347 @@
 package com.example.androidfarmerfriend.ui.screens.market
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Diamond
+import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.Egg
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.ShoppingBasket
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.androidfarmerfriend.data.location.LocationPrefs
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Crop
-import com.example.androidfarmerfriend.data.repository.FarmerRepository
+import com.example.androidfarmerfriend.data.model.MarketData
+import coil.compose.SubcomposeAsyncImage
 import com.example.androidfarmerfriend.data.util.UiState
-import com.example.androidfarmerfriend.ui.components.FarmerCard
-import com.example.androidfarmerfriend.ui.components.FilterChipGroup
-import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
-import com.example.androidfarmerfriend.ui.components.ScreenHeader
-import com.example.androidfarmerfriend.ui.theme.*
+import com.example.androidfarmerfriend.ui.components.ChipOption
+import com.example.androidfarmerfriend.ui.components.EmptyState
+import com.example.androidfarmerfriend.ui.components.ErrorState
+import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.LocPill
+import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
+import com.example.androidfarmerfriend.ui.components.PillChipGroup
+import com.example.androidfarmerfriend.ui.components.RowCard
+import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.ShimmerList
+import com.example.androidfarmerfriend.ui.components.TrendTag
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
+import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import com.example.androidfarmerfriend.ui.theme.TrendRed
+import com.example.androidfarmerfriend.util.RateCardRenderer
+import com.example.androidfarmerfriend.util.RateCardSharer
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
-    var showSearchBar by remember { mutableStateOf(false) }
+    var showMarketPicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
+    // Honest pull-to-refresh: spinner tracks the real UiState, not a
+    // synchronously-set-and-cleared flag.
+    val isRefreshing = state.cropsState is UiState.Loading
+    val scope = rememberCoroutineScope()
 
-    val context = LocalContext.current
-    val locationPrefs = remember { LocationPrefs(context) }
-    var selectedLocation by remember { mutableStateOf(locationPrefs.selectedLocation) }
-    var showLocationPicker by remember { mutableStateOf(false) }
+    val strings = LocalAppStrings.current
+    val colors = FarmerTheme.colors
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     LaunchedEffect(Unit) {
-        viewModel.onEvent(MarketEvent.ChangeLocation(locationPrefs.selectedLocation.marketName))
+        viewModel.loadInitialData()
     }
 
-    val repository = remember { FarmerRepository() }
-
-    if (showLocationPicker) {
-        LocationPickerSheet(
-            currentLocation = selectedLocation,
-            onLocationSelected = { loc ->
-                selectedLocation = loc
-                locationPrefs.selectedLocation = loc
-                showLocationPicker = false
-                viewModel.onEvent(MarketEvent.ChangeLocation(loc.marketName))
+    if (showMarketPicker) {
+        MarketPickerSheet(
+            markets = MarketData.marketsForCategory(state.selectedFilter),
+            selectedMarket = state.selectedMarket,
+            onMarketSelected = { market ->
+                viewModel.onEvent(MarketEvent.ChangeMarket(market))
+                showMarketPicker = false
             },
-            onSearch = { query -> repository.searchLocations(query) },
-            onDismiss = { showLocationPicker = false }
+            onDismiss = { showMarketPicker = false }
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(MaterialTheme.colorScheme.background)
-            .padding(16.dp)
+    val shareRateCard: () -> Unit = {
+        scope.launch {
+            val bitmap = withContext(Dispatchers.Default) {
+                RateCardRenderer.render(
+                    context = context,
+                    title = strings.marketTitle,
+                    dateLabel = state.fetchDate,
+                    marketName = state.selectedMarket.displayName,
+                    filterLabel = state.selectedFilter.displayKey(strings),
+                    crops = state.filteredCrops
+                )
+            }
+            RateCardSharer.share(
+                context, bitmap,
+                marketName = state.selectedMarket.displayName,
+                dateLabel = state.fetchDate
+            )
+        }
+    }
+
+    PullToRefreshBox(
+        isRefreshing = isRefreshing,
+        onRefresh = { viewModel.onEvent(MarketEvent.Retry) }
     ) {
-        ScreenHeader(
-            title = "மார்க்கெட் விலை",
-            subtitle = selectedLocation.name,
-            isSearchActive = showSearchBar,
-            onSearchClick = {
-                showSearchBar = !showSearchBar
-                if (!showSearchBar) viewModel.onEvent(MarketEvent.Search(""))
-            },
-            onLocationClick = { showLocationPicker = true }
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        if (showSearchBar) {
-            OutlinedTextField(
-                value = state.searchQuery,
-                onValueChange = { viewModel.onEvent(MarketEvent.Search(it)) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text("பொருளைத் தேடவும்", color = GrayText, fontSize = 14.sp) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = GrayText) },
-                trailingIcon = {
-                    if (state.searchQuery.isNotEmpty()) {
-                        IconButton(onClick = { viewModel.onEvent(MarketEvent.Search("")) }) {
-                            Icon(Icons.Default.Close, contentDescription = null, tint = GrayText)
-                        }
-                    }
-                },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                colors = OutlinedTextFieldDefaults.colors(
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedContainerColor = MaterialTheme.colorScheme.surface,
-                    focusedContainerColor = MaterialTheme.colorScheme.surface,
-                    unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                    focusedTextColor = MaterialTheme.colorScheme.onSurface
-                )
-            )
-        }
-
-        FilterChipGroup(
-            filters = listOf("காய்கறிகள்", "பழங்கள்", "இறைச்சி", "தங்கம்", "முட்டை"),
-            selectedFilter = state.selectedFilter,
-            onFilterSelected = { viewModel.onEvent(MarketEvent.SelectFilter(it)) }
-        )
-
-        if (state.fetchDate.isNotEmpty()) {
-            Text(
-                text = "புதுப்பிக்கப்பட்டது: ${state.fetchDate}",
-                style = MaterialTheme.typography.labelSmall,
-                color = GrayText,
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        when (val cropsState = state.cropsState) {
-            is UiState.Loading -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                CircularProgressIndicator(color = FarmerGreenPrimary)
-            }
-            is UiState.Error -> Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Icon(Icons.Default.ErrorOutline, contentDescription = null, tint = TrendRed, modifier = Modifier.size(56.dp))
-                    Spacer(modifier = Modifier.height(12.dp))
-                    Text("தரவுகளை ஏற்ற முடியவில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(cropsState.message, color = GrayText, style = MaterialTheme.typography.bodySmall)
-                    Spacer(modifier = Modifier.height(16.dp))
-                    Button(onClick = { viewModel.onEvent(MarketEvent.Retry) }, colors = ButtonDefaults.buttonColors(containerColor = FarmerGreenPrimary)) {
-                        Text("மீண்டும் முயற்சிக்க")
-                    }
-                }
-            }
-            is UiState.Success -> {
-                if (state.filteredCrops.isEmpty()) {
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Icon(Icons.Default.SearchOff, contentDescription = null, tint = GrayText, modifier = Modifier.size(48.dp))
-                            Spacer(modifier = Modifier.height(8.dp))
-                            Text("தரவுகள் ஏதுமில்லை", color = GrayText, style = MaterialTheme.typography.bodyLarge)
-                        }
-                    }
-                } else {
-                    LazyColumn(
-                        verticalArrangement = Arrangement.spacedBy(12.dp),
-                        contentPadding = PaddingValues(bottom = 16.dp)
-                    ) {
-                        items(state.filteredCrops) { crop ->
-                            MarketCropItem(crop)
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun MarketCropItem(crop: Crop) {
-    FarmerCard {
-        Row(
-            modifier = Modifier
-                .padding(12.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Surface(
-                modifier = Modifier.size(44.dp),
-                shape = CircleShape,
-                color = MaterialTheme.colorScheme.surfaceVariant
+        Box(modifier = Modifier.fillMaxSize()) {
+            com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+                maxWidth = 640.dp,
+                modifier = Modifier.background(colors.background)
             ) {
-                Box(contentAlignment = Alignment.Center) {
-                    Icon(
-                        Icons.Default.ShoppingCart,
-                        contentDescription = null,
-                        tint = FarmerGreenPrimary,
-                        modifier = Modifier.size(22.dp)
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = FarmerSpacing.lg)
+                ) {
+                    Spacer(Modifier.height(FarmerSpacing.lg))
+
+                    HeroTitle(
+                        text = strings.marketTitle,
+                        accent = strings.marketTitle.split(" ").getOrNull(1)
                     )
+
+                    Spacer(Modifier.height(FarmerSpacing.s))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        LocPill(
+                            text = state.selectedMarket.displayName,
+                            onClick = { showMarketPicker = true },
+                            modifier = Modifier.weight(1f, fill = false)
+                        )
+                        if (state.fetchDate.isNotEmpty()) {
+                            Spacer(Modifier.width(FarmerSpacing.s))
+                            FreshnessChip(text = state.fetchDate.uppercase())
+                        }
+                    }
+
+                    Spacer(Modifier.height(FarmerSpacing.lg))
+
+                    SearchField(
+                        value = state.searchQuery,
+                        onValueChange = { viewModel.onEvent(MarketEvent.Search(it)) },
+                        placeholder = strings.searchHint
+                    )
+
+                    PillChipGroup(
+                        filters = FilterType.entries.map { ChipOption(it.displayKey(strings), it.icon()) },
+                        selectedFilter = state.selectedFilter.displayKey(strings),
+                        onFilterSelected = { option ->
+                            FilterType.entries.find { it.displayKey(strings) == option.label }?.let {
+                                viewModel.onEvent(MarketEvent.SelectFilter(it))
+                            }
+                        }
+                    )
+
+                    if (state.selectedFilter == FilterType.GOLD) {
+                        MarketInfoChip(text = "${strings.gold} · ${strings.chennai}")
+                    }
+
+                    when (val cropsState = state.cropsState) {
+                        is UiState.Loading -> ShimmerList(modifier = Modifier.weight(1f))
+                        is UiState.Error -> ErrorState(
+                            message = cropsState.message.ifBlank { strings.loadError },
+                            onRetry = { viewModel.onEvent(MarketEvent.Retry) },
+                            modifier = Modifier.weight(1f)
+                        )
+                        is UiState.Success -> {
+                            if (state.filteredCrops.isEmpty()) {
+                                EmptyState(
+                                    icon = Icons.Default.SearchOff,
+                                    title = strings.noData,
+                                    subtitle = "${state.selectedFilter.displayKey(strings)} · ${state.selectedMarket.displayName}"
+                                )
+                            } else {
+                                LazyColumn(
+                                    verticalArrangement = Arrangement.spacedBy(10.dp),
+                                    contentPadding = PaddingValues(bottom = 16.dp)
+                                ) {
+                                    items(state.filteredCrops) { crop ->
+                                        MarketCropItem(crop, state.selectedMarket.displayName, strings)
+                                    }
+                                }
+                            }
+                        }
+                    }
                 }
             }
 
-            Spacer(modifier = Modifier.width(12.dp))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    text = crop.name,
-                    style = MaterialTheme.typography.bodyLarge,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 16.sp,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    text = crop.price,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = GrayText
-                )
+            FloatingActionButton(
+                onClick = shareRateCard,
+                modifier = Modifier
+                    .align(Alignment.BottomEnd)
+                    .padding(FarmerSpacing.lg),
+                containerColor = colors.primary,
+                contentColor = colors.onPrimary
+            ) {
+                Icon(Icons.Default.Share, contentDescription = strings.shareAction)
             }
-
-            MarketTrendIndicator(crop.trend)
         }
     }
 }
 
 @Composable
-fun MarketTrendIndicator(trend: Double) {
-    if (trend == 0.0) {
+private fun MarketInfoChip(text: String) {
+    Text(
+        text = text,
+        color = FarmerTheme.colors.primary,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.SemiBold,
+        modifier = Modifier
+            .padding(vertical = 2.dp)
+            .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
+            .padding(horizontal = 12.dp, vertical = 5.dp)
+    )
+}
+
+private fun FilterType.icon(): ImageVector = when (this) {
+    FilterType.VEGETABLES -> Icons.Default.Eco
+    FilterType.FRUITS -> Icons.Default.ShoppingBasket
+    FilterType.NONVEG -> Icons.Default.Restaurant
+    FilterType.GOLD -> Icons.Default.Diamond
+    FilterType.EGG -> Icons.Default.Egg
+}
+
+@Composable
+private fun FreshnessChip(text: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ) {
+        Icon(
+            Icons.Default.Event,
+            contentDescription = null,
+            tint = FarmerTheme.colors.primary,
+            modifier = Modifier.size(13.dp)
+        )
+        Spacer(Modifier.width(4.dp))
         Text(
-            text = "0%",
-            style = MaterialTheme.typography.labelMedium,
+            text = text,
+            style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = GrayText
+            color = FarmerTheme.colors.primary
+        )
+    }
+}
+
+@Composable
+fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
+    val colors = FarmerTheme.colors
+
+    RowCard(
+        title = crop.name,
+        subtitle = crop.retailPrice.takeIf { it.isNotBlank() }
+            ?.let { "${strings.retailPriceLabel}: ₹$it" }
+            ?: marketName.takeIf { it.isNotEmpty() },
+        icon = Icons.Default.ShoppingCart,
+        iconTint = colors.primary,
+        iconContainer = colors.softMint,
+        leading = { CropThumbnail(crop) },
+        end = {
+            Column(horizontalAlignment = Alignment.End) {
+                PriceText(price = crop.price)
+                val trend = crop.priceDiffPercent ?: crop.trend.takeIf { it != 0.0 }
+                if (trend != null && trend != 0.0) {
+                    Spacer(Modifier.height(4.dp))
+                    TrendTag(percent = trend)
+                }
+            }
+        }
+    )
+}
+
+/** Product photo when available; falls back to the category icon tile. */
+@Composable
+private fun CropThumbnail(crop: Crop) {
+    val colors = FarmerTheme.colors
+    if (crop.imageUrl.isBlank()) {
+        Icon(
+            Icons.Default.ShoppingCart,
+            contentDescription = null,
+            tint = colors.primary,
+            modifier = Modifier
+                .size(46.dp)
+                .background(colors.softMint, RoundedCornerShape(15.dp))
+                .padding(12.dp)
         )
         return
     }
-    val isPositive = trend > 0
-    val color = if (isPositive) TrendGreen else TrendRed
-    val icon = if (isPositive) Icons.Default.ArrowUpward else Icons.Default.ArrowDownward
-    val sign = if (isPositive) "+" else ""
+    SubcomposeAsyncImage(
+        model = crop.imageUrl,
+        contentDescription = crop.nameEng.ifBlank { crop.name },
+        modifier = Modifier
+            .size(46.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(colors.surfaceMuted),
+        loading = {
+            Box(Modifier.matchParentSize().background(colors.softMint))
+        },
+        error = {
+            Icon(
+                Icons.Default.ShoppingCart,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.matchParentSize().padding(12.dp)
+            )
+        }
+    )
+}
 
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = color,
-            modifier = Modifier.size(14.dp)
-        )
-        Spacer(modifier = Modifier.width(2.dp))
+/** Price with unit subscript. */
+@Composable
+private fun PriceText(price: String) {
+    val colors = FarmerTheme.colors
+    val unitMatch = Regex("^(.*?)\\s*/\\s*(.*)$").find(price)
+    if (unitMatch != null) {
+        Row(verticalAlignment = Alignment.Bottom) {
+            Text(
+                text = unitMatch.groupValues[1],
+                color = colors.textPrimary,
+                style = MaterialTheme.typography.titleLarge,
+                fontWeight = FontWeight.ExtraBold
+            )
+            Spacer(Modifier.width(2.dp))
+            Text(
+                text = "/ ${unitMatch.groupValues[2]}",
+                color = colors.textTertiary,
+                style = MaterialTheme.typography.labelMedium
+            )
+        }
+    } else {
         Text(
-            text = "$sign$trend%",
-            color = color,
-            style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold
+            text = price,
+            color = colors.textPrimary,
+            style = MaterialTheme.typography.titleLarge,
+            fontWeight = FontWeight.ExtraBold
         )
     }
 }
