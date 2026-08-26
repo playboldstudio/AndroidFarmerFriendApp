@@ -69,7 +69,7 @@ fun SplashScreen(onReady: () -> Unit = {}, onFinished: () -> Unit) {
 
             val alpha = textAlpha.value
             Text(
-                text = strings.appName,
+                text = "Farmer Friend",
                 color = colors.textPrimary.copy(alpha = alpha),
                 fontSize = 28.sp,
                 fontWeight = FontWeight.ExtraBold,
@@ -79,7 +79,7 @@ fun SplashScreen(onReady: () -> Unit = {}, onFinished: () -> Unit) {
             Spacer(modifier = Modifier.height(6.dp))
 
             Text(
-                text = strings.appTagline,
+                text = "Made for Indian Farmers",
                 color = colors.textSecondary.copy(alpha = alpha),
                 fontSize = 13.sp
             )

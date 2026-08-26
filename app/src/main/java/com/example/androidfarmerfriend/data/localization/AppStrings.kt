@@ -181,6 +181,25 @@ data class AppStrings(
     val nextDaysLabel: String,
     val rangeTitle: String,
     val readMoreLabel: String,
+    // Auth & polish additions
+    val forgotPassword: String,
+    val markAllRead: String,
+    val unreadCountBadge: String,
+    val languageAppliedHint: String,
+    val googleContinue: String,
+    val newHerePrompt: String,
+    val alreadyRegisteredPrompt: String,
+    val googleUnavailable: String,
+    val googleSignInFailed: String,
+    val noGoogleAccount: String,
+    val invalidEmailError: String,
+    val shortPasswordError: String,
+    val emptyNameError: String,
+    val noAccountError: String,
+    val wrongPasswordError: String,
+    val emailInUseError: String,
+    val genericAuthError: String,
+    val passwordResetSent: String,
 ) {
     companion object {
         val Tamil = AppStrings(
@@ -358,7 +377,25 @@ data class AppStrings(
             viewAllLabel = "எல்லாம் பார்",
             nextDaysLabel = "அடுத்த நாட்கள்",
             rangeTitle = "5 நாள் வீச்சு",
-            readMoreLabel = "முழு குறிப்பைப் படிக்க"
+            readMoreLabel = "முழு குறிப்பைப் படிக்க",
+            forgotPassword = "கடவுச்சொல்லை மறந்துவிட்டீர்களா?",
+            markAllRead = "எல்லாம் படித்ததாக குறி",
+            unreadCountBadge = "%d புதியவை",
+            languageAppliedHint = "மொழி உடனடியாகப் பயன்படுத்தப்படும்",
+            googleContinue = "Google மூலம் தொடரவும்",
+            newHerePrompt = "புதியவரா?",
+            alreadyRegisteredPrompt = "ஏற்கனவே பதிவு செய்துள்ளீர்களா?",
+            googleUnavailable = "Google உள்நுழைவு கிடைக்கவில்லை. SHA-1 ஐ Firebase-இல் சேர்த்து google-services.json ஐப் புதுப்பிக்கவும்.",
+            googleSignInFailed = "Google உள்நுழைவு தோல்வியுற்றது",
+            noGoogleAccount = "Google கணக்கு எதுவும் இல்லை",
+            invalidEmailError = "சரியான மின்னஞ்சல் முகவரியை உள்ளிடவும்",
+            shortPasswordError = "கடவுச்சொல் குறைந்தது 6 எழுத்துகள் இருக்க வேண்டும்",
+            emptyNameError = "பெயரை காலியாக விட முடியாது",
+            noAccountError = "இந்த மின்னஞ்சலுக்கு கணக்கு இல்லை",
+            wrongPasswordError = "தவறான மின்னஞ்சல் அல்லது கடவுச்சொல்",
+            emailInUseError = "இந்த மின்னஞ்சல் ஏற்கனவே பயன்பாட்டில் உள்ளது",
+            genericAuthError = "அங்கீகாரம் தோல்வியுற்றது. மீண்டும் முயற்சிக்கவும்",
+            passwordResetSent = "கடவுச்சொல் மீட்டமைப்பு இணைப்பு உங்கள் மின்னஞ்சலுக்கு அனுப்பப்பட்டது"
         )
 
         val English = AppStrings(
@@ -536,7 +573,25 @@ data class AppStrings(
             viewAllLabel = "View all",
             nextDaysLabel = "Next days",
             rangeTitle = "5-Day Range",
-            readMoreLabel = "Read full note"
+            readMoreLabel = "Read full note",
+            forgotPassword = "Forgot password?",
+            markAllRead = "Mark all read",
+            unreadCountBadge = "%d new",
+            languageAppliedHint = "Language will be applied immediately",
+            googleContinue = "Continue with Google",
+            newHerePrompt = "New here?",
+            alreadyRegisteredPrompt = "Already registered?",
+            googleUnavailable = "Google sign-in unavailable — add SHA-1 in Firebase and update google-services.json",
+            googleSignInFailed = "Google sign-in failed",
+            noGoogleAccount = "No Google account available",
+            invalidEmailError = "Enter a valid email address",
+            shortPasswordError = "Password must be at least 6 characters",
+            emptyNameError = "Name cannot be empty",
+            noAccountError = "No account found for this email",
+            wrongPasswordError = "Incorrect email or password",
+            emailInUseError = "This email is already registered — try signing in",
+            genericAuthError = "Authentication failed. Please try again",
+            passwordResetSent = "Password reset link sent to your email"
         )
 
         val Hindi = AppStrings(
@@ -714,7 +769,25 @@ data class AppStrings(
             viewAllLabel = "सभी देखें",
             nextDaysLabel = "अगले दिन",
             rangeTitle = "5-दिन की सीमा",
-            readMoreLabel = "पूरी जानकारी पढ़ें"
+            readMoreLabel = "पूरी जानकारी पढ़ें",
+            forgotPassword = "पासवर्ड भूल गए?",
+            markAllRead = "सभी को पढ़ा हुआ मार्क करें",
+            unreadCountBadge = "%d नई",
+            languageAppliedHint = "भाषा तुरंत लागू होगी",
+            googleContinue = "Google से जारी रखें",
+            newHerePrompt = "नए हैं?",
+            alreadyRegisteredPrompt = "पहले से पंजीकृत?",
+            googleUnavailable = "Google साइन-इन उपलब्ध नहीं — Firebase में SHA-1 जोड़ें और google-services.json अपडेट करें",
+            googleSignInFailed = "Google साइन-इन विफल",
+            noGoogleAccount = "कोई Google खाता उपलब्ध नहीं",
+            invalidEmailError = "मान्य ईमेल पता दर्ज करें",
+            shortPasswordError = "पासवर्ड कम से कम 6 अक्षरों का होना चाहिए",
+            emptyNameError = "नाम खाली नहीं हो सकता",
+            noAccountError = "इस ईमेल के लिए कोई खाता नहीं मिला",
+            wrongPasswordError = "गलत ईमेल या पासवर्ड",
+            emailInUseError = "यह ईमेल पहले से पंजीकृत है — साइन-इन करें",
+            genericAuthError = "प्रमाणीकरण विफल। कृपया पुनः प्रयास करें",
+            passwordResetSent = "पासवर्ड रीसेट लिंक आपके ईमेल पर भेजा गया"
         )
 
         val Telugu = AppStrings(
@@ -892,7 +965,25 @@ data class AppStrings(
             viewAllLabel = "అన్నీ చూడండి",
             nextDaysLabel = "రాబోయే రోజులు",
             rangeTitle = "5 రోజుల పరిధి",
-            readMoreLabel = "పూర్తి నోట్ చదవండి"
+            readMoreLabel = "పూర్తి నోట్ చదవండి",
+            forgotPassword = "పాస్‌వర్డ్ మర్చిపోయారా?",
+            markAllRead = "అన్నీ చదివినట్లు గుర్తించు",
+            unreadCountBadge = "%d కొత్తవి",
+            languageAppliedHint = "భాష వెంటనే వర్తింపజేయబడుతుంది",
+            googleContinue = "Googleతో కొనసాగించండి",
+            newHerePrompt = "కొత్తవారా?",
+            alreadyRegisteredPrompt = "ఇప్పటికే నమోదు చేసుకున్నారా?",
+            googleUnavailable = "Google సైన్-ఇన్ అందుబాటులో లేదు — Firebase లో SHA-1 జోడించి google-services.json అప్‌డేట్ చేయండి",
+            googleSignInFailed = "Google సైన్-ఇన్ విఫలమైంది",
+            noGoogleAccount = "Google ఖాతా ఏదీ అందుబాటులో లేదు",
+            invalidEmailError = "సరైన ఇమెయిల్ చిరునామాను నమోదు చేయండి",
+            shortPasswordError = "పాస్‌వర్డ్ కనీసం 6 అక్షరాలు ఉండాలి",
+            emptyNameError = "పేరు ఖాళీగా ఉండకూడదు",
+            noAccountError = "ఈ ఇమెయిల్‌కు ఖాతా కనుగొనబడలేదు",
+            wrongPasswordError = "తప్పు ఇమెయిల్ లేదా పాస్‌వర్డ్",
+            emailInUseError = "ఈ ఇమెయిల్ ఇప్పటికే నమోదైంది — సైన్-ఇన్ చేయండి",
+            genericAuthError = "ప్రమాధీకరణ విఫలమైంది. దయచేసి మళ్లీ ప్రయత్నించండి",
+            passwordResetSent = "పాస్‌వర్డ్ రీసెట్ లింక్ మీ ఇమెయిల్‌కు పంపబడింది"
         )
 
         val Malayalam = AppStrings(
@@ -1070,7 +1161,25 @@ data class AppStrings(
             viewAllLabel = "എല്ലാം കാണുക",
             nextDaysLabel = "അടുത്ത ദിവസങ്ങൾ",
             rangeTitle = "5-ദിവസ പരിധി",
-            readMoreLabel = "മുഴുവൻ കുറിപ്പും വായിക്കുക"
+            readMoreLabel = "മുഴുവൻ കുറിപ്പും വായിക്കുക",
+            forgotPassword = "പാസ്‌വേഡ് മറന്നോ?",
+            markAllRead = "എല്ലാം വായിച്ചതായി അടയാളപ്പെടുത്തുക",
+            unreadCountBadge = "%d പുതിയവ",
+            languageAppliedHint = "ഭാഷ ഉടനടി പ്രയോഗിക്കും",
+            googleContinue = "Google ഉപയോഗിച്ച് തുടരുക",
+            newHerePrompt = "പുതിയതാണോ?",
+            alreadyRegisteredPrompt = "ഇതിനകം രജിസ്റ്റർ ചെയ്തിട്ടുണ്ടോ?",
+            googleUnavailable = "Google സൈൻ-ഇൻ ലഭ്യമല്ല — Firebase-ൽ SHA-1 ചേർത്ത് google-services.json അപ്ഡേറ്റ് ചെയ്യുക",
+            googleSignInFailed = "Google സൈൻ-ഇൻ പരാജയപ്പെട്ടു",
+            noGoogleAccount = "Google അക്കൗണ്ട് ഒന്നും ലഭ്യമല്ല",
+            invalidEmailError = "സാധുവായ ഇമെയിൽ വിലാസം നൽകുക",
+            shortPasswordError = "പാസ്‌വേഡിന് കുറഞ്ഞത് 6 അക്ഷരങ്ങൾ വേണം",
+            emptyNameError = "പേര് ശൂന്യമായിരിക്കരുത്",
+            noAccountError = "ഈ ഇമെയിലിനായി അക്കൗണ്ട് കണ്ടെത്തിയില്ല",
+            wrongPasswordError = "തെറ്റായ ഇമെയിൽ അല്ലെങ്കിൽ പാസ്‌വേഡ്",
+            emailInUseError = "ഈ ഇമെയിൽ ഇതിനകം രജിസ്റ്റർ ചെയ്തിട്ടുണ്ട് — സൈൻ-ഇൻ ചെയ്യുക",
+            genericAuthError = "ആധികാരികത പരാജയപ്പെട്ടു. വീണ്ടും ശ്രമിക്കുക",
+            passwordResetSent = "പാസ്‌വേഡ് റീസെറ്റ് ലിങ്ക് നിങ്ങളുടെ ഇമെയിലിലേക്ക് അയച്ചു"
         )
 
         val Kannada = AppStrings(
@@ -1248,7 +1357,25 @@ data class AppStrings(
             viewAllLabel = "ಎಲ್ಲವನ್ನೂ ನೋಡಿ",
             nextDaysLabel = "ಮುಂದಿನ ದಿನಗಳು",
             rangeTitle = "5 ದಿನದ ವ್ಯಾಪ್ತಿ",
-            readMoreLabel = "ಪೂರ್ಣ ಟಿಪ್ಪಣಿ ಓದಿ"
+            readMoreLabel = "ಪೂರ್ಣ ಟಿಪ್ಪಣಿ ಓದಿ",
+            forgotPassword = "ಪಾಸ್‌ವರ್ಡ್ ಮರೆತಿರಾ?",
+            markAllRead = "ಎಲ್ಲವನ್ನೂ ಓದಿದಂತೆ ಗುರುತಿಸಿ",
+            unreadCountBadge = "%d ಹೊಸದು",
+            languageAppliedHint = "ಭಾಷೆ ತಕ್ಷಣವೇ ಅನ್ವಯವಾಗುತ್ತದೆ",
+            googleContinue = "Google ಮೂಲಕ ಮುಂದುವರಿಯಿರಿ",
+            newHerePrompt = "ಹೊಸಬರಾ?",
+            alreadyRegisteredPrompt = "ಈಗಾಗಲೇ ನೋಂದಣಿ ಆಗಿದೆಯಾ?",
+            googleUnavailable = "Google ಸೈನ್-ಇನ್ ಲಭ್ಯವಿಲ್ಲ — Firebase ನಲ್ಲಿ SHA-1 ಸೇರಿಸಿ google-services.json ನವೀಕರಿಸಿ",
+            googleSignInFailed = "Google ಸೈನ್-ಇನ್ ವಿಫಲವಾಗಿದೆ",
+            noGoogleAccount = "ಯಾವುದೇ Google ಖಾತೆ ಲಭ್ಯವಿಲ್ಲ",
+            invalidEmailError = "ಮಾನ್ಯವಾದ ಇಮೇಲ್ ವಿಳಾಸವನ್ನು ನಮೂದಿಸಿ",
+            shortPasswordError = "ಪಾಸ್‌ವರ್ಡ್ ಕನಿಷ್ಠ 6 ಅಕ್ಷರಗಳಾಗಿರಬೇಕು",
+            emptyNameError = "ಹೆಸರು ಖಾಲಿಯಾಗಿರಬಾರದು",
+            noAccountError = "ಈ ಇಮೇಲ್‌ಗೆ ಖಾತೆ ಸಿಗಲಿಲ್ಲ",
+            wrongPasswordError = "ತಪ್ಪಾದ ಇಮೇಲ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್",
+            emailInUseError = "ಈ ಇಮೇಲ್ ಈಗಾಗಲೇ ನೋಂದಾಯಿಸಲಾಗಿದೆ — ಸೈನ್-ಇನ್ ಮಾಡಿ",
+            genericAuthError = "ದೃಢೀಕರಣ ವಿಫಲವಾಗಿದೆ. ದಯವಿಟ್ಟು ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ",
+            passwordResetSent = "ಪಾಸ್‌ವರ್ಡ್ ಮರುಹೊಂದಿಸುವ ಲಿಂಕ್ ನಿಮ್ಮ ಇಮೇಲ್‌ಗೆ ಕಳುಹಿಸಲಾಗಿದೆ"
         )
 
         val Marathi = AppStrings(
@@ -1426,7 +1553,25 @@ data class AppStrings(
             viewAllLabel = "सर्व पहा",
             nextDaysLabel = "पुढील दिवस",
             rangeTitle = "५-दिवसांचा तप्ती",
-            readMoreLabel = "संपूर्ण टीप वाचा"
+            readMoreLabel = "संपूर्ण टीप वाचा",
+            forgotPassword = "पासवर्ड विसरलात?",
+            markAllRead = "सर्व वाचलेले म्हणून चिन्हांकित करा",
+            unreadCountBadge = "%d नवीन",
+            languageAppliedHint = "भाषा लगेच लागू होईल",
+            googleContinue = "Google सह सुरु ठेवा",
+            newHerePrompt = "नवीन आहात?",
+            alreadyRegisteredPrompt = "आधीच नोंदणी केली आहे?",
+            googleUnavailable = "Google साइन-इन उपलब्ध नाही — Firebase मध्ये SHA-1 जोडा आणि google-services.json अपडेट करा",
+            googleSignInFailed = "Google साइन-इन अयशस्वी",
+            noGoogleAccount = "कोणतेही Google खाते उपलब्ध नाही",
+            invalidEmailError = "वैध ईमेल पत्ता प्रविष्ट करा",
+            shortPasswordError = "पासवर्ड किमान ६ अक्षरांचा असावा",
+            emptyNameError = "नाव रिकामे असू शकत नाही",
+            noAccountError = "या ईमेलसाठी खाते सापडले नाही",
+            wrongPasswordError = "चुकीचा ईमेल किंवा पासवर्ड",
+            emailInUseError = "हा ईमेल आधीच नोंदवला आहे — साइन-इन करा",
+            genericAuthError = "प्रमाणीकरण अयशस्वी. कृपया पुन्हा प्रयत्न करा",
+            passwordResetSent = "पासवर्ड रीसेट लिंक तुमच्या ईमेलवर पाठवला आहे"
         )
 
         val Bengali = AppStrings(
@@ -1604,7 +1749,25 @@ data class AppStrings(
             viewAllLabel = "সব দেখুন",
             nextDaysLabel = "আগামী দিন",
             rangeTitle = "৫ দিনের পরিসর",
-            readMoreLabel = "সম্পূর্ণ পড়ুন"
+            readMoreLabel = "সম্পূর্ণ পড়ুন",
+            forgotPassword = "পাসওয়ার্ড ভুলে গেছেন?",
+            markAllRead = "সব পড়া হয়েছে চিহ্নিত করুন",
+            unreadCountBadge = "%d নতুন",
+            languageAppliedHint = "ভাষা সঙ্গে সঙ্গেই প্রয়োগ হবে",
+            googleContinue = "Google দিয়ে চালিয়ে যান",
+            newHerePrompt = "নতুন এসেছেন?",
+            alreadyRegisteredPrompt = "ইতিমধ্যে নিবন্ধিত?",
+            googleUnavailable = "Google সাইন-ইন উপলব্ধ নয় — Firebase-এ SHA-1 যোগ করে google-services.json আপডেট করুন",
+            googleSignInFailed = "Google সাইন-ইন ব্যর্থ",
+            noGoogleAccount = "কোনো Google অ্যাকাউন্ট উপলব্ধ নেই",
+            invalidEmailError = "একটি সঠিক ইমেল ঠিকানা লিখুন",
+            shortPasswordError = "পাসওয়ার্ড কমপক্ষে ৬ অক্ষরের হতে হবে",
+            emptyNameError = "নাম খালি রাখা যাবে না",
+            noAccountError = "এই ইমেলের জন্য কোনো অ্যাকাউন্ট পাওয়া যায়নি",
+            wrongPasswordError = "ভুল ইমেল বা পাসওয়ার্ড",
+            emailInUseError = "এই ইমেল ইতিমধ্যে নিবন্ধিত — সাইন-ইন করুন",
+            genericAuthError = "প্রমাণীকরণ ব্যর্থ। আবার চেষ্টা করুন",
+            passwordResetSent = "পাসওয়ার্ড রিসেট লিংক আপনার ইমেলে পাঠানো হয়েছে"
         )
 
         val Punjabi = AppStrings(
@@ -1782,7 +1945,25 @@ data class AppStrings(
             viewAllLabel = "ਸਭ ਵੇਖੋ",
             nextDaysLabel = "ਅਗਲੇ ਦਿਨ",
             rangeTitle = "੫-ਦਿਨ ਰੇਂਜ",
-            readMoreLabel = "ਪੂਰੀ ਨੋਟ ਪੜ੍ਹੋ"
+            readMoreLabel = "ਪੂਰੀ ਨੋਟ ਪੜ੍ਹੋ",
+            forgotPassword = "ਪਾਸਵਰਡ ਭੁੱਲ ਗਏ?",
+            markAllRead = "ਸਭ ਪੜ੍ਹਿਆ ਹੋਇਆ ਮਾਰਕ ਕਰੋ",
+            unreadCountBadge = "%d ਨਵਾਂ",
+            languageAppliedHint = "ਭਾਸ਼ਾ ਤੁਰੰਤ ਲਾਗੂ ਹੋਵੇਗੀ",
+            googleContinue = "Google ਨਾਲ ਜਾਰੀ ਰੱਖੋ",
+            newHerePrompt = "ਨਵੇਂ ਹੋ?",
+            alreadyRegisteredPrompt = "ਪਹਿਲਾਂ ਹੀ ਰਜਿਸਟਰ ਹੈ?",
+            googleUnavailable = "Google ਸਾਈਨ-ਇਨ ਉਪਲਬਧ ਨਹੀਂ — Firebase ਵਿੱਚ SHA-1 ਸ਼ਾਮਲ ਕਰੋ ਅਤੇ google-services.json ਅੱਪਡੇਟ ਕਰੋ",
+            googleSignInFailed = "Google ਸਾਈਨ-ਇਨ ਅਸਫਲ",
+            noGoogleAccount = "ਕੋਈ Google ਖਾਤਾ ਉਪਲਬਧ ਨਹੀਂ",
+            invalidEmailError = "ਇੱਕ ਵੈਧ ਈਮੇਲ ਪਤਾ ਦਰਜ ਕਰੋ",
+            shortPasswordError = "ਪਾਸਵਰਡ ਘੱਟੋ-ਘੱਟ 6 ਅੱਖਰਾਂ ਦਾ ਹੋਣਾ ਚਾਹੀਦਾ ਹੈ",
+            emptyNameError = "ਨਾਮ ਖਾਲੀ ਨਹੀਂ ਹੋ ਸਕਦਾ",
+            noAccountError = "ਇਸ ਈਮੇਲ ਲਈ ਕੋਈ ਖਾਤਾ ਨਹੀਂ ਮਿਲਿਆ",
+            wrongPasswordError = "ਗਲਤ ਈਮੇਲ ਜਾਂ ਪਾਸਵਰਡ",
+            emailInUseError = "ਇਹ ਈਮੇਲ ਪਹਿਲਾਂ ਹੀ ਰਜਿਸਟਰ ਹੈ — ਸਾਈਨ-ਇਨ ਕਰੋ",
+            genericAuthError = "ਪ੍ਰਮਾਣਿਕਤਾ ਅਸਫਲ। ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ",
+            passwordResetSent = "ਪਾਸਵਰਡ ਰੀਸੈਟ ਲਿੰਕ ਤੁਹਾਡੇ ਈਮੇਲ 'ਤੇ ਭੇਜਿਆ ਗਿਆ"
         )
 
         val Gujarati = AppStrings(
@@ -1960,7 +2141,25 @@ data class AppStrings(
             viewAllLabel = "બધું જુઓ",
             nextDaysLabel = "આગામી દિવસો",
             rangeTitle = "૫-દિવસની રેન્જ",
-            readMoreLabel = "સંપૂર્ણ નોંધ વાંચો"
+            readMoreLabel = "સંપૂર્ણ નોંધ વાંચો",
+            forgotPassword = "પાસવર્ડ ભૂલી ગયા?",
+            markAllRead = "બધા વાંચેલા ચિહ્નિત કરો",
+            unreadCountBadge = "%d નવા",
+            languageAppliedHint = "ભાષા તરત જ લાગુ થશે",
+            googleContinue = "Google થી ચાલુ રાખો",
+            newHerePrompt = "નવા છો?",
+            alreadyRegisteredPrompt = "પહેલેથી નોંધાયેલા છો?",
+            googleUnavailable = "Google સાઇન-ઇન ઉપલબ્ધ નથી — Firebase માં SHA-1 ઉમેરો અને google-services.json અપડેટ કરો",
+            googleSignInFailed = "Google સાઇન-ઇન નિષ્ફળ",
+            noGoogleAccount = "કોઈ Google એકાઉન્ટ ઉપલબ્ધ નથી",
+            invalidEmailError = "માન્ય ઈમેલ સરનામું દાખલ કરો",
+            shortPasswordError = "પાસવર્ડ ઓછામતે 6 અક્ષરોનો હોવો જોઈએ",
+            emptyNameError = "નામ ખાલી હોઈ શકે નહીં",
+            noAccountError = "આ ઈમેલ માટે કોઈ ખાતું મળ્યું નથી",
+            wrongPasswordError = "ખોટો ઈમેલ અથવા પાસવર્ડ",
+            emailInUseError = "આ ઈમેલ પહેલેથી નોંધાયેલ છે — સાઇન-ઇન કરો",
+            genericAuthError = "પ્રમાણીકરણ નિષ્ફળ. કૃપા કરીને ફરી પ્રયાસ કરો",
+            passwordResetSent = "પાસવર્ડ રીસેટ લિંક તમારા ઈમેલ પર મોકલાયો છે"
         )
 
         val Odia = AppStrings(
@@ -2138,7 +2337,25 @@ data class AppStrings(
             viewAllLabel = "ସବୁ ଦେଖନ୍ତୁ",
             nextDaysLabel = "ଆସନ୍ତା ଦିନ",
             rangeTitle = "୫-ଦିନିକ ପରିସର",
-            readMoreLabel = "ସମ୍ପୂର୍ଣ୍ଣ ପଢ଼ନ୍ତୁ"
+            readMoreLabel = "ସମ୍ପୂର୍ଣ୍ଣ ପଢ଼ନ୍ତୁ",
+            forgotPassword = "ପାସୱାର୍ଡ ଭୁଲିଗଲା?",
+            markAllRead = "ସବୁ ପଢ଼ାଯାଇଥିବା ଚିହ୍ନଟ କରନ୍ତୁ",
+            unreadCountBadge = "%d ନୂଆ",
+            languageAppliedHint = "ଭାଷା ତୁରନ୍ତ ପ୍ରୟୋଗ ହେବ",
+            googleContinue = "Google ସହିତ ଜାରି ରଖନ୍ତୁ",
+            newHerePrompt = "ନୂଆ ଅଛନ୍ତି?",
+            alreadyRegisteredPrompt = "ପୂର୍ବରୁ ପଞ୍ଜୀକୃତ?",
+            googleUnavailable = "Google ସାଇନ-ଇନ୍ ଉପଲବ୍ଧ ନାହିଁ — Firebase ରେ SHA-1 ଯୋଗ କରି google-services.json ଅପଡେଟ୍ କରନ୍ତୁ",
+            googleSignInFailed = "Google ସାଇନ-ଇନ୍ ବିଫଳ",
+            noGoogleAccount = "କୌଣସି Google ଆକାଉଣ୍ଟ ଉପଲବ୍ଧ ନାହିଁ",
+            invalidEmailError = "ଏକ ଭେଦ ଇମେଲ୍ ଠିକଣା ପରିପୂର୍ଣ୍ଣ କରନ୍ତୁ",
+            shortPasswordError = "ପାସୱାର୍ଡ ଅତି କମରେ 6 ଅକ୍ଷରର ହୋଇବା ଉଚିତ୍",
+            emptyNameError = "ନାମ ଖାଲି ହୋଇପାରିବ ନାହିଁ",
+            noAccountError = "ଏହି ଇମେଲ୍ ପାଇଁ କୌଣସି ଆକାଉଣ୍ଟ ମିଳିଲା ନାହିଁ",
+            wrongPasswordError = "ଭୁଲ ଇମେଲ୍ କିମ୍ବା ପାସୱାର୍ଡ",
+            emailInUseError = "ଏହି ଇମେଲ୍ ପୂର୍ବରୁ ପଞ୍ଜୀକୃତ — ସାଇନ-ଇନ୍ କରନ୍ତୁ",
+            genericAuthError = "ପ୍ରାମାଣିକତା ବିଫଳ। ଦୟାକରି ପୁନର୍ବାର ଚେଷ୍ଟା କରନ୍ତୁ",
+            passwordResetSent = "ପାସୱାର୍ଡ ରିସେଟ୍ ଲିଙ୍କ୍ ଆପଣଙ୍କ ଇମେଲ୍‌କୁ ପଠାଯାଇଛି"
         )
 }
 }

@@ -9,18 +9,24 @@ class UserPrefs(context: Context) {
 
     var userName: String
         get() = prefs.getString(KEY_NAME, DEFAULT_NAME) ?: DEFAULT_NAME
-        set(value) = prefs.edit().putString(KEY_NAME, value).apply()
+        set(value) { prefs.edit().putString(KEY_NAME, value).commit() }
 
     var userPhone: String
         get() = prefs.getString(KEY_PHONE, DEFAULT_PHONE) ?: DEFAULT_PHONE
-        set(value) = prefs.edit().putString(KEY_PHONE, value).apply()
+        set(value) { prefs.edit().putString(KEY_PHONE, value).commit() }
+
+    var userEmail: String
+        get() = prefs.getString(KEY_EMAIL, DEFAULT_EMAIL) ?: DEFAULT_EMAIL
+        set(value) { prefs.edit().putString(KEY_EMAIL, value).commit() }
 
     companion object {
         private const val KEY_NAME = "user_name"
         private const val KEY_PHONE = "user_phone"
+        private const val KEY_EMAIL = "user_email"
 
         const val DEFAULT_NAME = "Farmer"
         const val DEFAULT_PHONE = "9876543210"
+        const val DEFAULT_EMAIL = ""
 
         val PLACEHOLDER_NAMES = setOf(
             DEFAULT_NAME, "விவசாயி", "किसान", "రైతు", "കർഷകൻ",

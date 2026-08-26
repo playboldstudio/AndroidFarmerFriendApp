@@ -48,14 +48,22 @@ fun DiseaseScreen(
         viewModel.loadData(languagePrefs.selectedLanguage)
     }
 
+    // Honest PTR: keep spinner visible briefly so the gesture reads honestly.
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            kotlinx.coroutines.delay(600)
+            isRefreshing = false
+        }
+    }
+
     androidx.compose.material3.pulltorefresh.PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
-            viewModel.loadData()
-            isRefreshing = false
+            viewModel.loadData(languagePrefs.selectedLanguage)
         }
     ) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -102,6 +110,7 @@ fun DiseaseScreen(
                 }
             }
         }
+        }
     }
 }
 
@@ -122,6 +131,7 @@ fun DiseaseItem(disease: Disease) {
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Icon(
+                    @Suppress("DEPRECATION")
                     Icons.Default.OpenInNew,
                     contentDescription = null,
                     tint = colors.textTertiary,

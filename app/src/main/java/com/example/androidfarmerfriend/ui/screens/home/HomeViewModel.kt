@@ -76,7 +76,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
         val name = personalizedName(userPrefs.userName)
         _state.value = _state.value.copy(
             greetingName = name,
-            greeting = if (name != null) "${strings.welcomeBack}, $name 👋" else "${strings.welcomeBack} 👋"
+            greeting = if (name != null) "${strings.welcomeBack}, $name" else strings.welcomeBack
         )
     }
 

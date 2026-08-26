@@ -2,10 +2,8 @@ package com.example.androidfarmerfriend.ui.screens.schemes
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
@@ -16,7 +14,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Scheme
@@ -50,14 +47,22 @@ fun SchemesScreen(
         viewModel.loadData(languagePrefs.selectedLanguage)
     }
 
+    // Honest PTR: keep spinner visible briefly so the gesture reads honestly.
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            kotlinx.coroutines.delay(600)
+            isRefreshing = false
+        }
+    }
+
     androidx.compose.material3.pulltorefresh.PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
-            viewModel.loadData()
-            isRefreshing = false
+            viewModel.loadData(languagePrefs.selectedLanguage)
         }
     ) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -104,6 +109,7 @@ fun SchemesScreen(
                 }
             }
         }
+        }
     }
 }
 
@@ -131,6 +137,7 @@ fun SchemeItem(scheme: Scheme) {
                 }
                 Spacer(modifier = Modifier.height(6.dp))
                 Icon(
+                    @Suppress("DEPRECATION")
                     Icons.Default.OpenInNew,
                     contentDescription = null,
                     tint = colors.textTertiary,

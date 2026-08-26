@@ -26,6 +26,7 @@ import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.ui.components.ChipOption
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.LocPill
@@ -58,14 +59,22 @@ fun CropNotesScreen(
         viewModel.loadData()
     }
 
+    // Keep the spinner visible briefly after refresh so the gesture reads honestly.
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            kotlinx.coroutines.delay(600)
+            isRefreshing = false
+        }
+    }
+
     PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
             viewModel.loadData()
-            isRefreshing = false
         }
     ) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -100,7 +109,7 @@ fun CropNotesScreen(
                 state.crops.forEach { crop ->
                     val displayName = if (crop == ALL_CROPS) strings.filterAll else crop
                     PillChip(
-                        text = displayName,
+                        option = ChipOption(displayName),
                         selected = crop == state.selectedCrop,
                         onClick = { viewModel.onEvent(CropNoteEvent.SelectCrop(crop)) }
                     )
@@ -129,6 +138,7 @@ fun CropNotesScreen(
                     }
                 }
             }
+        }
         }
     }
 }

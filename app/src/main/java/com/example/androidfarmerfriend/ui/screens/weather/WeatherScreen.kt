@@ -48,7 +48,7 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     val state by viewModel.state.collectAsState()
 
     val strings = LocalAppStrings.current
-    var showLocationPicker by remember { mutableStateOf(false) }
+    var showLocationPicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.setStrings(strings)
@@ -72,23 +72,26 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FarmerTheme.colors.background)
-            .padding(horizontal = FarmerSpacing.lg)
-            .verticalScroll(rememberScrollState())
+    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+        maxWidth = 640.dp,
+        modifier = Modifier.background(FarmerTheme.colors.background)
     ) {
-        Spacer(Modifier.height(FarmerSpacing.lg))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = FarmerSpacing.lg)
+                .verticalScroll(rememberScrollState())
+        ) {
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
-        HeroTitle(text = strings.weatherTitle)
+            HeroTitle(text = strings.weatherTitle)
 
-        Spacer(Modifier.height(FarmerSpacing.s))
+            Spacer(Modifier.height(FarmerSpacing.s))
 
-        LocPill(
-            text = state.selectedLocation?.name.orEmpty(),
-            onClick = { showLocationPicker = true }
-        )
+            LocPill(
+                text = state.selectedLocation?.name.orEmpty(),
+                onClick = { showLocationPicker = true }
+            )
 
         when (val weatherState = state.weatherState) {
             is UiState.Loading -> ShimmerList(
@@ -104,12 +107,13 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
         }
 
         Spacer(Modifier.height(FarmerSpacing.xxl))
+        }
     }
 }
 
 @Composable
 fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.English) {
-    var selectedDay by remember { mutableIntStateOf(0) }
+    var selectedDay by androidx.compose.runtime.saveable.rememberSaveable { mutableIntStateOf(0) }
 
     CompactWeatherCard(
         weather = weather,
@@ -135,6 +139,10 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
                 )
             }
         }
+
+        // The selected pill drives a detail card so the selection has an effect.
+        val detail = weather.forecast[selectedDay.coerceIn(weather.forecast.indices)]
+        SelectedDayDetailCard(day = detail, strings = strings)
 
         SectionHeaderCompat(title = strings.rangeTitle)
         ForecastRangeList(forecast = weather.forecast)
@@ -191,6 +199,58 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
     Spacer(Modifier.height(14.dp))
 
     FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
+}
+
+/** Detail card for whichever forecast day-pill is selected. */
+@Composable
+private fun SelectedDayDetailCard(day: ForecastDay, strings: AppStrings) {
+    val colors = FarmerTheme.colors
+    Card(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp),
+        shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.cardColors(containerColor = colors.softBlue)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(46.dp)
+                    .clip(RoundedCornerShape(15.dp))
+                    .background(colors.surface),
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    weatherIconFor(day.weatherCode),
+                    contentDescription = null,
+                    tint = colors.weatherBlue,
+                    modifier = Modifier.size(26.dp)
+                )
+            }
+            Spacer(Modifier.width(13.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = day.day,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.textPrimary
+                )
+            }
+            Column(horizontalAlignment = Alignment.End) {
+                Text(
+                    text = "${day.maxTemp} / ${day.minTemp}",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = colors.primaryDeep
+                )
+            }
+        }
+    }
 }
 
 /** Rows with a gradient bar showing each day's min–max span within the week's range. */

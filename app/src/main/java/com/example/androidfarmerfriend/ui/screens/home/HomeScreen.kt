@@ -13,7 +13,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
@@ -21,14 +20,17 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -36,12 +38,15 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import coil.compose.SubcomposeAsyncImage
 import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.FarmTipCard
 import com.example.androidfarmerfriend.ui.components.HeroTitle
@@ -69,6 +74,15 @@ fun HomeScreen(
     val strings = LocalAppStrings.current
     var showLocationPicker by remember { mutableStateOf(false) }
 
+    // Live unread-alert count for the header bell. Uses its own repository
+    // listener slot so it never fights the alerts screen's list listener.
+    var unreadCount by remember { mutableIntStateOf(0) }
+    DisposableEffect(Unit) {
+        val repo = FirestoreAlertRepository.getInstance()
+        repo.listenForUnreadCount(limit = 30) { unreadCount = it }
+        onDispose { repo.stopUnreadListening() }
+    }
+
     LaunchedEffect(Unit) {
         viewModel.setStrings(strings)
         viewModel.onEvent(HomeEvent.LoadInitial)
@@ -91,15 +105,19 @@ fun HomeScreen(
         )
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FarmerTheme.colors.background)
-            .padding(horizontal = FarmerSpacing.lg)
-            .verticalScroll(rememberScrollState())
+    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+        maxWidth = 640.dp,
+        modifier = Modifier.background(FarmerTheme.colors.background)
     ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = FarmerSpacing.lg)
+                .verticalScroll(rememberScrollState())
+        ) {
         HomeHeader(
             strings = strings,
+            unreadCount = unreadCount,
             onProfileClick = { onNavigate(Screen.Profile.route) },
             onAlertsClick = { onNavigate(Screen.Alerts.route) }
         )
@@ -135,12 +153,30 @@ fun HomeScreen(
             )
         }
 
+        Spacer(Modifier.height(FarmerSpacing.md))
+
         if (state.marketPreview.isNotEmpty()) {
-            SectionHeader(
-                title = strings.todaysMarketTitle,
-                action = strings.viewAllLabel,
-                onAction = { onNavigate(Screen.Market.route) }
-            )
+            val colors = FarmerTheme.colors
+            Row(
+                verticalAlignment = Alignment.Bottom,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = FarmerSpacing.lg, bottom = FarmerSpacing.s)
+            ) {
+                Text(
+                    text = strings.navMarket,
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.textPrimary,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "${strings.viewAllLabel} ›",
+                    color = colors.primary,
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.clickable { onNavigate(Screen.Market.route) }
+                )
+            }
             MarketPreviewStrip(crops = state.marketPreview)
         }
 
@@ -153,13 +189,18 @@ fun HomeScreen(
         FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
 
         Spacer(Modifier.height(FarmerSpacing.xxl))
+        }
     }
 }
 
 @Composable
 private fun DateLine() {
-    val label = remember {
-        SimpleDateFormat("EEEE · dd MMMM yyyy", Locale.ENGLISH).format(Date()).uppercase()
+    val strings = LocalAppStrings.current
+    // Localized day/month names; the app language drives the locale.
+    val context = LocalContext.current
+    val label = remember(strings) {
+        val locale = LanguagePrefs(context).selectedLanguage.locale()
+        SimpleDateFormat("EEEE · dd MMMM yyyy", locale).format(Date())
     }
     Text(
         text = label,
@@ -170,7 +211,12 @@ private fun DateLine() {
 }
 
 @Composable
-private fun HomeHeader(strings: AppStrings, onProfileClick: () -> Unit, onAlertsClick: () -> Unit) {
+private fun HomeHeader(
+    strings: AppStrings,
+    unreadCount: Int,
+    onProfileClick: () -> Unit,
+    onAlertsClick: () -> Unit
+) {
     val colors = FarmerTheme.colors
     Row(
         modifier = Modifier
@@ -205,7 +251,7 @@ private fun HomeHeader(strings: AppStrings, onProfileClick: () -> Unit, onAlerts
         HeaderIconButton(
             icon = Icons.Default.Notifications,
             contentDescription = strings.navAlerts,
-            showDot = true,
+            showDot = unreadCount > 0,
             onClick = onAlertsClick
         )
         Spacer(Modifier.width(FarmerSpacing.s))
@@ -227,7 +273,9 @@ private fun HeaderIconButton(
     val colors = FarmerTheme.colors
     Box(
         modifier = Modifier
-            .size(38.dp)
+            // 44dp: comfortably above the minimum touch-target floor while
+            // keeping the 38dp visual footprint.
+            .size(44.dp)
             .clip(CircleShape)
             .background(colors.surface)
             .border(1.dp, colors.outline, CircleShape)
@@ -238,14 +286,14 @@ private fun HeaderIconButton(
             icon,
             contentDescription = contentDescription,
             tint = colors.textSecondary,
-            modifier = Modifier.size(19.dp)
+            modifier = Modifier.size(20.dp)
         )
         if (showDot) {
             Box(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
-                    .padding(top = 7.dp, end = 8.dp)
-                    .size(8.dp)
+                    .padding(top = 9.dp, end = 10.dp)
+                    .size(9.dp)
                     .background(colors.alertRed, CircleShape)
             )
         }
@@ -285,6 +333,7 @@ private fun SectionHeader(
 
 @Composable
 private fun MarketPreviewStrip(crops: List<Crop>) {
+    val colors = FarmerTheme.colors
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         crops.take(3).forEach { crop ->
             val unit = crop.price.substringAfter("/ ", "").ifBlank { crop.units }
@@ -292,29 +341,70 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(18.dp))
-                    .background(FarmerTheme.colors.surface)
-                    .border(1.dp, FarmerTheme.colors.outline, RoundedCornerShape(18.dp))
-                    .padding(12.dp)
+                    .background(colors.surface)
+                    .border(1.dp, colors.outline, RoundedCornerShape(18.dp))
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally
             ) {
+                // Veg image
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(RoundedCornerShape(14.dp))
+                        .background(colors.softMint),
+                    contentAlignment = Alignment.Center
+                ) {
+                    if (crop.imageUrl.isNotBlank()) {
+                        SubcomposeAsyncImage(
+                            model = crop.imageUrl,
+                            contentDescription = crop.nameEng.ifBlank { crop.name },
+                            modifier = Modifier
+                                .size(48.dp)
+                                .clip(RoundedCornerShape(14.dp)),
+                            contentScale = ContentScale.Crop,
+                            loading = {
+                                Icon(
+                                    Icons.Default.BarChart,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            },
+                            error = {
+                                Icon(
+                                    Icons.Default.BarChart,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(22.dp)
+                                )
+                            }
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.BarChart,
+                            contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(22.dp)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(8.dp))
                 Text(
                     text = crop.nameEng.ifBlank { crop.name },
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
-                    color = FarmerTheme.colors.textPrimary,
+                    color = colors.textPrimary,
                     maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
                 )
-                Spacer(Modifier.height(3.dp))
+                Spacer(Modifier.height(2.dp))
                 Text(
-                    text = "₹${"%.0f".format(crop.priceValue)}",
-                    style = MaterialTheme.typography.titleMedium,
+                    text = "₹${"%.0f".format(crop.priceValue)}/$unit",
+                    style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
-                    color = FarmerTheme.colors.primaryDeep
-                )
-                Text(
-                    text = "per $unit",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = FarmerTheme.colors.textTertiary
+                    color = colors.primaryDeep,
+                    textAlign = TextAlign.Center
                 )
             }
         }
@@ -390,8 +480,6 @@ private fun QuickAccessTile(
 }
 
 // Retained reference so the arrow import stays honest even if LocPill changes.
-private val ChevronDown = Icons.Default.KeyboardArrowDown
-
 @Preview(showBackground = true)
 @Composable
 fun HomeScreenPreview() {

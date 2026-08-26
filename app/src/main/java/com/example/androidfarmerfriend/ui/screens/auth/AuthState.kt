@@ -9,5 +9,7 @@ data class AuthState(
     val email: String = "",
     val password: String = "",
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: String? = null,
+    /** Non-blocking notice, e.g. "reset link sent" — shown in brand color. */
+    val info: String? = null
 )

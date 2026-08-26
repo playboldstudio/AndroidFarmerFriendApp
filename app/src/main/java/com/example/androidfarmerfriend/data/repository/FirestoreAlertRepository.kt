@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import com.google.firebase.firestore.Query
@@ -12,6 +13,29 @@ class FirestoreAlertRepository {
     private val db = FirebaseFirestore.getInstance()
     private val alertsCollection = db.collection("alerts")
     private var listenerRegistration: ListenerRegistration? = null
+    // Separate slot so the home-screen unread badge can coexist with the
+    // alerts screen's own realtime listener.
+    private var unreadListenerRegistration: ListenerRegistration? = null
+
+    private fun DocumentSnapshot.toAlert(): Alert? = try {
+        Alert(
+            id = id,
+            title = getString("title") ?: "",
+            message = getString("message") ?: "",
+            time = getString("time") ?: "",
+            timestamp = getLong("timestamp") ?: System.currentTimeMillis(),
+            type = try {
+                AlertType.valueOf(getString("type") ?: "PRICE")
+            } catch (e: Exception) {
+                AlertType.PRICE
+            },
+            isRead = getBoolean("isRead") ?: false,
+            actionRoute = getString("actionRoute") ?: "",
+            location = getString("location") ?: ""
+        )
+    } catch (e: Exception) {
+        null
+    }
 
     suspend fun getAlerts(
         location: String? = null,
@@ -30,27 +54,7 @@ class FirestoreAlertRepository {
         query = query.limit(limit)
 
         val snapshot = query.get().await()
-        return dedupe(snapshot.documents.mapNotNull { doc ->
-            try {
-                Alert(
-                    id = doc.id,
-                    title = doc.getString("title") ?: "",
-                    message = doc.getString("message") ?: "",
-                    time = doc.getString("time") ?: "",
-                    timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis(),
-                    type = try {
-                        AlertType.valueOf(doc.getString("type") ?: "PRICE")
-                    } catch (e: Exception) {
-                        AlertType.PRICE
-                    },
-                    isRead = doc.getBoolean("isRead") ?: false,
-                    actionRoute = doc.getString("actionRoute") ?: "",
-                    location = doc.getString("location") ?: ""
-                )
-            } catch (e: Exception) {
-                null
-            }
-        })
+        return dedupe(snapshot.documents.mapNotNull { it.toAlert() })
     }
 
     /** Collapse alerts that share the same content (duplicate protection). */
@@ -72,28 +76,25 @@ class FirestoreAlertRepository {
             .limit(limit)
             .addSnapshotListener { snapshot, error ->
                 if (error != null || snapshot == null) return@addSnapshotListener
-                val alerts = dedupe(snapshot.documents.mapNotNull { doc ->
-                    try {
-                        Alert(
-                            id = doc.id,
-                            title = doc.getString("title") ?: "",
-                            message = doc.getString("message") ?: "",
-                            time = doc.getString("time") ?: "",
-                            timestamp = doc.getLong("timestamp") ?: System.currentTimeMillis(),
-                            type = try {
-                                AlertType.valueOf(doc.getString("type") ?: "PRICE")
-                            } catch (e: Exception) {
-                                AlertType.PRICE
-                            },
-                            isRead = doc.getBoolean("isRead") ?: false,
-                            actionRoute = doc.getString("actionRoute") ?: "",
-                            location = doc.getString("location") ?: ""
-                        )
-                    } catch (e: Exception) {
-                        null
-                    }
-                })
+                val alerts = dedupe(snapshot.documents.mapNotNull { it.toAlert() })
                 onAlertsReceived(alerts)
+            }
+    }
+
+    /** Realtime count of unread alerts, mirroring the list query's shape. */
+    fun listenForUnreadCount(
+        limit: Long = 30,
+        onCountChanged: (Int) -> Unit
+    ) {
+        unreadListenerRegistration?.remove()
+        unreadListenerRegistration = alertsCollection
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .limit(limit)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null || snapshot == null) return@addSnapshotListener
+                val unread = dedupe(snapshot.documents.mapNotNull { it.toAlert() })
+                    .count { !it.isRead }
+                onCountChanged(unread)
             }
     }
 
@@ -102,8 +103,21 @@ class FirestoreAlertRepository {
         listenerRegistration = null
     }
 
+    fun stopUnreadListening() {
+        unreadListenerRegistration?.remove()
+        unreadListenerRegistration = null
+    }
+
     suspend fun markAsRead(alertId: String) {
         alertsCollection.document(alertId).update("isRead", true).await()
+    }
+
+    suspend fun markAllAsRead(alertIds: List<String>) {
+        val batch = db.batch()
+        alertIds.forEach { id ->
+            batch.update(alertsCollection.document(id), "isRead", true)
+        }
+        batch.commit().await()
     }
 
     suspend fun saveToken(token: String, location: String, crops: List<String>) {

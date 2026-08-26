@@ -3,7 +3,21 @@ package com.example.androidfarmerfriend.ui.screens.profile
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,8 +29,9 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Description
 import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Landscape
+import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
@@ -25,8 +40,26 @@ import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Sync
 import androidx.compose.material.icons.filled.Verified
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -44,16 +77,13 @@ import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.screens.auth.AuthMode
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
-private val GoldBorder = Color(0xFFE8C96A)
-private val GoldTitle = Color(0xFF8A6A12)
-private val GoldBody = Color(0xFF6B5A20)
-private val UnlockTop = Color(0xFFFFFDF5)
-private val UnlockBottom = Color(0xFFFFF6E0)
-private val GoogleRed = Color(0xFFDB4437)
+// Google brand red is fixed across themes (official mark color).
+
 
 @Composable
 fun ProfileScreen(
@@ -74,6 +104,11 @@ fun ProfileScreen(
         }
     }
 
+    // Re-read prefs + Firestore every time this screen appears so signup changes show up.
+    LaunchedEffect(Unit) {
+        viewModel.refresh()
+    }
+
     LaunchedEffect(state.message) {
         state.message?.let {
             snackbarHostState.showSnackbar(it)
@@ -87,127 +122,133 @@ fun ProfileScreen(
             .background(FarmerTheme.colors.background)
             .imePadding()
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = FarmerSpacing.lg)
-                .verticalScroll(rememberScrollState())
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+            maxWidth = 640.dp,
+            modifier = Modifier.fillMaxSize()
         ) {
-            Spacer(Modifier.height(FarmerSpacing.lg))
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = FarmerSpacing.lg)
+                    .verticalScroll(rememberScrollState())
+            ) {
+                Spacer(Modifier.height(FarmerSpacing.lg))
 
-            HeroTitle(text = strings.profileTitle)
+                HeroTitle(text = strings.profileTitle)
 
-            Spacer(Modifier.height(FarmerSpacing.md))
+                Spacer(Modifier.height(FarmerSpacing.md))
 
-            if (isSignedIn) {
-                IdentityCard(
-                    state = state,
-                    strings = strings,
-                    onStartEditing = { viewModel.onEvent(ProfileEvent.StartEditing) },
-                    onSaveProfile = { viewModel.onEvent(ProfileEvent.SaveProfile) },
-                    onCancelEditing = { viewModel.onEvent(ProfileEvent.CancelEditing) },
-                    onNameChange = { viewModel.onEvent(ProfileEvent.UpdateTempName(it)) },
-                    onPhoneChange = { viewModel.onEvent(ProfileEvent.UpdateTempPhone(it)) }
-                )
-
-                MenuSection(title = stringAccount(strings)) {
-                    SettingsRow(
-                        icon = Icons.Default.Person,
-                        iconTint = FarmerTheme.colors.primary,
-                        iconContainer = FarmerTheme.colors.softMint,
-                        title = strings.myDetails,
-                        showDivider = true,
-                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToDetails) }
+                if (isSignedIn) {
+                    IdentityCard(
+                        state = state,
+                        strings = strings,
+                        onStartEditing = { viewModel.onEvent(ProfileEvent.StartEditing) }
                     )
-                    SettingsRow(
-                        icon = Icons.Default.Landscape,
-                        iconTint = FarmerTheme.colors.alertGreen,
-                        iconContainer = FarmerTheme.colors.softGreen,
-                        title = strings.myLands,
-                        trailing = strings.soonLabel,
-                        trailMuted = true,
-                        showDivider = true,
-                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToLands) }
-                    )
-                    SettingsRow(
-                        icon = Icons.Default.Logout,
-                        iconTint = FarmerTheme.colors.alertRed,
-                        iconContainer = FarmerTheme.colors.softRed,
-                        title = strings.logout,
-                        danger = true,
-                        showDivider = false,
-                        onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) }
-                    )
+
+                    MenuSection(title = stringAccount(strings)) {
+                        SettingsRow(
+                            icon = Icons.Default.Person,
+                            iconTint = FarmerTheme.colors.primary,
+                            iconContainer = FarmerTheme.colors.softMint,
+                            title = strings.myDetails,
+                            showDivider = true,
+                            onClick = { viewModel.onEvent(ProfileEvent.NavigateToDetails) }
+                        )
+                        SettingsRow(
+                            icon = Icons.Default.Landscape,
+                            iconTint = FarmerTheme.colors.alertGreen,
+                            iconContainer = FarmerTheme.colors.softGreen,
+                            title = strings.myLands,
+                            trailing = strings.soonLabel,
+                            trailMuted = true,
+                            showDivider = true,
+                            onClick = { viewModel.onEvent(ProfileEvent.NavigateToLands) }
+                        )
+                        SettingsRow(
+                            icon = Icons.Default.Logout,
+                            iconTint = FarmerTheme.colors.alertRed,
+                            iconContainer = FarmerTheme.colors.softRed,
+                            title = strings.logout,
+                            danger = true,
+                            showDivider = false,
+                            onClick = { viewModel.onEvent(ProfileEvent.ConfirmLogout) }
+                        )
+                    }
+
+                    MenuSection(title = strings.preferencesSection) {
+                        SettingsRow(
+                            icon = Icons.Default.Language,
+                            iconTint = FarmerTheme.colors.weatherBlue,
+                            iconContainer = FarmerTheme.colors.softBlue,
+                            title = strings.language,
+                            trailing = state.languageLabel,
+                            showDivider = true,
+                            onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
+                        )
+                        SettingsRow(
+                            icon = Icons.Default.Notifications,
+                            iconTint = FarmerTheme.colors.alertPurple,
+                            iconContainer = FarmerTheme.colors.softPurple,
+                            title = strings.notifications,
+                            trailing = strings.onLabel,
+                            trailAccent = FarmerTheme.colors.primary,
+                            showDivider = false,
+                            onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) }
+                        )
+                    }
+                } else {
+                    GuestHero(strings = strings)
+
+                    Spacer(Modifier.height(FarmerSpacing.md))
+
+                    Button(
+                        onClick = { requestSignIn(AuthMode.SIGN_IN) {} },
+                        shape = RoundedCornerShape(14.dp),
+                        contentPadding = PaddingValues(vertical = 13.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text(strings.signInAction, fontWeight = FontWeight.Bold)
+                    }
+
+                    UnlockTeaserCard(strings = strings)
+
+                    MenuSection(title = strings.preferencesSection) {
+                        SettingsRow(
+                            icon = Icons.Default.Language,
+                            iconTint = FarmerTheme.colors.weatherBlue,
+                            iconContainer = FarmerTheme.colors.softBlue,
+                            title = strings.language,
+                            trailing = state.languageLabel,
+                            showDivider = false,
+                            onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
+                        )
+                    }
                 }
 
-                MenuSection(title = strings.preferencesSection) {
+                MenuSection(title = strings.legalSection) {
                     SettingsRow(
-                        icon = Icons.Default.Language,
+                        icon = Icons.Default.PrivacyTip,
+                        iconTint = FarmerTheme.colors.cropBrown,
+                        iconContainer = FarmerTheme.colors.softBrown,
+                        title = strings.privacyPolicy,
+                        showDivider = true,
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToPrivacy) }
+                    )
+                    SettingsRow(
+                        icon = Icons.Default.Description,
                         iconTint = FarmerTheme.colors.weatherBlue,
                         iconContainer = FarmerTheme.colors.softBlue,
-                        title = strings.language,
-                        trailing = state.languageLabel,
-                        showDivider = true,
-                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
-                    )
-                    SettingsRow(
-                        icon = Icons.Default.Notifications,
-                        iconTint = FarmerTheme.colors.alertPurple,
-                        iconContainer = FarmerTheme.colors.softPurple,
-                        title = strings.notifications,
-                        trailing = strings.onLabel,
-                        trailAccent = FarmerTheme.colors.primary,
+                        title = strings.termsOfUse,
                         showDivider = false,
-                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) }
+                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToTerms) }
                     )
                 }
-            } else {
-                GuestHero(strings = strings)
 
-                SignInOptionsCard(
-                    strings = strings,
-                    onGoogle = { requestSignIn {} },
-                    onEmail = { requestSignIn {} }
-                )
-
-                UnlockTeaserCard(strings = strings)
-
-                MenuSection(title = strings.preferencesSection) {
-                    SettingsRow(
-                        icon = Icons.Default.Language,
-                        iconTint = FarmerTheme.colors.weatherBlue,
-                        iconContainer = FarmerTheme.colors.softBlue,
-                        title = strings.language,
-                        trailing = state.languageLabel,
-                        showDivider = false,
-                        onClick = { viewModel.onEvent(ProfileEvent.NavigateToLanguage) }
-                    )
-                }
-            }
-
-            MenuSection(title = strings.legalSection) {
-                SettingsRow(
-                    icon = Icons.Default.PrivacyTip,
-                    iconTint = FarmerTheme.colors.cropBrown,
-                    iconContainer = FarmerTheme.colors.softBrown,
-                    title = strings.privacyPolicy,
-                    showDivider = true,
-                    onClick = { viewModel.onEvent(ProfileEvent.NavigateToPrivacy) }
-                )
-                SettingsRow(
-                    icon = Icons.Default.Description,
-                    iconTint = FarmerTheme.colors.weatherBlue,
-                    iconContainer = FarmerTheme.colors.softBlue,
-                    title = strings.termsOfUse,
-                    showDivider = false,
-                    onClick = { viewModel.onEvent(ProfileEvent.NavigateToTerms) }
+                VersionFooter(
+                    label = "${strings.appName} v${BuildConfig.VERSION_NAME}",
+                    tagline = strings.appTagline
                 )
             }
-
-            VersionFooter(
-                label = "${strings.appName} v${BuildConfig.VERSION_NAME}",
-                tagline = strings.appTagline
-            )
         }
 
         SnackbarHost(
@@ -229,6 +270,48 @@ fun ProfileScreen(
             dismissButton = {
                 TextButton(onClick = { viewModel.onEvent(ProfileEvent.DismissLogout) }) {
                     Text(strings.no)
+                }
+            }
+        )
+    }
+
+    if (state.isEditing) {
+        AlertDialog(
+            onDismissRequest = { viewModel.onEvent(ProfileEvent.CancelEditing) },
+            title = {
+                Text(
+                    text = strings.editAction,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = FarmerTheme.colors.primary
+                )
+            },
+            text = {
+                ProfileEditForm(
+                    state = state,
+                    strings = strings,
+                    onNameChange = { viewModel.onEvent(ProfileEvent.UpdateTempName(it)) },
+                    onPhoneChange = { viewModel.onEvent(ProfileEvent.UpdateTempPhone(it)) }
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = { viewModel.onEvent(ProfileEvent.SaveProfile) },
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(strings.saveAction)
+                }
+            },
+            dismissButton = {
+                OutlinedButton(
+                    onClick = { viewModel.onEvent(ProfileEvent.CancelEditing) },
+                    shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+                ) {
+                    Text(strings.cancelAction, color = FarmerTheme.colors.textSecondary)
                 }
             }
         )
@@ -278,7 +361,12 @@ private fun GuestHero(strings: AppStrings) {
 }
 
 @Composable
-private fun SignInOptionsCard(strings: AppStrings, onGoogle: () -> Unit, onEmail: () -> Unit) {
+private fun SignInOptionsCard(
+    strings: AppStrings,
+    onGoogle: () -> Unit,
+    onSignUp: () -> Unit,
+    onSignIn: () -> Unit
+) {
     val colors = FarmerTheme.colors
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -308,23 +396,43 @@ private fun SignInOptionsCard(strings: AppStrings, onGoogle: () -> Unit, onEmail
                     .fillMaxWidth()
                     .padding(vertical = FarmerSpacing.md)
             ) {
-                HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = colors.outline)
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = colors.outline
+                )
                 Text(
                     text = strings.orLabel,
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.textTertiary,
                     modifier = Modifier.padding(horizontal = FarmerSpacing.md)
                 )
-                HorizontalDivider(modifier = Modifier.weight(1f), thickness = 1.dp, color = colors.outline)
+                HorizontalDivider(
+                    modifier = Modifier.weight(1f),
+                    thickness = 1.dp,
+                    color = colors.outline
+                )
             }
 
             Button(
-                onClick = onEmail,
+                onClick = onSignUp,
                 shape = RoundedCornerShape(14.dp),
                 contentPadding = PaddingValues(vertical = 13.dp),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text(strings.signInAction, fontWeight = FontWeight.Bold)
+                Text(strings.signUpAction, fontWeight = FontWeight.Bold)
+            }
+
+            Spacer(Modifier.height(FarmerSpacing.s))
+
+            OutlinedButton(
+                onClick = onSignIn,
+                shape = RoundedCornerShape(14.dp),
+                contentPadding = PaddingValues(vertical = 13.dp),
+                border = androidx.compose.foundation.BorderStroke(1.5.dp, colors.outline),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text(strings.signInAction, fontWeight = FontWeight.Bold, color = colors.textPrimary)
             }
         }
     }
@@ -333,22 +441,32 @@ private fun SignInOptionsCard(strings: AppStrings, onGoogle: () -> Unit, onEmail
 @Composable
 private fun GoogleButton(onClick: () -> Unit) {
     val colors = FarmerTheme.colors
+    val strings = LocalAppStrings.current
     OutlinedButton(
         onClick = onClick,
         shape = RoundedCornerShape(14.dp),
         contentPadding = PaddingValues(vertical = 12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(containerColor = colors.surface, contentColor = colors.textPrimary),
+        colors = ButtonDefaults.outlinedButtonColors(
+            containerColor = colors.surface,
+            contentColor = colors.textPrimary
+        ),
         border = androidx.compose.foundation.BorderStroke(1.5.dp, colors.outline),
         modifier = Modifier.fillMaxWidth()
     ) {
-        Text("G", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Bold, color = GoogleRed)
+        Text(
+            "G",
+            style = MaterialTheme.typography.titleMedium,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFFDB4437)
+        )
         Spacer(Modifier.width(FarmerSpacing.s))
-        Text("Continue with Google", fontWeight = FontWeight.SemiBold)
+        Text(strings.googleContinue, fontWeight = FontWeight.SemiBold)
     }
 }
 
 @Composable
 private fun UnlockTeaserCard(strings: AppStrings) {
+    val colors = FarmerTheme.colors
     val rows = listOf(
         Icons.Default.Share to strings.unlockShare,
         Icons.Default.Sync to strings.unlockSync,
@@ -359,19 +477,31 @@ private fun UnlockTeaserCard(strings: AppStrings) {
             .fillMaxWidth()
             .padding(top = FarmerSpacing.md),
         shape = RoundedCornerShape(20.dp),
-        border = androidx.compose.foundation.BorderStroke(1.dp, GoldBorder)
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, colors.goldBorder)
     ) {
         Column(
             modifier = Modifier
-                .background(Brush.linearGradient(listOf(UnlockTop, UnlockBottom)))
+                .fillMaxWidth()
+                .background(Brush.linearGradient(listOf(colors.unlockTop, colors.unlockBottom)))
                 .padding(16.dp)
         ) {
-            Text(
-                text = "🔒  ${strings.unlockTitle}",
-                style = MaterialTheme.typography.labelLarge,
-                fontWeight = FontWeight.Bold,
-                color = GoldTitle
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Default.Lock,
+                    contentDescription = null,
+                    tint = colors.goldTitle,
+                    modifier = Modifier.size(14.dp)
+                )
+                Spacer(Modifier.width(FarmerSpacing.xs))
+                Text(
+                    text = strings.unlockTitle,
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.goldTitle
+                )
+            }
             Spacer(Modifier.height(FarmerSpacing.s))
             rows.forEach { (icon, label) ->
                 Row(
@@ -382,16 +512,21 @@ private fun UnlockTeaserCard(strings: AppStrings) {
                         modifier = Modifier
                             .size(30.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFFFBEECB)),
+                            .background(colors.unlockTileBg),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(icon, contentDescription = null, tint = Color(0xFFC9A23B), modifier = Modifier.size(15.dp))
+                        Icon(
+                            icon,
+                            contentDescription = null,
+                            tint = colors.unlockTileIcon,
+                            modifier = Modifier.size(15.dp)
+                        )
                     }
                     Spacer(Modifier.width(FarmerSpacing.md))
                     Text(
                         text = label,
                         style = MaterialTheme.typography.bodySmall,
-                        color = GoldBody
+                        color = colors.goldBody
                     )
                 }
             }
@@ -405,60 +540,33 @@ private fun UnlockTeaserCard(strings: AppStrings) {
 private fun IdentityCard(
     state: ProfileState,
     strings: AppStrings,
-    onStartEditing: () -> Unit,
-    onSaveProfile: () -> Unit,
-    onCancelEditing: () -> Unit,
-    onNameChange: (String) -> Unit,
-    onPhoneChange: (String) -> Unit
+    onStartEditing: () -> Unit
 ) {
-    if (state.isEditing) {
-        Card(
-            modifier = Modifier.fillMaxWidth(),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-            elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
-        ) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Brush.linearGradient(listOf(FarmerTheme.colors.softMint, FarmerTheme.colors.softGreen)))
-                    .padding(FarmerSpacing.xl)
-            ) {
-                ProfileEditForm(
-                    state = state,
-                    strings = strings,
-                    onSave = onSaveProfile,
-                    onCancel = onCancelEditing,
-                    onNameChange = onNameChange,
-                    onPhoneChange = onPhoneChange
+    IdentitySurface {
+        InitialsAvatar(name = state.displayName)
+
+        Spacer(Modifier.width(FarmerSpacing.md))
+
+        Column(modifier = Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = state.displayName,
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = FarmerTheme.colors.primaryDeep,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false)
+                )
+                Spacer(Modifier.width(FarmerSpacing.xs))
+                Icon(
+                    Icons.Default.Verified,
+                    contentDescription = null,
+                    tint = FarmerTheme.colors.primaryBright,
+                    modifier = Modifier.size(16.dp)
                 )
             }
-        }
-    } else {
-        IdentitySurface {
-            InitialsAvatar(name = state.displayName)
-
-            Spacer(Modifier.width(FarmerSpacing.md))
-
-            Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = state.displayName,
-                        style = MaterialTheme.typography.titleLarge,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = FarmerTheme.colors.primaryDeep,
-                        maxLines = 1,
-                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                        modifier = Modifier.weight(1f, fill = false)
-                    )
-                    Spacer(Modifier.width(FarmerSpacing.xs))
-                    Icon(
-                        Icons.Default.Verified,
-                        contentDescription = null,
-                        tint = FarmerTheme.colors.primaryBright,
-                        modifier = Modifier.size(16.dp)
-                    )
-                }
+            if (state.userPhone.isNotBlank() && state.userPhone != "9876543210") {
                 Spacer(Modifier.height(FarmerSpacing.xs))
                 Text(
                     text = phoneWithDialCode(state.userPhone),
@@ -468,9 +576,19 @@ private fun IdentityCard(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
-
-            EditPillButton(onClick = onStartEditing, label = strings.editAction)
+            if (state.userEmail.isNotBlank()) {
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = state.userEmail,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = FarmerTheme.colors.textTertiary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                )
+            }
         }
+
+        EditPillButton(onClick = onStartEditing, label = strings.editAction)
     }
 }
 
@@ -498,67 +616,47 @@ private fun IdentitySurface(content: @Composable RowScope.() -> Unit) {
 internal fun ProfileEditForm(
     state: ProfileState,
     strings: AppStrings,
-    onSave: () -> Unit,
-    onCancel: () -> Unit,
     onNameChange: (String) -> Unit,
     onPhoneChange: (String) -> Unit
 ) {
     val colors = FarmerTheme.colors
 
-    OutlinedTextField(
-        value = state.tempName,
-        onValueChange = onNameChange,
-        label = { Text(strings.nameField) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        shape = RoundedCornerShape(14.dp),
-        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
-        colors = editFieldColors()
-    )
-
-    Spacer(Modifier.height(FarmerSpacing.md))
-
-    OutlinedTextField(
-        value = state.tempPhone,
-        onValueChange = onPhoneChange,
-        label = { Text(strings.phoneField) },
-        modifier = Modifier.fillMaxWidth(),
-        singleLine = true,
-        shape = RoundedCornerShape(14.dp),
-        prefix = {
-            Text(text = "+91 ", color = colors.textSecondary, style = MaterialTheme.typography.bodyLarge)
-        },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Done),
-        isError = state.phoneError != null,
-        supportingText = state.phoneError?.let { error ->
-            { Text(error, color = MaterialTheme.colorScheme.error) }
-        },
-        colors = editFieldColors()
-    )
-
-    Spacer(Modifier.height(FarmerSpacing.lg))
-
-    Row(horizontalArrangement = Arrangement.spacedBy(FarmerSpacing.s)) {
-        Button(
-            onClick = onSave,
-            modifier = Modifier.weight(1f),
+    Column(verticalArrangement = Arrangement.spacedBy(FarmerSpacing.s)) {
+        OutlinedTextField(
+            value = state.tempName,
+            onValueChange = onNameChange,
+            label = { Text(strings.nameField) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
             shape = RoundedCornerShape(14.dp),
-            contentPadding = PaddingValues(vertical = 12.dp)
-        ) {
-            Icon(Icons.Default.Check, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(strings.saveAction)
-        }
-        OutlinedButton(
-            onClick = onCancel,
-            modifier = Modifier.weight(1f),
+            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            colors = editFieldColors()
+        )
+
+        OutlinedTextField(
+            value = state.tempPhone,
+            onValueChange = onPhoneChange,
+            label = { Text(strings.phoneField) },
+            modifier = Modifier.fillMaxWidth(),
+            singleLine = true,
             shape = RoundedCornerShape(14.dp),
-            contentPadding = PaddingValues(vertical = 12.dp)
-        ) {
-            Icon(Icons.Default.Close, contentDescription = null, modifier = Modifier.size(18.dp))
-            Spacer(Modifier.width(6.dp))
-            Text(strings.cancelAction, color = colors.textSecondary)
-        }
+            prefix = {
+                Text(
+                    text = "+91 ",
+                    color = colors.textSecondary,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            },
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Done
+            ),
+            isError = state.phoneError != null,
+            supportingText = state.phoneError?.let { error ->
+                { Text(error, color = MaterialTheme.colorScheme.error) }
+            },
+            colors = editFieldColors()
+        )
     }
 }
 
@@ -609,7 +707,12 @@ private fun EditPillButton(onClick: () -> Unit, label: String) {
             .clickable(onClick = onClick)
             .padding(horizontal = 14.dp, vertical = 8.dp)
     ) {
-        Icon(Icons.Default.Edit, contentDescription = null, tint = colors.onPrimary, modifier = Modifier.size(14.dp))
+        Icon(
+            Icons.Default.Edit,
+            contentDescription = null,
+            tint = colors.onPrimary,
+            modifier = Modifier.size(14.dp)
+        )
         Spacer(Modifier.width(FarmerSpacing.xs))
         Text(text = label, color = colors.onPrimary, style = MaterialTheme.typography.labelMedium)
     }
@@ -635,7 +738,10 @@ private fun MenuSection(
             shape = RoundedCornerShape(24.dp),
             colors = CardDefaults.cardColors(containerColor = colors.surface)
         ) {
-            Column(modifier = Modifier.padding(horizontal = 18.dp, vertical = FarmerSpacing.xs), content = content)
+            Column(
+                modifier = Modifier.padding(horizontal = 18.dp, vertical = FarmerSpacing.xs),
+                content = content
+            )
         }
     }
 }

@@ -2,14 +2,15 @@ package com.example.androidfarmerfriend.ui.screens.alerts
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
@@ -31,6 +32,7 @@ import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.AlertChip
+import com.example.androidfarmerfriend.ui.components.ChipOption
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.HeroTitle
@@ -51,75 +53,98 @@ fun AlertsScreen(
     val state by viewModel.state.collectAsState()
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
-    var isRefreshing by remember { mutableStateOf(false) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .padding(horizontal = FarmerSpacing.lg)
-    ) {
-        Spacer(Modifier.height(FarmerSpacing.lg))
-
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HeroTitle(text = strings.alertsTitle, modifier = Modifier.weight(1f, fill = false))
-            if (state.unreadCount > 0) {
-                Spacer(Modifier.width(10.dp))
-                UnreadBadge(count = state.unreadCount)
-            }
+    // Honest pull-to-refresh: the spinner stays up until the realtime
+    // listener actually delivers fresh data.
+    var awaitingRefresh by remember { mutableStateOf(false) }
+    LaunchedEffect(state.alertsState) {
+        if (awaitingRefresh && state.alertsState is UiState.Success) {
+            awaitingRefresh = false
         }
+    }
 
-        Spacer(Modifier.height(FarmerSpacing.s))
+    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+        maxWidth = 640.dp,
+        modifier = Modifier.background(colors.background)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = FarmerSpacing.lg)
+        ) {
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
-        LocPill(text = state.locationName)
-
-        PillChipGroup(
-            filters = AlertFilterType.entries.map { "${it.emoji()} ${it.displayKey(strings)}" },
-            selectedFilter = "${state.selectedFilter.emoji()} ${state.selectedFilter.displayKey(strings)}",
-            onFilterSelected = { display ->
-                AlertFilterType.entries.find { "${it.emoji()} ${it.displayKey(strings)}" == display }?.let {
-                    viewModel.onEvent(AlertEvent.SelectFilter(it))
+            Column {
+                HeroTitle(text = strings.alertsTitle)
+                if (state.unreadCount > 0) {
+                    Spacer(Modifier.height(FarmerSpacing.xs))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        UnreadBadge(count = state.unreadCount)
+                        Spacer(Modifier.width(FarmerSpacing.s))
+                        Text(
+                            text = strings.markAllRead,
+                            color = colors.primary,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                viewModel.onEvent(AlertEvent.MarkAllRead)
+                            }
+                        )
+                    }
                 }
             }
-        )
 
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = {
-                isRefreshing = true
-                viewModel.onEvent(AlertEvent.Refresh)
-                isRefreshing = false
-            }
-        ) {
-            when (val alertState = state.alertsState) {
-                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 88.dp)
-                is UiState.Error -> ErrorState(
-                    message = alertState.message.ifBlank { strings.alertsLoadError },
-                    onRetry = { viewModel.onEvent(AlertEvent.Refresh) },
-                    modifier = Modifier.padding(top = 32.dp)
-                )
-                is UiState.Success -> {
-                    if (state.filteredAlerts.isEmpty()) {
-                        EmptyState(
-                            icon = Icons.Default.Notifications,
-                            title = strings.noAlerts
-                        )
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            items(state.filteredAlerts) { alert ->
-                                AlertItem(
-                                    alert = alert,
-                                    strings = strings,
-                                    onClick = {
-                                        viewModel.onEvent(AlertEvent.MarkRead(alert.id))
-                                        if (alert.actionRoute.isNotEmpty()) {
-                                            onNavigateToAlert(alert.actionRoute)
+            Spacer(Modifier.height(FarmerSpacing.s))
+
+            LocPill(text = state.locationName)
+
+            PillChipGroup(
+                filters = AlertFilterType.entries.map { ChipOption(it.displayKey(strings), it.icon()) },
+                selectedFilter = state.selectedFilter.displayKey(strings),
+                onFilterSelected = { option ->
+                    AlertFilterType.entries.find { it.displayKey(strings) == option.label }?.let {
+                        viewModel.onEvent(AlertEvent.SelectFilter(it))
+                    }
+                }
+            )
+
+            PullToRefreshBox(
+                isRefreshing = awaitingRefresh,
+                onRefresh = {
+                    awaitingRefresh = true
+                    viewModel.onEvent(AlertEvent.Refresh)
+                }
+            ) {
+                when (val alertState = state.alertsState) {
+                    is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 88.dp)
+                    is UiState.Error -> ErrorState(
+                        message = alertState.message.ifBlank { strings.alertsLoadError },
+                        onRetry = { viewModel.onEvent(AlertEvent.Refresh) },
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                    is UiState.Success -> {
+                        if (state.filteredAlerts.isEmpty()) {
+                            EmptyState(
+                                icon = Icons.Default.Notifications,
+                                title = strings.noAlerts
+                            )
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                items(state.filteredAlerts) { alert ->
+                                    AlertItem(
+                                        alert = alert,
+                                        strings = strings,
+                                        onClick = {
+                                            viewModel.onEvent(AlertEvent.MarkRead(alert.id))
+                                            if (alert.actionRoute.isNotEmpty()) {
+                                                onNavigateToAlert(alert.actionRoute)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -131,8 +156,9 @@ fun AlertsScreen(
 
 @Composable
 private fun UnreadBadge(count: Int) {
+    val strings = LocalAppStrings.current
     Text(
-        text = "$count new",
+        text = String.format(strings.unreadCountBadge, count),
         color = Color.White,
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
@@ -143,12 +169,11 @@ private fun UnreadBadge(count: Int) {
     )
 }
 
-/** Emoji per filter chip. */
-private fun AlertFilterType.emoji(): String = when (this) {
-    AlertFilterType.ALL -> "🔔"
-    AlertFilterType.PRICE -> "💰"
-    AlertFilterType.WEATHER -> "🌦️"
-    AlertFilterType.CROP -> "🌾"
+private fun AlertFilterType.icon(): ImageVector = when (this) {
+    AlertFilterType.ALL -> Icons.Default.Notifications
+    AlertFilterType.PRICE -> Icons.Default.Paid
+    AlertFilterType.WEATHER -> Icons.Default.WbCloudy
+    AlertFilterType.CROP -> Icons.Default.Eco
 }
 
 private data class AlertVisuals(
@@ -162,15 +187,16 @@ private data class AlertVisuals(
 fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
     val colors = FarmerTheme.colors
     val (iconVec, iconTint, iconContainer, label) = when (alert.type) {
-        AlertType.PRICE -> AlertVisuals(Icons.Default.TrendingUp, colors.alertGreen, colors.softGreen, strings.priceAlertLabel)
+        AlertType.PRICE -> AlertVisuals(Icons.Default.Paid, colors.alertGreen, colors.softGreen, strings.priceAlertLabel)
         AlertType.WEATHER -> AlertVisuals(Icons.Default.WbCloudy, colors.alertBlue, colors.softBlue, strings.weatherAlertLabel)
-        AlertType.CROP -> AlertVisuals(Icons.Default.Notifications, colors.alertPurple, colors.softPurple, strings.cropAlertLabel)
+        AlertType.CROP -> AlertVisuals(Icons.Default.Eco, colors.alertPurple, colors.softPurple, strings.cropAlertLabel)
     }
 
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .heightIn(min = 76.dp)
+            .height(IntrinsicSize.Min)
             .clip(RoundedCornerShape(20.dp))
             .background(colors.surface)
             .clickable(onClick = onClick)
@@ -195,6 +221,8 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
                         text = alert.title.ifBlank { label },
                         style = MaterialTheme.typography.titleSmall,
                         color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         modifier = Modifier.weight(1f, fill = false)
                     )
                     if (!alert.isRead) {

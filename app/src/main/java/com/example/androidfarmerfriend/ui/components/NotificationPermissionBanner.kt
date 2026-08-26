@@ -160,16 +160,19 @@ fun NotificationPermissionBanner(
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 )
             }
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "Not now",
-                tint = colors.textTertiary,
+            Box(
                 modifier = Modifier
-                    .size(18.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { markAsked() }
-                    .padding(3.dp)
-            )
+                    .size(32.dp)
+                    .clickable { markAsked() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = LocalAppStrings.current.cancelAction,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }

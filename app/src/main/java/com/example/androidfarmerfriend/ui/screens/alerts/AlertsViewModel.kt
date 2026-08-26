@@ -52,6 +52,20 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                     )
                 }
             }
+            is AlertEvent.MarkAllRead -> {
+                val current = (_state.value.alertsState as? UiState.Success)?.data ?: return
+                viewModelScope.launch {
+                    try {
+                        repository.markAllAsRead(current.filter { !it.isRead }.map { it.id })
+                    } catch (_: Exception) {
+                        // Realtime listener will reconcile; nothing user-facing to do.
+                    }
+                    // Optimistic local update so the badge drops immediately.
+                    _state.value = _state.value.copy(
+                        alertsState = UiState.Success(current.map { it.copy(isRead = true) })
+                    )
+                }
+            }
         }
     }
 
@@ -70,36 +84,6 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             _state.value = _state.value.copy(
                 alertsState = UiState.Success(alerts)
             )
-        }
-    }
-
-    private fun loadAlerts() {
-        _state.value = _state.value.copy(alertsState = UiState.Loading)
-        viewModelScope.launch {
-            try {
-                val alerts = repository.getAlerts(limit = 30)
-                if (alerts.isEmpty()) {
-                    try {
-                        AlertSeedData.seedAlerts()
-                        val seeded = repository.getAlerts(limit = 30)
-                        _state.value = _state.value.copy(
-                            alertsState = UiState.Success(seeded)
-                        )
-                    } catch (e: Exception) {
-                        _state.value = _state.value.copy(
-                            alertsState = UiState.Success(emptyList())
-                        )
-                    }
-                } else {
-                    _state.value = _state.value.copy(
-                        alertsState = UiState.Success(alerts)
-                    )
-                }
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    alertsState = UiState.Error(e.message ?: "Failed to load alerts")
-                )
-            }
         }
     }
 }

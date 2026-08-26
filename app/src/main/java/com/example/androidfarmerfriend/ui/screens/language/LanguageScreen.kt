@@ -68,11 +68,7 @@ fun LanguageScreen(
         }
 
         Text(
-            text = if (selectedLanguage == Language.TAMIL) {
-                "மொழி உடனடியாக மாற்றப்படும்"
-            } else {
-                "Language will be applied immediately"
-            },
+            text = LocalAppStrings.current.languageAppliedHint,
             style = MaterialTheme.typography.bodySmall,
             color = colors.textSecondary,
             modifier = Modifier.padding(vertical = FarmerSpacing.lg)
