@@ -3,9 +3,9 @@ package com.example.androidfarmerfriend.ui.screens.disease
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
@@ -21,16 +21,20 @@ import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
-import com.example.androidfarmerfriend.ui.components.HeroTitle
+import com.example.androidfarmerfriend.ui.components.SubScreenHeader
 import com.example.androidfarmerfriend.ui.components.RowCard
+import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.SearchField
+import com.example.androidfarmerfriend.ui.components.urlHostLabel
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
+fun DiseaseScreen(
+    onBack: () -> Unit = {},
+    viewModel: DiseaseViewModel = viewModel()
+) {
     val strings = LocalAppStrings.current
     val state by viewModel.state.collectAsState()
     val context = LocalContext.current
@@ -44,14 +48,22 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
         viewModel.loadData(languagePrefs.selectedLanguage)
     }
 
+    // Honest PTR: keep spinner visible briefly so the gesture reads honestly.
+    LaunchedEffect(isRefreshing) {
+        if (isRefreshing) {
+            kotlinx.coroutines.delay(600)
+            isRefreshing = false
+        }
+    }
+
     androidx.compose.material3.pulltorefresh.PullToRefreshBox(
         isRefreshing = isRefreshing,
         onRefresh = {
             isRefreshing = true
-            viewModel.loadData()
-            isRefreshing = false
+            viewModel.loadData(languagePrefs.selectedLanguage)
         }
     ) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -60,7 +72,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
         ) {
             Spacer(modifier = Modifier.height(16.dp))
 
-            HeroTitle(text = strings.diseaseDetectionTitle)
+            SubScreenHeader(title = strings.diseaseDetectionTitle, onBack = onBack)
 
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -73,7 +85,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
             Spacer(modifier = Modifier.height(14.dp))
 
             when (val diseaseState = state.diseasesState) {
-                is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
+                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 72.dp, modifier = Modifier.padding(top = 16.dp))
                 is UiState.Error -> ErrorState(
                     message = diseaseState.message.ifBlank { strings.diseaseLoadError },
                     onRetry = { viewModel.onEvent(DiseaseEvent.Retry) },
@@ -98,6 +110,7 @@ fun DiseaseScreen(viewModel: DiseaseViewModel = viewModel()) {
                 }
             }
         }
+        }
     }
 }
 
@@ -107,23 +120,42 @@ fun DiseaseItem(disease: Disease) {
     val colors = FarmerTheme.colors
     RowCard(
         title = disease.name,
-        subtitle = disease.cropAffected,
+        subtitle = disease.cropAffected.ifBlank { null },
         icon = Icons.Default.BugReport,
         iconTint = colors.diseaseOrange,
         iconContainer = colors.softOrange,
         end = {
-            Icon(
-                Icons.Default.OpenInNew,
-                contentDescription = null,
-                tint = colors.textTertiary,
-                modifier = Modifier.size(20.dp)
-            )
+            Column(horizontalAlignment = androidx.compose.ui.Alignment.End) {
+                if (disease.sourceUrl.isNotBlank()) {
+                    SourceChip(url = disease.sourceUrl)
+                }
+                Spacer(modifier = Modifier.height(6.dp))
+                Icon(
+                    @Suppress("DEPRECATION")
+                    Icons.Default.OpenInNew,
+                    contentDescription = null,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         },
         onClick = {
             if (disease.sourceUrl.isNotBlank()) {
                 WebSearchUtil.openUrl(context, disease.sourceUrl)
             }
         }
+    )
+}
+
+@Composable
+private fun SourceChip(url: String) {
+    Text(
+        text = urlHostLabel(url),
+        style = MaterialTheme.typography.labelSmall,
+        color = FarmerTheme.colors.textTertiary,
+        modifier = Modifier
+            .background(FarmerTheme.colors.surfaceMuted, RoundedCornerShape(6.dp))
+            .padding(horizontal = 8.dp, vertical = 3.dp)
     )
 }
 

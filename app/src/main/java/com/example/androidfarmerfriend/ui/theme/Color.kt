@@ -77,7 +77,15 @@ data class FarmerColors(
     val softOrange: Color,
     val softBrown: Color,
     val softMint: Color,
-    val softLavender: Color
+    val softLavender: Color,
+    // Gold teaser (profile "what you unlock" card)
+    val goldBorder: Color,
+    val goldTitle: Color,
+    val goldBody: Color,
+    val unlockTop: Color,
+    val unlockBottom: Color,
+    val unlockTileBg: Color,
+    val unlockTileIcon: Color
 )
 
 val LightFarmerColors = FarmerColors(
@@ -86,11 +94,11 @@ val LightFarmerColors = FarmerColors(
     surfaceMuted = Color(0xFFF1F0EC),
     textPrimary = Color(0xFF1C1C1E),
     textSecondary = Color(0xFF5A5A5E),
-    textTertiary = Color(0xFF9A9A9E),
+    textTertiary = Color(0xFF76767B),
     outline = Color(0xFFEDECE7),
     primary = Color(0xFF2E7D32),
     primaryDeep = Color(0xFF1B5E20),
-    primaryBright = Color(0xFF4CAF50),
+    primaryBright = Color(0xFF338038),
     onPrimary = Color(0xFFFFFFFF),
     weatherBlue = Color(0xFF2196F3),
     weatherYellow = Color(0xFFFBC02D),
@@ -107,7 +115,14 @@ val LightFarmerColors = FarmerColors(
     softOrange = Color(0xFFFDEEDD),
     softBrown = Color(0xFFF0EAE6),
     softMint = Color(0xFFE6F6E8),
-    softLavender = Color(0xFFF0EDF9)
+    softLavender = Color(0xFFF0EDF9),
+    goldBorder = Color(0xFFE8C96A),
+    goldTitle = Color(0xFF8A6A12),
+    goldBody = Color(0xFF6B5A20),
+    unlockTop = Color(0xFFFFFDF5),
+    unlockBottom = Color(0xFFFFF6E0),
+    unlockTileBg = Color(0xFFFBEECB),
+    unlockTileIcon = Color(0xFFC9A23B)
 )
 
 val DarkFarmerColors = FarmerColors(
@@ -116,7 +131,7 @@ val DarkFarmerColors = FarmerColors(
     surfaceMuted = Color(0xFF232823),
     textPrimary = Color(0xFFE6E6E1),
     textSecondary = Color(0xFFA8A8A0),
-    textTertiary = Color(0xFF6E6E6A),
+    textTertiary = Color(0xFF82827C),
     outline = Color(0xFF2A2F2A),
     primary = Color(0xFF81C784),
     primaryDeep = Color(0xFF4CAF50),
@@ -137,5 +152,12 @@ val DarkFarmerColors = FarmerColors(
     softOrange = Color(0xFF3A2C1E),
     softBrown = Color(0xFF2E2722),
     softMint = Color(0xFF1F3527),
-    softLavender = Color(0xFF2C2A38)
+    softLavender = Color(0xFF2C2A38),
+    goldBorder = Color(0xFF8A7433),
+    goldTitle = Color(0xFFE4C36B),
+    goldBody = Color(0xFFCBB57E),
+    unlockTop = Color(0xFF2A2415),
+    unlockBottom = Color(0xFF231D10),
+    unlockTileBg = Color(0xFF3A3018),
+    unlockTileIcon = Color(0xFFE4C36B)
 )

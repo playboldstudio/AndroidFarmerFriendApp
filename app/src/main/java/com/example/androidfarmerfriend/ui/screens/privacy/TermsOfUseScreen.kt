@@ -1,51 +1,52 @@
 package com.example.androidfarmerfriend.ui.screens.privacy
 
-import android.webkit.WebView
-import android.webkit.WebViewClient
-import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.viewinterop.AndroidView
-import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.ui.components.SubScreenHeader
-import com.example.androidfarmerfriend.ui.theme.FarmerTheme
+import androidx.compose.runtime.Composable
 
-/** Hosted terms of use (FlyCricket doc hosting). */
-private const val TERMS_URL =
+private const val TERMS_OF_USE_URL =
     "https://doc-hosting.flycricket.io/farmer-friend-terms-of-use/63df81a9-6229-4119-ae1d-149e7b5de893/terms"
+
+private val TERMS_SECTIONS = listOf(
+    LegalSection(
+        heading = "Acceptance",
+        body = "By using Farmer Friend you agree to these terms. If you do not agree, please do not use the app."
+    ),
+    LegalSection(
+        heading = "Information Only, Not Advice",
+        body = "Prices, weather and farming content are provided for general information. Market rates " +
+            "and forecasts can be incomplete or delayed. Always confirm with local authorities or buyers " +
+            "before making financial decisions."
+    ),
+    LegalSection(
+        heading = "Acceptable Use",
+        bullets = listOf(
+            "Use the app only for lawful purposes.",
+            "Do not attempt to disrupt, reverse-engineer or overload the service."
+        )
+    ),
+    LegalSection(
+        heading = "Intellectual Property",
+        body = "The app, its design and its content are owned by us or our licensors and may not be " +
+            "copied without permission."
+    ),
+    LegalSection(
+        heading = "Availability & Changes",
+        body = "Features depend on third-party data sources and internet connectivity. We may change " +
+            "or discontinue parts of the service at any time."
+    ),
+    LegalSection(
+        heading = "Limitation of Liability",
+        body = "To the maximum extent permitted by law, we are not liable for losses arising from the " +
+            "use of, or reliance on, information in this app."
+    )
+)
 
 @Composable
 fun TermsOfUseScreen(onBack: () -> Unit = {}) {
-    val strings = LocalAppStrings.current
-
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(FarmerTheme.colors.background)
-            .padding(horizontal = 16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        SubScreenHeader(title = strings.termsOfUse, onBack = onBack)
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        AndroidView(
-            modifier = Modifier
-                .fillMaxSize(),
-            factory = { context ->
-                WebView(context).apply {
-                    webViewClient = WebViewClient()
-                    settings.javaScriptEnabled = true
-                    settings.loadWithOverviewMode = true
-                    settings.useWideViewPort = true
-                    settings.defaultTextEncodingName = "UTF-8"
-                    loadUrl(TERMS_URL)
-                }
-            }
-        )
-    }
+    LegalContentScreen(
+        title = "Terms of Use",
+        lastUpdated = "August 2026",
+        sections = TERMS_SECTIONS,
+        fullDocumentUrl = TERMS_OF_USE_URL,
+        onBack = onBack
+    )
 }

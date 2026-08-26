@@ -1,8 +1,10 @@
 package com.example.androidfarmerfriend.ui.screens.alerts
 
-import androidx.lifecycle.ViewModel
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.alerts.AlertSeedData
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -10,8 +12,10 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-class AlertsViewModel : ViewModel() {
-    private val _state = MutableStateFlow(AlertsState())
+class AlertsViewModel(application: Application) : AndroidViewModel(application) {
+    private val _state = MutableStateFlow(
+        AlertsState(locationName = LocationPrefs(application).selectedLocation.name)
+    )
     val state: StateFlow<AlertsState> = _state.asStateFlow()
 
     private val repository = FirestoreAlertRepository.getInstance()
@@ -48,6 +52,20 @@ class AlertsViewModel : ViewModel() {
                     )
                 }
             }
+            is AlertEvent.MarkAllRead -> {
+                val current = (_state.value.alertsState as? UiState.Success)?.data ?: return
+                viewModelScope.launch {
+                    try {
+                        repository.markAllAsRead(current.filter { !it.isRead }.map { it.id })
+                    } catch (_: Exception) {
+                        // Realtime listener will reconcile; nothing user-facing to do.
+                    }
+                    // Optimistic local update so the badge drops immediately.
+                    _state.value = _state.value.copy(
+                        alertsState = UiState.Success(current.map { it.copy(isRead = true) })
+                    )
+                }
+            }
         }
     }
 
@@ -66,36 +84,6 @@ class AlertsViewModel : ViewModel() {
             _state.value = _state.value.copy(
                 alertsState = UiState.Success(alerts)
             )
-        }
-    }
-
-    private fun loadAlerts() {
-        _state.value = _state.value.copy(alertsState = UiState.Loading)
-        viewModelScope.launch {
-            try {
-                val alerts = repository.getAlerts(limit = 30)
-                if (alerts.isEmpty()) {
-                    try {
-                        AlertSeedData.seedAlerts()
-                        val seeded = repository.getAlerts(limit = 30)
-                        _state.value = _state.value.copy(
-                            alertsState = UiState.Success(seeded)
-                        )
-                    } catch (e: Exception) {
-                        _state.value = _state.value.copy(
-                            alertsState = UiState.Success(emptyList())
-                        )
-                    }
-                } else {
-                    _state.value = _state.value.copy(
-                        alertsState = UiState.Success(alerts)
-                    )
-                }
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    alertsState = UiState.Error(e.message ?: "Failed to load alerts")
-                )
-            }
         }
     }
 }

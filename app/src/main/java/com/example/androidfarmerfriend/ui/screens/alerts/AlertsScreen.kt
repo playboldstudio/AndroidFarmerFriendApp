@@ -1,7 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.alerts
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -9,7 +8,9 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
@@ -19,7 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -27,21 +28,21 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
-import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.model.AlertType
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.AlertChip
+import com.example.androidfarmerfriend.ui.components.ChipOption
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
-import com.example.androidfarmerfriend.ui.components.FullScreenLoading
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.PillChipGroup
+import com.example.androidfarmerfriend.ui.components.ShimmerList
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import com.example.androidfarmerfriend.util.relativeTimeLabel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -52,89 +53,98 @@ fun AlertsScreen(
     val state by viewModel.state.collectAsState()
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
-    var isRefreshing by remember { mutableStateOf(false) }
-    val context = LocalContext.current
-    val locationPrefs = remember { LocationPrefs(context) }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(colors.background)
-            .padding(horizontal = 16.dp)
-    ) {
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Title with unread count badge
-        val unreadCount = (state.alertsState as? UiState.Success)
-            ?.data?.count { !it.isRead } ?: 0
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            HeroTitle(text = strings.alertsTitle, modifier = Modifier.weight(1f, fill = false))
-            if (unreadCount > 0) {
-                Spacer(modifier = Modifier.width(10.dp))
-                Text(
-                    text = "$unreadCount new",
-                    color = Color.White,
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
-                        .clip(RoundedCornerShape(999.dp))
-                        .background(colors.alertRed)
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                )
-            }
+    // Honest pull-to-refresh: the spinner stays up until the realtime
+    // listener actually delivers fresh data.
+    var awaitingRefresh by remember { mutableStateOf(false) }
+    LaunchedEffect(state.alertsState) {
+        if (awaitingRefresh && state.alertsState is UiState.Success) {
+            awaitingRefresh = false
         }
+    }
 
-        Spacer(modifier = Modifier.height(8.dp))
+    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+        maxWidth = 640.dp,
+        modifier = Modifier.background(colors.background)
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = FarmerSpacing.lg)
+        ) {
+            Spacer(Modifier.height(FarmerSpacing.lg))
 
-        LocPill(text = locationPrefs.selectedLocation.name)
-
-        PillChipGroup(
-            filters = AlertFilterType.entries.map { it.displayKey(strings) },
-            selectedFilter = state.selectedFilter.displayKey(strings),
-            onFilterSelected = { display ->
-                AlertFilterType.entries.find { it.displayKey(strings) == display }?.let {
-                    viewModel.onEvent(AlertEvent.SelectFilter(it))
+            Column {
+                HeroTitle(text = strings.alertsTitle)
+                if (state.unreadCount > 0) {
+                    Spacer(Modifier.height(FarmerSpacing.xs))
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        UnreadBadge(count = state.unreadCount)
+                        Spacer(Modifier.width(FarmerSpacing.s))
+                        Text(
+                            text = strings.markAllRead,
+                            color = colors.primary,
+                            style = MaterialTheme.typography.labelMedium,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.clickable {
+                                viewModel.onEvent(AlertEvent.MarkAllRead)
+                            }
+                        )
+                    }
                 }
             }
-        )
 
-        PullToRefreshBox(
-            isRefreshing = isRefreshing,
-            onRefresh = {
-                isRefreshing = true
-                viewModel.onEvent(AlertEvent.Refresh)
-                isRefreshing = false
-            }
-        ) {
-            when (val alertState = state.alertsState) {
-                is UiState.Loading -> FullScreenLoading(modifier = Modifier.padding(top = 48.dp))
-                is UiState.Error -> ErrorState(
-                    message = alertState.message.ifBlank { strings.alertsLoadError },
-                    onRetry = { viewModel.onEvent(AlertEvent.Refresh) },
-                    modifier = Modifier.padding(top = 32.dp)
-                )
-                is UiState.Success -> {
-                    if (state.filteredAlerts.isEmpty()) {
-                        EmptyState(
-                            icon = Icons.Default.Notifications,
-                            title = strings.noAlerts
-                        )
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            items(state.filteredAlerts) { alert ->
-                                AlertItem(
-                                    alert = alert,
-                                    strings = strings,
-                                    onClick = {
-                                        viewModel.onEvent(AlertEvent.MarkRead(alert.id))
-                                        if (alert.actionRoute.isNotEmpty()) {
-                                            onNavigateToAlert(alert.actionRoute)
+            Spacer(Modifier.height(FarmerSpacing.s))
+
+            LocPill(text = state.locationName)
+
+            PillChipGroup(
+                filters = AlertFilterType.entries.map { ChipOption(it.displayKey(strings), it.icon()) },
+                selectedFilter = state.selectedFilter.displayKey(strings),
+                onFilterSelected = { option ->
+                    AlertFilterType.entries.find { it.displayKey(strings) == option.label }?.let {
+                        viewModel.onEvent(AlertEvent.SelectFilter(it))
+                    }
+                }
+            )
+
+            PullToRefreshBox(
+                isRefreshing = awaitingRefresh,
+                onRefresh = {
+                    awaitingRefresh = true
+                    viewModel.onEvent(AlertEvent.Refresh)
+                }
+            ) {
+                when (val alertState = state.alertsState) {
+                    is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 88.dp)
+                    is UiState.Error -> ErrorState(
+                        message = alertState.message.ifBlank { strings.alertsLoadError },
+                        onRetry = { viewModel.onEvent(AlertEvent.Refresh) },
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                    is UiState.Success -> {
+                        if (state.filteredAlerts.isEmpty()) {
+                            EmptyState(
+                                icon = Icons.Default.Notifications,
+                                title = strings.noAlerts
+                            )
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                items(state.filteredAlerts) { alert ->
+                                    AlertItem(
+                                        alert = alert,
+                                        strings = strings,
+                                        onClick = {
+                                            viewModel.onEvent(AlertEvent.MarkRead(alert.id))
+                                            if (alert.actionRoute.isNotEmpty()) {
+                                                onNavigateToAlert(alert.actionRoute)
+                                            }
                                         }
-                                    }
-                                )
+                                    )
+                                }
                             }
                         }
                     }
@@ -145,111 +155,129 @@ fun AlertsScreen(
 }
 
 @Composable
-fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
-    val colors = FarmerTheme.colors
-    val (iconVec, iconTint, iconContainer, label) = when (alert.type) {
-        AlertType.PRICE -> AlertVisuals(Icons.Default.TrendingUp, colors.alertGreen, colors.softGreen, strings.priceAlertLabel)
-        AlertType.WEATHER -> AlertVisuals(Icons.Default.WbCloudy, colors.alertBlue, colors.softBlue, strings.weatherAlertLabel)
-        AlertType.CROP -> AlertVisuals(Icons.Default.Notifications, colors.alertPurple, colors.softPurple, strings.cropAlertLabel)
-    }
-
-    Row(
+private fun UnreadBadge(count: Int) {
+    val strings = LocalAppStrings.current
+    Text(
+        text = String.format(strings.unreadCountBadge, count),
+        color = Color.White,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
         modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colors.surface)
-            .then(
-                if (!alert.isRead) Modifier.border(1.5.dp, colors.alertRed, RoundedCornerShape(20.dp))
-                else Modifier
-            )
-            .clickable(onClick = onClick)
-            .padding(14.dp),
-        verticalAlignment = Alignment.Top
-    ) {
-        Box {
-            Box(
-                modifier = Modifier
-                    .size(46.dp)
-                    .clip(RoundedCornerShape(15.dp))
-                    .background(iconContainer),
-                contentAlignment = Alignment.Center
-            ) {
-                Icon(iconVec, contentDescription = null, tint = iconTint, modifier = Modifier.size(20.dp))
-            }
-            if (!alert.isRead) {
-                Box(
-                    modifier = Modifier
-                        .align(Alignment.TopEnd)
-                        .size(10.dp)
-                        .clip(CircleShape)
-                        .background(colors.alertRed)
-                )
-            }
-        }
-        Spacer(modifier = Modifier.width(13.dp))
-        Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = alert.title.ifBlank { label },
-                color = colors.textPrimary,
-                fontSize = 14.5.sp,
-                fontWeight = FontWeight.Bold
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-                text = alert.message,
-                color = colors.textSecondary,
-                fontSize = 12.sp,
-                lineHeight = 17.sp,
-                maxLines = 3
-            )
-            Spacer(modifier = Modifier.height(6.dp))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                AlertChip(text = label, color = iconTint, container = iconContainer)
-                Text(
-                    text = formatTimestamp(alert.timestamp, strings),
-                    color = colors.textTertiary,
-                    fontSize = 10.sp
-                )
-            }
-        }
-    }
+            .clip(RoundedCornerShape(999.dp))
+            .background(FarmerTheme.colors.alertRed)
+            .padding(horizontal = 10.dp, vertical = 4.dp)
+    )
 }
 
-/** Visual descriptors for an alert row. */
+private fun AlertFilterType.icon(): ImageVector = when (this) {
+    AlertFilterType.ALL -> Icons.Default.Notifications
+    AlertFilterType.PRICE -> Icons.Default.Paid
+    AlertFilterType.WEATHER -> Icons.Default.WbCloudy
+    AlertFilterType.CROP -> Icons.Default.Eco
+}
+
 private data class AlertVisuals(
-    val icon: androidx.compose.ui.graphics.vector.ImageVector,
+    val icon: ImageVector,
     val tint: Color,
     val container: Color,
     val label: String
 )
 
-private fun formatTimestamp(timestamp: Long, strings: AppStrings): String {
-    val now = System.currentTimeMillis()
-    val diff = now - timestamp
-    val minutes = diff / 60000
-    val hours = diff / 3600000
-    val days = diff / 86400000
+@Composable
+fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
+    val colors = FarmerTheme.colors
+    val (iconVec, iconTint, iconContainer, label) = when (alert.type) {
+        AlertType.PRICE -> AlertVisuals(Icons.Default.Paid, colors.alertGreen, colors.softGreen, strings.priceAlertLabel)
+        AlertType.WEATHER -> AlertVisuals(Icons.Default.WbCloudy, colors.alertBlue, colors.softBlue, strings.weatherAlertLabel)
+        AlertType.CROP -> AlertVisuals(Icons.Default.Eco, colors.alertPurple, colors.softPurple, strings.cropAlertLabel)
+    }
 
-    return when {
-        minutes < 1 -> strings.timeJustNow
-        minutes < 60 -> strings.timeMinutesAgo.format(minutes)
-        hours < 24 -> strings.timeHoursAgo.format(hours)
-        days < 7 -> strings.timeDaysAgo.format(days)
-        else -> {
-            val sdf = SimpleDateFormat("dd MMM", Locale.getDefault())
-            sdf.format(Date(timestamp))
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .heightIn(min = 76.dp)
+            .height(IntrinsicSize.Min)
+            .clip(RoundedCornerShape(20.dp))
+            .background(colors.surface)
+            .clickable(onClick = onClick)
+    ) {
+        Box(
+            modifier = Modifier
+                .width(4.dp)
+                .fillMaxHeight()
+                .background(if (alert.isRead) colors.outline else iconTint)
+        )
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .padding(14.dp),
+            verticalAlignment = Alignment.Top
+        ) {
+            TintedIconTile(iconVec, iconTint, iconContainer)
+            Spacer(Modifier.width(13.dp))
+            Column(modifier = Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        text = alert.title.ifBlank { label },
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.textPrimary,
+                        maxLines = 1,
+                        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false)
+                    )
+                    if (!alert.isRead) {
+                        Spacer(Modifier.width(6.dp))
+                        Box(
+                            modifier = Modifier
+                                .size(7.dp)
+                                .clip(CircleShape)
+                                .background(colors.alertRed)
+                        )
+                    }
+                }
+                Spacer(Modifier.height(2.dp))
+                Text(
+                    text = alert.message,
+                    color = colors.textSecondary,
+                    style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
+                    lineHeight = 17.sp,
+                    maxLines = 3
+                )
+                Spacer(Modifier.height(6.dp))
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    AlertChip(text = label, color = iconTint, container = iconContainer)
+                    Text(
+                        text = relativeTimeLabel(alert.timestamp, strings),
+                        color = colors.textTertiary,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
         }
+    }
+}
+
+@Composable
+private fun TintedIconTile(icon: ImageVector, tint: Color, container: Color) {
+    Box(
+        modifier = Modifier
+            .size(46.dp)
+            .clip(RoundedCornerShape(15.dp))
+            .background(container),
+        contentAlignment = Alignment.Center
+    ) {
+        Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(20.dp))
     }
 }
 
 @Preview(showBackground = true)
 @Composable
 fun AlertsScreenPreview() {
-    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
+    AndroidFarmerFriendTheme {
         AlertsScreen()
     }
 }

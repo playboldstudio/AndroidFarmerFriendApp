@@ -17,3 +17,5 @@ local.properties
 *.jks
 *.keystore
 google-services.json
+/app/release/
+/scratchpad/

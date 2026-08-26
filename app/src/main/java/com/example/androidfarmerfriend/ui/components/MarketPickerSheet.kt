@@ -226,12 +226,13 @@ private fun MarketItem(
     isSelected: Boolean,
     onClick: () -> Unit
 ) {
+    val strings = LocalAppStrings.current
+    val colors = FarmerTheme.colors
     Surface(
         modifier = Modifier
             .fillMaxWidth()
             .clickable(onClick = onClick),
-        color = if (isSelected) FarmerTheme.colors.softGreen
-        else FarmerTheme.colors.surface,
+        color = if (isSelected) colors.softGreen else colors.surface,
         shape = MaterialTheme.shapes.small
     ) {
         Row(
@@ -250,11 +251,11 @@ private fun MarketItem(
                 )
                 // Show supported categories as small text
                 val categories = buildList {
-                    if (market.supportsVegetables) add("Veg")
-                    if (market.supportsFruits) add("Fruit")
-                    if (market.supportsNonVeg) add("Non-Veg")
-                    if (market.supportsCategory(FilterType.GOLD)) add("Gold")
-                    if (market.supportsCategory(FilterType.EGG)) add("Egg")
+                    if (market.supportsVegetables) add(strings.vegetables)
+                    if (market.supportsFruits) add(strings.fruits)
+                    if (market.supportsNonVeg) add(strings.nonVeg)
+                    if (market.supportsCategory(FilterType.GOLD)) add(strings.gold)
+                    if (market.supportsCategory(FilterType.EGG)) add(strings.egg)
                 }
                 if (categories.isNotEmpty()) {
                     Text(

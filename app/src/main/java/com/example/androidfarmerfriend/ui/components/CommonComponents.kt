@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.ui.theme.TrendRed
@@ -53,26 +54,6 @@ fun weatherIconFor(code: Int): ImageVector = when (code) {
     in 85..86 -> Icons.Default.Grain
     in 95..99 -> Icons.Default.Thunderstorm
     else -> Icons.Default.WbCloudy
-}
-
-/* ------------------------------------------------------------------ */
-/* Cards                                                               */
-/* ------------------------------------------------------------------ */
-
-/** Rounded white card with a soft shadow — matches `.card` (24dp radius). */
-@Composable
-fun FarmerCard(
-    modifier: Modifier = Modifier,
-    containerColor: Color = FarmerTheme.colors.surface,
-    content: @Composable ColumnScope.() -> Unit
-) {
-    Card(
-        modifier = modifier.fillMaxWidth(),
-        elevation = CardDefaults.cardElevation(defaultElevation = 1.dp),
-        colors = CardDefaults.cardColors(containerColor = containerColor),
-        shape = RoundedCornerShape(24.dp),
-        content = content
-    )
 }
 
 /* ------------------------------------------------------------------ */
@@ -101,9 +82,7 @@ fun HeroTitle(
     Text(
         text = annotated,
         color = colors.textPrimary,
-        fontSize = 26.sp,
-        fontWeight = FontWeight.ExtraBold,
-        letterSpacing = (-0.5).sp,
+        style = MaterialTheme.typography.headlineMedium,
         modifier = modifier
     )
 }
@@ -133,7 +112,7 @@ fun SubScreenHeader(
         ) {
             Icon(
                 Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back",
+                contentDescription = LocalAppStrings.current.backLabel,
                 tint = colors.textPrimary,
                 modifier = Modifier.size(22.dp)
             )
@@ -169,49 +148,15 @@ fun LocPill(
         Text(
             text = text,
             color = colors.textSecondary,
-            fontSize = 12.5.sp,
-            fontWeight = FontWeight.SemiBold
+            style = MaterialTheme.typography.labelMedium
         )
         Spacer(modifier = Modifier.width(3.dp))
-        Icon(
-            Icons.Default.KeyboardArrowDown,
-            contentDescription = null,
-            tint = colors.textTertiary,
-            modifier = Modifier.size(14.dp)
-        )
-    }
-}
-
-/** Section heading with optional trailing action link — matches `.sec-title`. */
-@Composable
-fun SectionTitle(
-    title: String,
-    actionText: String? = null,
-    onAction: (() -> Unit)? = null,
-    modifier: Modifier = Modifier
-) {
-    val colors = FarmerTheme.colors
-    Row(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(top = 22.dp, bottom = 12.dp),
-        verticalAlignment = Alignment.Bottom
-    ) {
-        Text(
-            text = title,
-            color = colors.textPrimary,
-            fontSize = 17.sp,
-            fontWeight = FontWeight.ExtraBold,
-            letterSpacing = (-0.3).sp,
-            modifier = Modifier.weight(1f)
-        )
-        if (actionText != null && onAction != null) {
-            Text(
-                text = actionText,
-                color = colors.primary,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.clickable(onClick = onAction)
+        if (onClick != null) {
+            Icon(
+                Icons.Default.KeyboardArrowDown,
+                contentDescription = null,
+                tint = colors.textTertiary,
+                modifier = Modifier.size(14.dp)
             )
         }
     }
@@ -245,7 +190,7 @@ fun SearchField(
                 Text(
                     text = placeholder,
                     color = colors.textTertiary,
-                    fontSize = 14.5.sp
+                    style = MaterialTheme.typography.bodyMedium
                 )
             }
             BasicTextField(
@@ -254,7 +199,7 @@ fun SearchField(
                 singleLine = true,
                 textStyle = LocalTextStyle.current.copy(
                     color = colors.textPrimary,
-                    fontSize = 14.5.sp
+                    fontSize = MaterialTheme.typography.bodyMedium.fontSize
                 ),
                 cursorBrush = SolidColor(colors.primary),
                 modifier = Modifier.fillMaxWidth()
@@ -262,14 +207,19 @@ fun SearchField(
         }
         if (value.isNotEmpty()) {
             Spacer(modifier = Modifier.width(6.dp))
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "Clear",
-                tint = colors.textTertiary,
+            Box(
                 modifier = Modifier
-                    .size(16.dp)
-                    .clickable { onValueChange("") }
-            )
+                    .size(32.dp)
+                    .clickable { onValueChange("") },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = LocalAppStrings.current.cancelAction,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(16.dp)
+                )
+            }
         }
     }
 }
@@ -278,12 +228,18 @@ fun SearchField(
 /* Chips                                                               */
 /* ------------------------------------------------------------------ */
 
-/** Pill-shaped filter chip row — matches `.chips` / `.chip` / `.chip.active`. */
+/** Filter chip model: label plus optional leading Material icon. */
+data class ChipOption(
+    val label: String,
+    val icon: ImageVector? = null
+)
+
+/** Pill-shaped filter chip row with optional leading icons. */
 @Composable
 fun PillChipGroup(
-    filters: List<String>,
+    filters: List<ChipOption>,
     selectedFilter: String,
-    onFilterSelected: (String) -> Unit
+    onFilterSelected: (ChipOption) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -292,20 +248,20 @@ fun PillChipGroup(
             .padding(vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        filters.forEach { filter ->
+        filters.forEach { option ->
             PillChip(
-                text = filter,
-                selected = filter == selectedFilter,
-                onClick = { onFilterSelected(filter) }
+                option = option,
+                selected = option.label == selectedFilter,
+                onClick = { onFilterSelected(option) }
             )
         }
     }
 }
 
-/** Single pill chip. */
+/** Single pill chip with optional icon. */
 @Composable
 fun PillChip(
-    text: String,
+    option: ChipOption,
     selected: Boolean,
     onClick: () -> Unit
 ) {
@@ -313,20 +269,32 @@ fun PillChip(
     val bg = if (selected) colors.primary else colors.surface
     val fg = if (selected) colors.onPrimary else colors.textSecondary
     val border = if (selected) colors.primary else colors.outline
-    Text(
-        text = text,
-        color = fg,
-        fontSize = 12.5.sp,
-        fontWeight = FontWeight.SemiBold,
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(bg)
             .border(BorderStroke(1.dp, border), RoundedCornerShape(999.dp))
             .clickable(onClick = onClick)
-            .padding(horizontal = 15.dp, vertical = 8.dp)
-    )
+            .padding(horizontal = 14.dp, vertical = 7.dp)
+    ) {
+        if (option.icon != null) {
+            Icon(
+                option.icon,
+                contentDescription = null,
+                tint = fg,
+                modifier = Modifier.size(15.dp)
+            )
+            Spacer(Modifier.width(5.dp))
+        }
+        Text(
+            text = option.label,
+            color = fg,
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.SemiBold
+        )
+    }
 }
-
 /* ------------------------------------------------------------------ */
 /* Icon tiles + list rows                                              */
 /* ------------------------------------------------------------------ */
@@ -365,6 +333,7 @@ fun RowCard(
     icon: ImageVector? = null,
     iconTint: Color = FarmerTheme.colors.primary,
     iconContainer: Color = FarmerTheme.colors.softGreen,
+    leading: (@Composable () -> Unit)? = null,
     end: @Composable (() -> Unit)? = null,
     onClick: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -384,7 +353,10 @@ fun RowCard(
                 .padding(14.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            if (icon != null) {
+            if (leading != null) {
+                leading()
+                Spacer(modifier = Modifier.width(13.dp))
+            } else if (icon != null) {
                 TintIconCircle(
                     icon = icon,
                     tint = iconTint,
@@ -398,9 +370,7 @@ fun RowCard(
                 Text(
                     text = title,
                     color = colors.textPrimary,
-                    fontSize = 14.5.sp,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = (-0.2).sp,
+                    style = MaterialTheme.typography.titleSmall,
                     maxLines = 2
                 )
                 if (subtitle != null) {
@@ -408,7 +378,7 @@ fun RowCard(
                     Text(
                         text = subtitle,
                         color = colors.textSecondary,
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                         maxLines = 2
                     )
                 }
@@ -429,12 +399,15 @@ fun TrendTag(percent: Double?) {
     if (value == 0.0) return
     val up = value > 0
     val arrow = if (up) "▲" else "▼"
-    val text = "$arrow ${"%.0f".format(abs(value))}%"
+    // One decimal keeps small moves (e.g. 0.4%) visible instead of "▲ 0%".
+    val text = "$arrow ${"%.1f".format(abs(value))}%"
     Text(
         text = text,
         color = if (up) colors.primary else TrendRed,
-        fontSize = 11.5.sp,
-        fontWeight = FontWeight.Bold,
+        style = MaterialTheme.typography.labelMedium.copy(
+            fontSize = 11.5.sp,
+            fontWeight = FontWeight.Bold
+        ),
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(if (up) colors.softGreen else colors.softRed)
@@ -452,7 +425,7 @@ fun AlertChip(
     Text(
         text = text.uppercase(),
         color = color,
-        fontSize = 10.5.sp,
+        style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.Bold,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
@@ -461,288 +434,124 @@ fun AlertChip(
     )
 }
 
-/* ------------------------------------------------------------------ */
-/* Menu row                                                            */
-/* ------------------------------------------------------------------ */
-
-/** Settings/details row — matches `.menu-row`. */
+/**
+ * Compact left-aligned weather summary used on Home and Weather tabs.
+ */
 @Composable
-fun MenuRow(
-    icon: ImageVector,
-    iconTint: Color = FarmerTheme.colors.primary,
-    iconContainer: Color = FarmerTheme.colors.softGreen,
-    title: String,
-    trailing: String? = null,
-    onClick: (() -> Unit)? = null
-) {
-    val colors = FarmerTheme.colors
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
-            .padding(vertical = 14.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        TintIconCircle(
-            icon = icon,
-            tint = iconTint,
-            container = iconContainer,
-            size = 36.dp,
-            cornerRadius = 12.dp
-        )
-        Spacer(modifier = Modifier.width(12.dp))
-        Text(
-            text = title,
-            color = colors.textPrimary,
-            fontSize = 14.5.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.weight(1f)
-        )
-        if (trailing != null) {
-            Text(
-                text = trailing,
-                color = colors.textSecondary,
-                fontSize = 12.5.sp,
-                fontWeight = FontWeight.SemiBold
-            )
-            Spacer(modifier = Modifier.width(4.dp))
-        }
-        Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = null,
-            tint = colors.textTertiary,
-            modifier = Modifier.size(16.dp)
-        )
-    }
-}
-
-/* ------------------------------------------------------------------ */
-/* Weather hero                                                        */
-/* ------------------------------------------------------------------ */
-
-/** Green-gradient weather hero — matches `.weather-hero`. Shared by Home + Weather. */
-@Composable
-fun WeatherHeroCard(
+fun CompactWeatherCard(
     weather: WeatherInfo,
     strings: AppStrings,
     modifier: Modifier = Modifier,
-    centered: Boolean = false
+    onClick: (() -> Unit)? = null
 ) {
     val colors = FarmerTheme.colors
-    val gradient = Brush.linearGradient(
-        colorStops = arrayOf(
-            0f to colors.primaryBright,
-            0.55f to colors.primary,
-            1f to colors.primaryDeep
-        ),
-        start = Offset.Zero,
-        end = Offset.Infinite
-    )
-    val (tempValue, tempUnit) = splitTemperature(weather.temperature)
-
-    Box(
+    Column(
         modifier = modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
-            .background(gradient)
+            .clip(RoundedCornerShape(20.dp))
+            .background(
+                Brush.linearGradient(listOf(colors.primaryBright, colors.primary, colors.primaryDeep))
+            )
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .padding(horizontal = 16.dp, vertical = 14.dp)
     ) {
-        // Decorative glows
-        Box(
-            modifier = Modifier
-                .align(Alignment.TopEnd)
-                .offset(x = 40.dp, y = (-50).dp)
-                .size(170.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(Color.White.copy(alpha = 0.14f), Color.Transparent)
-                    ),
-                    CircleShape
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = weather.condition,
+                    color = Color.White.copy(alpha = 0.95f),
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold
                 )
-        )
-        Box(
-            modifier = Modifier
-                .align(Alignment.BottomStart)
-                .offset(x = (-30).dp, y = 70.dp)
-                .size(150.dp)
-                .background(
-                    Brush.radialGradient(
-                        colors = listOf(colors.primaryBright.copy(alpha = 0.25f), Color.Transparent)
-                    ),
-                    CircleShape
-                )
-        )
-
-        Column(modifier = Modifier.padding(22.dp)) {
-            if (centered) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
+                Spacer(Modifier.height(4.dp))
+                Row(verticalAlignment = Alignment.Bottom) {
                     Text(
-                        text = weather.condition,
+                        text = weather.temperature,
                         color = Color.White,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold
+                        fontSize = 44.sp,
+                        fontWeight = FontWeight.Bold,
+                        lineHeight = 44.sp,
+                        letterSpacing = (-2).sp
                     )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Icon(
-                        weatherIconFor(weather.weatherCode),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(56.dp)
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    HeroTemperature(tempValue, tempUnit, large = true)
-                    if (weather.todayHigh.isNotEmpty() && weather.todayLow.isNotEmpty()) {
-                        Spacer(modifier = Modifier.height(4.dp))
-                        Text(
-                            text = "H:${weather.todayHigh}  L:${weather.todayLow}",
-                            color = Color.White,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.SemiBold
-                        )
-                    }
-                }
-            } else {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.Top
-                ) {
-                    Column {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Icon(
-                                Icons.Default.LocationOn,
-                                contentDescription = null,
-                                tint = Color.White.copy(alpha = 0.9f),
-                                modifier = Modifier.size(13.dp)
-                            )
-                            Spacer(modifier = Modifier.width(3.dp))
+                    Spacer(Modifier.width(10.dp))
+                    Column(modifier = Modifier.padding(bottom = 6.dp)) {
+                        if (weather.todayHigh.isNotEmpty() && weather.todayLow.isNotEmpty()) {
                             Text(
-                                text = weather.location,
-                                color = Color.White.copy(alpha = 0.9f),
-                                fontSize = 13.sp,
+                                text = "H:${weather.todayHigh}  L:${weather.todayLow}",
+                                color = Color.White.copy(alpha = 0.95f),
+                                style = MaterialTheme.typography.labelLarge,
                                 fontWeight = FontWeight.SemiBold
                             )
                         }
-                        Text(
-                            text = weather.condition,
-                            color = Color.White,
-                            fontSize = 14.sp,
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(top = 2.dp)
-                        )
+                        if (weather.feelsLike.isNotBlank()) {
+                            Text(
+                                text = strings.feelsLike + " " + weather.feelsLike,
+                                color = Color.White.copy(alpha = 0.75f),
+                                style = MaterialTheme.typography.labelSmall
+                            )
+                        }
                     }
-                    Icon(
-                        weatherIconFor(weather.weatherCode),
-                        contentDescription = null,
-                        tint = Color.White,
-                        modifier = Modifier.size(42.dp)
-                    )
-                }
-                Spacer(modifier = Modifier.height(10.dp))
-                HeroTemperature(tempValue, tempUnit, large = false)
-                if (weather.todayHigh.isNotEmpty() && weather.todayLow.isNotEmpty()) {
-                    Text(
-                        text = "H:${weather.todayHigh}  L:${weather.todayLow}",
-                        color = Color.White.copy(alpha = 0.9f),
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
                 }
             }
-
-            WeatherHeroStats(
-                weather = weather,
-                strings = strings,
-                modifier = Modifier.padding(top = 18.dp)
-            )
-        }
-    }
-}
-
-/** Big temperature with unit superscript. */
-@Composable
-private fun HeroTemperature(value: String, unit: String, large: Boolean) {
-    Row(verticalAlignment = Alignment.Top) {
-        Text(
-            text = value,
-            color = Color.White,
-            fontSize = if (large) 66.sp else 58.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = (-2).sp,
-            lineHeight = if (large) 70.sp else 64.sp
-        )
-        if (unit.isNotEmpty()) {
-            Text(
-                text = unit,
-                color = Color.White,
-                fontSize = 22.sp,
-                fontWeight = FontWeight.SemiBold,
-                modifier = Modifier.padding(top = 8.dp)
-            )
-        }
-    }
-}
-
-private fun splitTemperature(temp: String): Pair<String, String> {
-    val match = Regex("^(\\d+)\\s*(.*)$").find(temp.trim())
-    return if (match != null) match.groupValues[1] to match.groupValues[2]
-    else temp to ""
-}
-
-/** White stat row inside the weather hero — matches `.weather-stats`. */
-@Composable
-fun WeatherHeroStats(
-    weather: WeatherInfo,
-    strings: AppStrings,
-    modifier: Modifier = Modifier
-) {
-    Column(modifier = modifier.fillMaxWidth()) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(1.dp)
-                .background(Color.White.copy(alpha = 0.18f))
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 14.dp),
-            horizontalArrangement = Arrangement.SpaceAround
-        ) {
-            HeroStat(icon = Icons.Default.WaterDrop, value = weather.rainChance, label = strings.rain)
-            HeroStat(icon = Icons.Default.Opacity, value = weather.humidity, label = strings.humidity)
-            HeroStat(icon = Icons.Default.Air, value = weather.windSpeed, label = strings.wind)
-        }
-    }
-}
-
-@Composable
-private fun HeroStat(icon: ImageVector, value: String, label: String) {
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
             Icon(
-                icon,
+                weatherIconFor(weather.weatherCode),
                 contentDescription = null,
-                tint = Color.White.copy(alpha = 0.9f),
-                modifier = Modifier.size(13.dp)
-            )
-            Spacer(modifier = Modifier.width(3.dp))
-            Text(
-                text = value,
-                color = Color.White,
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Bold
+                tint = Color.White,
+                modifier = Modifier.size(38.dp)
             )
         }
+
+        Spacer(Modifier.height(12.dp))
+
+        Row(horizontalArrangement = Arrangement.spacedBy(7.dp)) {
+            WeatherChipStat(icon = Icons.Default.WaterDrop, label = strings.rain, value = weather.rainChance)
+            WeatherChipStat(icon = Icons.Default.Opacity, label = strings.humidity, value = weather.humidity)
+            WeatherChipStat(icon = Icons.Default.Air, label = strings.wind, value = weather.windSpeed)
+        }
+    }
+}
+
+/** Human-readable host of a source URL, e.g. "ta.wikipedia.org". */
+fun urlHostLabel(url: String): String = try {
+    android.net.Uri.parse(url).host.orEmpty().removePrefix("www.").ifBlank { "" }
+} catch (_: Exception) {
+    ""
+}
+
+/** Small section title used across tab screens. */
+@Composable
+fun SectionHeaderCompat(title: String, modifier: Modifier = Modifier) {    Text(
+        text = title,
+        style = MaterialTheme.typography.titleMedium,
+        color = FarmerTheme.colors.textPrimary,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(top = 22.dp, bottom = 12.dp)
+    )
+}
+
+/** Glass pill with a Material icon, label and value (on the weather gradient). */
+@Composable
+fun WeatherChipStat(icon: ImageVector, label: String, value: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .clip(RoundedCornerShape(999.dp))
+            .background(Color.White.copy(alpha = 0.18f))
+            .padding(horizontal = 10.dp, vertical = 5.dp)
+    ) {
+        Icon(
+            icon,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(13.dp)
+        )
+        Spacer(Modifier.width(4.dp))
         Text(
-            text = label.uppercase(),
-            color = Color.White.copy(alpha = 0.8f),
-            fontSize = 10.5.sp,
-            fontWeight = FontWeight.SemiBold,
-            modifier = Modifier.padding(top = 2.dp)
+            text = "$label $value",
+            color = Color.White,
+            style = MaterialTheme.typography.labelSmall,
+            fontWeight = FontWeight.Bold
         )
     }
 }
@@ -757,7 +566,8 @@ fun DayPill(
     day: String,
     weatherCode: Int,
     temp: String,
-    selected: Boolean
+    selected: Boolean,
+    onClick: (() -> Unit)? = null
 ) {
     val colors = FarmerTheme.colors
     val bg = if (selected) colors.primary else colors.surface
@@ -773,6 +583,7 @@ fun DayPill(
                 else BorderStroke(1.dp, colors.outline),
                 RoundedCornerShape(20.dp)
             )
+            .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
             .padding(vertical = 12.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -780,7 +591,7 @@ fun DayPill(
         Text(
             text = day,
             color = fgSub,
-            fontSize = 11.sp,
+            style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.Bold
         )
         Icon(
@@ -792,8 +603,10 @@ fun DayPill(
         Text(
             text = temp,
             color = fg,
-            fontSize = 12.5.sp,
-            fontWeight = FontWeight.ExtraBold
+            style = MaterialTheme.typography.titleSmall.copy(
+                fontSize = 12.5.sp,
+                fontWeight = FontWeight.ExtraBold
+            )
         )
     }
 }
@@ -815,15 +628,14 @@ fun FarmTipCard(title: String, body: String, modifier: Modifier = Modifier) {
             Text(
                 text = "🌱  $title",
                 color = colors.primary,
-                fontSize = 13.sp,
+                style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(5.dp))
             Text(
                 text = body,
                 color = colors.textSecondary,
-                fontSize = 12.5.sp,
-                lineHeight = 18.sp
+                style = MaterialTheme.typography.bodySmall
             )
         }
     }
@@ -849,13 +661,13 @@ fun EmptyState(
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Icon(icon, contentDescription = null, tint = colors.textTertiary, modifier = Modifier.size(48.dp))
             Spacer(modifier = Modifier.height(8.dp))
-            Text(title, color = colors.textSecondary, fontSize = 15.sp)
+            Text(title, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
             if (subtitle != null) {
                 Spacer(modifier = Modifier.height(4.dp))
                 Text(
                     subtitle,
                     color = colors.textTertiary,
-                    fontSize = 12.5.sp,
+                    style = MaterialTheme.typography.bodySmall,
                     textAlign = TextAlign.Center,
                     modifier = Modifier.padding(horizontal = 32.dp)
                 )
@@ -873,102 +685,15 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
     ) {
         Icon(Icons.Default.Refresh, contentDescription = null, tint = TrendRed, modifier = Modifier.size(48.dp))
         Spacer(modifier = Modifier.height(10.dp))
-        Text(message, color = colors.textSecondary, fontSize = 15.sp)
+        Text(message, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(14.dp))
-        Text(
-            text = "Retry",
-            color = colors.onPrimary,
-            fontSize = 14.sp,
-            fontWeight = FontWeight.Bold,
-            modifier = Modifier
-                .clip(RoundedCornerShape(16.dp))
-                .background(colors.primary)
-                .clickable(onClick = onRetry)
-                .padding(horizontal = 20.dp, vertical = 12.dp)
-        )
-    }
-}
-
-@Composable
-fun FullScreenLoading(modifier: Modifier = Modifier) {
-    val colors = FarmerTheme.colors
-    Box(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(vertical = 48.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        CircularProgressIndicator(
-            color = colors.primary,
-            modifier = Modifier.size(40.dp),
-            strokeWidth = 4.dp
-        )
-    }
-}
-
-/* ------------------------------------------------------------------ */
-/* Legacy ScreenHeader (kept; can still be used by sub-screens)        */
-/* ------------------------------------------------------------------ */
-@Composable
-fun ScreenHeader(
-    title: String,
-    modifier: Modifier = Modifier,
-    showSearch: Boolean = true,
-    subtitle: String? = null,
-    isHome: Boolean = false,
-    isSearchActive: Boolean = false,
-    onSearchClick: (() -> Unit)? = null,
-    onLocationClick: (() -> Unit)? = null
-) {
-    val colors = FarmerTheme.colors
-    Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .padding(bottom = 8.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+        Button(
+            onClick = onRetry,
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
         ) {
-            Text(
-                text = title,
-                style = MaterialTheme.typography.titleLarge,
-                fontWeight = FontWeight.Bold,
-                color = if (isHome) colors.primary else colors.textPrimary,
-                fontSize = 20.sp,
-                modifier = Modifier.weight(1f)
-            )
-            if (showSearch) {
-                Icon(
-                    if (isSearchActive) Icons.Default.Close else Icons.Default.Search,
-                    contentDescription = if (isSearchActive) "Close search" else "Search",
-                    tint = colors.textPrimary,
-                    modifier = Modifier
-                        .size(24.dp)
-                        .clickable { onSearchClick?.invoke() }
-                )
-            }
-        }
-        if (subtitle != null) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .padding(top = 4.dp)
-                    .then(if (onLocationClick != null) Modifier.clickable { onLocationClick() } else Modifier)
-            ) {
-                Text(
-                    text = subtitle,
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.textSecondary
-                )
-                Icon(
-                    Icons.Default.KeyboardArrowDown,
-                    contentDescription = null,
-                    modifier = Modifier.size(16.dp),
-                    tint = colors.textSecondary
-                )
-            }
+            Text(LocalAppStrings.current.retry, fontWeight = FontWeight.Bold)
         }
     }
 }

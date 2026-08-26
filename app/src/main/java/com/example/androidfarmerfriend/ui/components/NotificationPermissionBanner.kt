@@ -30,6 +30,7 @@ import androidx.compose.ui.unit.sp
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
+import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 private const val PREFS_NAME = "perm_prefs"
@@ -43,16 +44,24 @@ private const val KEY_NOTIF_ASKED = "notif_asked"
  * - The ✕ / Not now dismisses and records the ask (never nags again).
  * - If the user already denied once ("don't ask again" state), the banner
  *   instead offers to open the app's notification settings.
+ *
+ * Texts default to localized `AppStrings` values; explicit parameters win.
  */
 @Composable
 fun NotificationPermissionBanner(
     modifier: Modifier = Modifier,
-    titleText: String = "Stay updated",
-    bodyText: String = "Allow notifications to get price alerts, weather warnings and scheme updates.",
-    allowText: String = "Allow",
-    settingsText: String = "Open settings"
+    titleText: String? = null,
+    bodyText: String? = null,
+    allowText: String? = null,
+    settingsText: String? = null
 ) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
+
+    val strings = LocalAppStrings.current
+    val title = titleText ?: strings.notifBannerTitle
+    val body = bodyText ?: strings.notifBannerBody
+    val allow = allowText ?: strings.actionAllow
+    val openSettings = settingsText ?: strings.actionOpenSettings
 
     val context = LocalContext.current
     val colors = FarmerTheme.colors
@@ -103,14 +112,14 @@ fun NotificationPermissionBanner(
             Spacer(modifier = Modifier.width(10.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = titleText,
+                    text = title,
                     color = colors.textPrimary,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = bodyText,
+                    text = body,
                     color = colors.textSecondary,
                     fontSize = 12.sp,
                     lineHeight = 16.sp
@@ -119,7 +128,7 @@ fun NotificationPermissionBanner(
             Spacer(modifier = Modifier.width(8.dp))
             if (permanentlyDenied) {
                 Text(
-                    text = settingsText,
+                    text = openSettings,
                     color = colors.onPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -137,7 +146,7 @@ fun NotificationPermissionBanner(
                 )
             } else {
                 Text(
-                    text = allowText,
+                    text = allow,
                     color = colors.onPrimary,
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
@@ -151,16 +160,19 @@ fun NotificationPermissionBanner(
                         .padding(horizontal = 14.dp, vertical = 8.dp)
                 )
             }
-            Icon(
-                Icons.Default.Close,
-                contentDescription = "Not now",
-                tint = colors.textTertiary,
+            Box(
                 modifier = Modifier
-                    .size(18.dp)
-                    .clip(RoundedCornerShape(8.dp))
-                    .clickable { markAsked() }
-                    .padding(3.dp)
-            )
+                    .size(32.dp)
+                    .clickable { markAsked() },
+                contentAlignment = Alignment.Center
+            ) {
+                Icon(
+                    Icons.Default.Close,
+                    contentDescription = LocalAppStrings.current.cancelAction,
+                    tint = colors.textTertiary,
+                    modifier = Modifier.size(18.dp)
+                )
+            }
         }
     }
 }

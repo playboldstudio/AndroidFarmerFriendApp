@@ -14,7 +14,8 @@ enum class AlertFilterType(val id: String, val displayKey: (AppStrings) -> Strin
 
 data class AlertsState(
     val alertsState: UiState<List<Alert>> = UiState.Loading,
-    val selectedFilter: AlertFilterType = AlertFilterType.ALL
+    val selectedFilter: AlertFilterType = AlertFilterType.ALL,
+    val locationName: String = ""
 ) {
     val filteredAlerts: List<Alert>
         get() {
@@ -22,4 +23,7 @@ data class AlertsState(
             if (selectedFilter == AlertFilterType.ALL) return data
             return data.filter { it.type == selectedFilter.alertType }
         }
+
+    val unreadCount: Int
+        get() = (alertsState as? UiState.Success)?.data?.count { !it.isRead } ?: 0
 }

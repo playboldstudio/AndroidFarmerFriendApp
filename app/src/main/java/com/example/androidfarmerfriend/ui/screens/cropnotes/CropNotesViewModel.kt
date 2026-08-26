@@ -14,7 +14,7 @@ class CropNotesViewModel(private val repository: FarmerRepository = FarmerReposi
     private val _state = MutableStateFlow(CropNotesState())
     val state: StateFlow<CropNotesState> = _state.asStateFlow()
 
-    private var currentLanguage: Language = Language.TAMIL
+    private var currentLanguage: Language = Language.ENGLISH
 
     fun loadData(language: Language = currentLanguage) {
         currentLanguage = language

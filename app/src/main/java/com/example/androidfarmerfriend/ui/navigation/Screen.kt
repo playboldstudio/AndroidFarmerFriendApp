@@ -14,4 +14,5 @@ sealed class Screen(val route: String) {
     object CropNotes : Screen("crop_notes")
     object PrivacyPolicy : Screen("privacy_policy")
     object TermsOfUse : Screen("terms_of_use")
+    object Auth : Screen("auth/{mode}")
 }

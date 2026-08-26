@@ -1,6 +1,7 @@
 package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.api.ItemImageTable
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
@@ -22,7 +23,7 @@ class FarmerRepository {
 
     private fun todayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
-    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu", strings: AppStrings = AppStrings.Tamil): WeatherInfo? = withContext(Dispatchers.IO) {
+    suspend fun getWeather(lat: Double, lon: Double, locationName: String = "Namakkal, Tamil Nadu", strings: AppStrings = AppStrings.English): WeatherInfo? = withContext(Dispatchers.IO) {
         try {
             val response = weatherApi.getForecast(latitude = lat, longitude = lon)
             val current = response.current ?: throw Exception("Failed to load weather data")
@@ -67,23 +68,23 @@ class FarmerRepository {
         }
     }
 
-    suspend fun getVegetablePrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getVegetablePrices(location, todayDate())
+    suspend fun getVegetablePrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getVegetablePrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getFruitPrices(location: String = "koyambedu"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getFruitPrices(location, todayDate())
+    suspend fun getFruitPrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getFruitPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getNonVegPrices(location: String = "bangalore"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getNonVegPrices(location, todayDate())
+    suspend fun getNonVegPrices(location: String = "bangalore", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getNonVegPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
-    suspend fun getGoldPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getGoldPrices(location, todayDate())
+    suspend fun getGoldPrices(location: String = "chennai", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
+        val response = vegetableMarketApi.getGoldPrices(location, date)
         response.data?.mapNotNull { it.toCrop() } ?: emptyList()
     }
 
@@ -127,15 +128,15 @@ class FarmerRepository {
 
     fun getAlerts(): List<Alert> = emptyList()
 
-    suspend fun getSchemes(language: Language = Language.TAMIL): List<Scheme> = withContext(Dispatchers.IO) {
+    suspend fun getSchemes(language: Language = Language.ENGLISH): List<Scheme> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchSchemes(language)
     }
 
-    suspend fun getCropNotes(language: Language = Language.TAMIL): List<CropNote> = withContext(Dispatchers.IO) {
+    suspend fun getCropNotes(language: Language = Language.ENGLISH): List<CropNote> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchCropNotes(language)
     }
 
-    suspend fun getDiseases(language: Language = Language.TAMIL): List<Disease> = withContext(Dispatchers.IO) {
+    suspend fun getDiseases(language: Language = Language.ENGLISH): List<Disease> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchDiseases(language)
     }
 
@@ -160,7 +161,8 @@ class FarmerRepository {
             trend = 0.0,
             category = "vegetable",
             units = units ?: "kg",
-            retailPrice = retail
+            retailPrice = retail,
+            imageUrl = table?.imageUrl?.let { ItemImageTable.BASE_URL + it }.orEmpty()
         )
     }
 
@@ -243,6 +245,18 @@ class FarmerRepository {
             is Number -> p.toDouble()
             else -> 0.0
         }
+        val avgVal = when (val a = avg) {
+            is Double -> a
+            is Int -> a.toDouble()
+            is String -> a.toDoubleOrNull()
+            is Number -> a.toDouble()
+            else -> null
+        }
+        val diffPercent = if (avgVal != null && avgVal > 0.0 && priceVal > 0.0) {
+            ((priceVal - avgVal) / avgVal) * 100.0
+        } else {
+            null
+        }
         val cityName = city ?: "Chennai"
         return Crop(
             id = "egg_$cityName".hashCode(),
@@ -252,7 +266,9 @@ class FarmerRepository {
             priceValue = priceVal,
             trend = 0.0,
             category = "egg",
-            units = "piece"
+            units = "piece",
+            prevPrice = avgVal,
+            priceDiffPercent = diffPercent
         )
     }
 }
