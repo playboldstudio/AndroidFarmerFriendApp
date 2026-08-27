@@ -5,8 +5,10 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.alerts.AlertSeedData
 import com.example.androidfarmerfriend.data.location.LocationPrefs
+import com.example.androidfarmerfriend.data.model.Alert
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.data.util.orEmpty
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,7 +36,7 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
     fun onEvent(event: AlertEvent) {
         when (event) {
             is AlertEvent.SelectFilter -> {
-                _state.value = _state.value.copy(selectedFilter = event.filter)
+                _state.value = rerender(_state.value.copy(selectedFilter = event.filter))
             }
             is AlertEvent.Refresh -> {
                 // Restart the realtime listener to get fresh data
@@ -44,16 +46,19 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
             is AlertEvent.MarkRead -> {
                 viewModelScope.launch {
                     repository.markAsRead(event.alertId)
-                    val current = (_state.value.alertsState as? UiState.Success)?.data ?: return@launch
-                    _state.value = _state.value.copy(
-                        alertsState = UiState.Success(
-                            current.map { if (it.id == event.alertId) it.copy(isRead = true) else it }
+                    val current = _state.value.alertsState.orEmpty()
+                    if (current.isEmpty()) return@launch
+                    _state.value = rerender(
+                        _state.value.copy(
+                            alertsState = UiState.Success(
+                                current.map { if (it.id == event.alertId) it.copy(isRead = true) else it }
+                            )
                         )
                     )
                 }
             }
             is AlertEvent.MarkAllRead -> {
-                val current = (_state.value.alertsState as? UiState.Success)?.data ?: return
+                val current = _state.value.alertsState.orEmpty()
                 viewModelScope.launch {
                     try {
                         repository.markAllAsRead(current.filter { !it.isRead }.map { it.id })
@@ -61,8 +66,10 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                         // Realtime listener will reconcile; nothing user-facing to do.
                     }
                     // Optimistic local update so the badge drops immediately.
-                    _state.value = _state.value.copy(
-                        alertsState = UiState.Success(current.map { it.copy(isRead = true) })
+                    _state.value = rerender(
+                        _state.value.copy(
+                            alertsState = UiState.Success(current.map { it.copy(isRead = true) })
+                        )
                     )
                 }
             }
@@ -81,9 +88,24 @@ class AlertsViewModel(application: Application) : AndroidViewModel(application) 
                     } catch (_: Exception) {}
                 }
             }
-            _state.value = _state.value.copy(
-                alertsState = UiState.Success(alerts)
+            _state.value = rerender(
+                _state.value.copy(alertsState = UiState.Success(alerts))
             )
         }
     }
+
+    /** Recompute the filter + unread badge once per state change instead of per read. */
+    private fun rerender(s: AlertsState): AlertsState = s.copy(
+        filteredAlerts = computeFilteredAlerts(s),
+        unreadCount = computeUnreadCount(s)
+    )
+
+    private fun computeFilteredAlerts(s: AlertsState): List<Alert> {
+        val data = s.alertsState.orEmpty()
+        if (s.selectedFilter == AlertFilterType.ALL) return data
+        return data.filter { it.type == s.selectedFilter.alertType }
+    }
+
+    private fun computeUnreadCount(s: AlertsState): Int =
+        s.alertsState.orEmpty().count { !it.isRead }
 }

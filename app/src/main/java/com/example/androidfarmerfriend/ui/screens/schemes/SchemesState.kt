@@ -15,16 +15,7 @@ enum class SchemeFilterType(val id: String, val displayKey: (AppStrings) -> Stri
 data class SchemesState(
     val schemesState: UiState<List<Scheme>> = UiState.Loading,
     val selectedFilter: SchemeFilterType = SchemeFilterType.ALL,
-    val searchQuery: String = ""
-) {
-    val filteredSchemes: List<Scheme>
-        get() {
-            val data = (schemesState as? UiState.Success)?.data ?: return emptyList()
-            val query = searchQuery.trim().lowercase()
-            return if (query.isEmpty()) data
-            else data.filter {
-                it.title.lowercase().contains(query) ||
-                it.description.lowercase().contains(query)
-            }
-        }
-}
+    val searchQuery: String = "",
+    /** Derived in the ViewModel whenever schemes/search/filter change — not recomputed per read. */
+    val filteredSchemes: List<Scheme> = emptyList()
+)

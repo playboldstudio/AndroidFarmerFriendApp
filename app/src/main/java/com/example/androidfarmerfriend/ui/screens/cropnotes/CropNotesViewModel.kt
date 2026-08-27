@@ -3,8 +3,11 @@ package com.example.androidfarmerfriend.ui.screens.cropnotes
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.androidfarmerfriend.data.localization.Language
+import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.data.util.loadSafely
+import com.example.androidfarmerfriend.data.util.orEmpty
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,28 +21,49 @@ class CropNotesViewModel(private val repository: FarmerRepository = FarmerReposi
 
     fun loadData(language: Language = currentLanguage) {
         currentLanguage = language
-        _state.value = _state.value.copy(notesState = UiState.Loading, searchQuery = "")
+        _state.value = rerender(_state.value.copy(notesState = UiState.Loading, searchQuery = ""))
         viewModelScope.launch {
-            try {
-                val notes = repository.getCropNotes(language)
-                _state.value = _state.value.copy(notesState = UiState.Success(notes))
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    notesState = UiState.Error(e.message ?: "Failed to load notes")
-                )
-            }
+            _state.value = rerender(
+                _state.value.copy(notesState = loadSafely { repository.getCropNotes(language) })
+            )
         }
     }
 
     fun onEvent(event: CropNoteEvent) {
         when (event) {
             is CropNoteEvent.SelectCrop -> {
-                _state.value = _state.value.copy(selectedCrop = event.crop, searchQuery = "")
+                _state.value = rerender(
+                    _state.value.copy(selectedCrop = event.crop, searchQuery = "")
+                )
             }
             is CropNoteEvent.Search -> {
-                _state.value = _state.value.copy(searchQuery = event.query)
+                _state.value = rerender(_state.value.copy(searchQuery = event.query))
             }
             is CropNoteEvent.Retry -> loadData()
+        }
+    }
+
+    /** Recompute the derived crop list + filtered notes once per state change instead of per read. */
+    private fun rerender(s: CropNotesState): CropNotesState = s.copy(
+        crops = computeCrops(s),
+        filteredNotes = computeFilteredNotes(s)
+    )
+
+    private fun computeCrops(s: CropNotesState): List<String> {
+        val data = s.notesState.orEmpty()
+        return listOf(ALL_CROPS) + data.map { it.cropName }.distinct()
+    }
+
+    private fun computeFilteredNotes(s: CropNotesState): List<CropNote> {
+        val data = s.notesState.orEmpty()
+        return data.filter { note ->
+            val matchesCrop = s.selectedCrop == ALL_CROPS || note.cropName == s.selectedCrop
+            val query = s.searchQuery.trim().lowercase()
+            val matchesSearch = query.isEmpty() ||
+                note.title.lowercase().contains(query) ||
+                note.cropName.lowercase().contains(query) ||
+                note.content.lowercase().contains(query)
+            matchesCrop && matchesSearch
         }
     }
 }

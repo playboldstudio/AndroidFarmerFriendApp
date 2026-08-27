@@ -57,7 +57,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
@@ -91,12 +91,12 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = viewModel()
 ) {
     val strings = LocalAppStrings.current
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val snackbarHostState = remember { SnackbarHostState() }
     val isSignedIn = AuthBridge.LocalIsSignedIn.current
     val requestSignIn = AuthBridge.LocalRequestSignIn.current
 
-    val navEvent by viewModel.navigation.collectAsState()
+    val navEvent by viewModel.navigation.collectAsStateWithLifecycle()
     LaunchedEffect(navEvent) {
         navEvent?.let { route ->
             onNavigate(route)
@@ -357,110 +357,6 @@ private fun GuestHero(strings: AppStrings) {
                 maxLines = 2
             )
         }
-    }
-}
-
-@Composable
-private fun SignInOptionsCard(
-    strings: AppStrings,
-    onGoogle: () -> Unit,
-    onSignUp: () -> Unit,
-    onSignIn: () -> Unit
-) {
-    val colors = FarmerTheme.colors
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
-        colors = CardDefaults.cardColors(containerColor = colors.surface)
-    ) {
-        Column(modifier = Modifier.padding(20.dp)) {
-            Text(
-                text = strings.signinCardTitle,
-                style = MaterialTheme.typography.titleSmall,
-                color = colors.textPrimary
-            )
-            Spacer(Modifier.height(FarmerSpacing.xs))
-            Text(
-                text = strings.signinCardBody,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.textSecondary
-            )
-
-            Spacer(Modifier.height(FarmerSpacing.lg))
-
-            GoogleButton(onClick = onGoogle)
-
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = FarmerSpacing.md)
-            ) {
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    thickness = 1.dp,
-                    color = colors.outline
-                )
-                Text(
-                    text = strings.orLabel,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.textTertiary,
-                    modifier = Modifier.padding(horizontal = FarmerSpacing.md)
-                )
-                HorizontalDivider(
-                    modifier = Modifier.weight(1f),
-                    thickness = 1.dp,
-                    color = colors.outline
-                )
-            }
-
-            Button(
-                onClick = onSignUp,
-                shape = RoundedCornerShape(14.dp),
-                contentPadding = PaddingValues(vertical = 13.dp),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(strings.signUpAction, fontWeight = FontWeight.Bold)
-            }
-
-            Spacer(Modifier.height(FarmerSpacing.s))
-
-            OutlinedButton(
-                onClick = onSignIn,
-                shape = RoundedCornerShape(14.dp),
-                contentPadding = PaddingValues(vertical = 13.dp),
-                border = androidx.compose.foundation.BorderStroke(1.5.dp, colors.outline),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(strings.signInAction, fontWeight = FontWeight.Bold, color = colors.textPrimary)
-            }
-        }
-    }
-}
-
-@Composable
-private fun GoogleButton(onClick: () -> Unit) {
-    val colors = FarmerTheme.colors
-    val strings = LocalAppStrings.current
-    OutlinedButton(
-        onClick = onClick,
-        shape = RoundedCornerShape(14.dp),
-        contentPadding = PaddingValues(vertical = 12.dp),
-        colors = ButtonDefaults.outlinedButtonColors(
-            containerColor = colors.surface,
-            contentColor = colors.textPrimary
-        ),
-        border = androidx.compose.foundation.BorderStroke(1.5.dp, colors.outline),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Text(
-            "G",
-            style = MaterialTheme.typography.titleMedium,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFFDB4437)
-        )
-        Spacer(Modifier.width(FarmerSpacing.s))
-        Text(strings.googleContinue, fontWeight = FontWeight.SemiBold)
     }
 }
 
@@ -848,9 +744,6 @@ private fun VersionFooter(label: String, tagline: String) {
 
 private fun phoneWithDialCode(phone: String): String =
     if (phone.startsWith("+91")) phone else "+91 $phone"
-
-// Unused stub kept for potential future settings entry.
-private val unusedSettingsIcon: ImageVector = Icons.Default.Settings
 
 @Preview(showBackground = true)
 @Composable

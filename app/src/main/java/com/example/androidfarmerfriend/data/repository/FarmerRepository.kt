@@ -126,8 +126,6 @@ class FarmerRepository {
         }
     }
 
-    fun getAlerts(): List<Alert> = emptyList()
-
     suspend fun getSchemes(language: Language = Language.ENGLISH): List<Scheme> = withContext(Dispatchers.IO) {
         WebDataScraper.fetchSchemes(language)
     }

@@ -19,6 +19,7 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -60,7 +61,7 @@ import com.example.androidfarmerfriend.util.RateCardSharer
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var showMarketPicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     // Honest pull-to-refresh: spinner tracks the real UiState, not a
     // synchronously-set-and-cleared flag.
@@ -123,9 +124,12 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 ) {
                     Spacer(Modifier.height(FarmerSpacing.lg))
 
+                    val titleAccent = remember(strings.marketTitle) {
+                        strings.marketTitle.split(" ").getOrNull(1)
+                    }
                     HeroTitle(
                         text = strings.marketTitle,
-                        accent = strings.marketTitle.split(" ").getOrNull(1)
+                        accent = titleAccent
                     )
 
                     Spacer(Modifier.height(FarmerSpacing.s))
@@ -183,7 +187,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                                     verticalArrangement = Arrangement.spacedBy(10.dp),
                                     contentPadding = PaddingValues(bottom = 16.dp)
                                 ) {
-                                    items(state.filteredCrops) { crop ->
+                                    items(state.filteredCrops, key = { it.id }) { crop ->
                                         MarketCropItem(crop, state.selectedMarket.displayName, strings)
                                     }
                                 }
@@ -317,10 +321,13 @@ private fun CropThumbnail(crop: Crop) {
 }
 
 /** Price with unit subscript. */
+/** Compiled once — avoids per-item per-recomposition Regex allocation in the market list. */
+private val PRICE_UNIT_REGEX = Regex("^(.*?)\\s*/\\s*(.*)$")
+
 @Composable
 private fun PriceText(price: String) {
     val colors = FarmerTheme.colors
-    val unitMatch = Regex("^(.*?)\\s*/\\s*(.*)$").find(price)
+    val unitMatch = PRICE_UNIT_REGEX.find(price)
     if (unitMatch != null) {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(

@@ -23,15 +23,7 @@ data class MarketState(
     val selectedFilter: FilterType = FilterType.VEGETABLES,
     val selectedMarket: MarketOption = MarketData.defaultMarketForCategory(FilterType.VEGETABLES),
     val searchQuery: String = "",
-    val fetchDate: String = ""
-) {
-    val filteredCrops: List<Crop>
-        get() {
-            val data = (cropsState as? UiState.Success)?.data ?: return emptyList()
-            val query = searchQuery.trim().lowercase()
-            return if (query.isEmpty()) data
-            else data.filter {
-                it.name.lowercase().contains(query) || it.nameEng.lowercase().contains(query)
-            }
-        }
-}
+    val fetchDate: String = "",
+    /** Derived in the ViewModel whenever search/filter/data change — not recomputed per read. */
+    val filteredCrops: List<Crop> = emptyList()
+)
