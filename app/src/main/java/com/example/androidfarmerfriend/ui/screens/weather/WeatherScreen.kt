@@ -70,7 +70,6 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     }
 
     com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-        maxWidth = 640.dp,
         modifier = Modifier.background(FarmerTheme.colors.background)
     ) {
         Column(

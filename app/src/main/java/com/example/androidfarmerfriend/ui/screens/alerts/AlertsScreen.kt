@@ -65,7 +65,6 @@ fun AlertsScreen(
     }
 
     com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-        maxWidth = 640.dp,
         modifier = Modifier.background(colors.background)
     ) {
         Column(

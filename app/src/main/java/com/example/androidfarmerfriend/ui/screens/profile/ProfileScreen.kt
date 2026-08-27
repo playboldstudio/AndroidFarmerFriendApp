@@ -123,7 +123,6 @@ fun ProfileScreen(
             .imePadding()
     ) {
         com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-            maxWidth = 640.dp,
             modifier = Modifier.fillMaxSize()
         ) {
             Column(

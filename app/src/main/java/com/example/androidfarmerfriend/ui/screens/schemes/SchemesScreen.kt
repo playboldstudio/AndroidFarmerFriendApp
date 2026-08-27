@@ -63,7 +63,7 @@ fun SchemesScreen(
             viewModel.loadData(languagePrefs.selectedLanguage)
         }
     ) {
-        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth {
         Column(
             modifier = Modifier
                 .fillMaxSize()
