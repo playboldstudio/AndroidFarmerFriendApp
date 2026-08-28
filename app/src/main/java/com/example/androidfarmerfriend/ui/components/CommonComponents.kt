@@ -16,6 +16,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -68,16 +69,18 @@ fun HeroTitle(
     modifier: Modifier = Modifier
 ) {
     val colors = FarmerTheme.colors
-    val hasAccent = !accent.isNullOrBlank() && text.contains(accent)
-    val annotated = if (hasAccent) {
-        buildAnnotatedString {
-            val idx = text.indexOf(accent!!)
-            append(text.substring(0, idx))
-            withStyle(SpanStyle(color = colors.primary)) { append(accent) }
-            append(text.substring(idx + accent.length))
+    val annotated = remember(text, accent, colors.primary) {
+        val hasAccent = !accent.isNullOrBlank() && text.contains(accent)
+        if (hasAccent) {
+            buildAnnotatedString {
+                val idx = text.indexOf(accent!!)
+                append(text.substring(0, idx))
+                withStyle(SpanStyle(color = colors.primary)) { append(accent) }
+                append(text.substring(idx + accent.length))
+            }
+        } else {
+            AnnotatedString(text)
         }
-    } else {
-        AnnotatedString(text)
     }
     Text(
         text = annotated,

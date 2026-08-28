@@ -11,6 +11,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -29,7 +30,7 @@ fun LanguageScreen(
     onBack: () -> Unit = {},
     viewModel: LanguageViewModel = viewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val selectedLanguage = state.selectedLanguage
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
@@ -50,7 +51,7 @@ fun LanguageScreen(
             verticalArrangement = Arrangement.spacedBy(FarmerSpacing.s),
             contentPadding = PaddingValues(vertical = FarmerSpacing.s)
         ) {
-            items(Language.entries) { language ->
+            items(Language.entries, key = { it.name }) { language ->
                 LanguageCard(
                     language = language,
                     displayName = if (selectedLanguage == Language.TAMIL) {

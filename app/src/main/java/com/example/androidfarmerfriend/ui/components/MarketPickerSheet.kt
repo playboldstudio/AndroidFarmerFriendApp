@@ -119,7 +119,7 @@ fun MarketPickerSheet(
                             title = strings.majorMarkets
                         )
                     }
-                    items(majorMarkets) { market ->
+                    items(majorMarkets, key = { it.apiSlug }) { market ->
                         MarketItem(
                             market = market,
                             isSelected = market.apiSlug == selectedMarket.apiSlug,
@@ -139,7 +139,7 @@ fun MarketPickerSheet(
                             title = strings.allStates
                         )
                     }
-                    items(states) { market ->
+                    items(states, key = { it.apiSlug }) { market ->
                         MarketItem(
                             market = market,
                             isSelected = market.apiSlug == selectedMarket.apiSlug,
@@ -159,7 +159,7 @@ fun MarketPickerSheet(
                             title = strings.allCities
                         )
                     }
-                    items(cities) { market ->
+                    items(cities, key = { it.apiSlug }) { market ->
                         MarketItem(
                             market = market,
                             isSelected = market.apiSlug == selectedMarket.apiSlug,
@@ -249,13 +249,15 @@ private fun MarketItem(
                     color = if (isSelected) FarmerTheme.colors.primary
                     else FarmerTheme.colors.textPrimary
                 )
-                // Show supported categories as small text
-                val categories = buildList {
-                    if (market.supportsVegetables) add(strings.vegetables)
-                    if (market.supportsFruits) add(strings.fruits)
-                    if (market.supportsNonVeg) add(strings.nonVeg)
-                    if (market.supportsCategory(FilterType.GOLD)) add(strings.gold)
-                    if (market.supportsCategory(FilterType.EGG)) add(strings.egg)
+                // Show supported categories as small text (built once per market/language).
+                val categories = remember(market, strings) {
+                    buildList {
+                        if (market.supportsVegetables) add(strings.vegetables)
+                        if (market.supportsFruits) add(strings.fruits)
+                        if (market.supportsNonVeg) add(strings.nonVeg)
+                        if (market.supportsCategory(FilterType.GOLD)) add(strings.gold)
+                        if (market.supportsCategory(FilterType.EGG)) add(strings.egg)
+                    }
                 }
                 if (categories.isNotEmpty()) {
                     Text(

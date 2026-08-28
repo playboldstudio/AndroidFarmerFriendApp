@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
@@ -35,7 +36,7 @@ fun SchemesScreen(
     viewModel: SchemesViewModel = viewModel()
 ) {
     val strings = LocalAppStrings.current
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var isRefreshing by remember { mutableStateOf(false) }
     val colors = FarmerTheme.colors
@@ -62,7 +63,7 @@ fun SchemesScreen(
             viewModel.loadData(languagePrefs.selectedLanguage)
         }
     ) {
-        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -101,7 +102,7 @@ fun SchemesScreen(
                             verticalArrangement = Arrangement.spacedBy(10.dp),
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
-                            items(state.filteredSchemes) { scheme ->
+                            items(state.filteredSchemes, key = { it.id }) { scheme ->
                                 SchemeItem(scheme)
                             }
                         }

@@ -11,16 +11,7 @@ enum class DiseaseFilterType(val id: String, val displayKey: (AppStrings) -> Str
 data class DiseaseState(
     val diseasesState: UiState<List<Disease>> = UiState.Loading,
     val selectedFilter: DiseaseFilterType = DiseaseFilterType.ALL,
-    val searchQuery: String = ""
-) {
-    val filteredDiseases: List<Disease>
-        get() {
-            val data = (diseasesState as? UiState.Success)?.data ?: return emptyList()
-            val query = searchQuery.trim().lowercase()
-            return if (query.isEmpty()) data
-            else data.filter { disease ->
-                disease.name.lowercase().contains(query) ||
-                    disease.cropAffected.lowercase().contains(query)
-            }
-        }
-}
+    val searchQuery: String = "",
+    /** Derived in the ViewModel whenever diseases/search/filter change — not recomputed per read. */
+    val filteredDiseases: List<Disease> = emptyList()
+)

@@ -15,15 +15,9 @@ enum class AlertFilterType(val id: String, val displayKey: (AppStrings) -> Strin
 data class AlertsState(
     val alertsState: UiState<List<Alert>> = UiState.Loading,
     val selectedFilter: AlertFilterType = AlertFilterType.ALL,
-    val locationName: String = ""
-) {
-    val filteredAlerts: List<Alert>
-        get() {
-            val data = (alertsState as? UiState.Success)?.data ?: return emptyList()
-            if (selectedFilter == AlertFilterType.ALL) return data
-            return data.filter { it.type == selectedFilter.alertType }
-        }
-
-    val unreadCount: Int
-        get() = (alertsState as? UiState.Success)?.data?.count { !it.isRead } ?: 0
-}
+    val locationName: String = "",
+    /** Derived in the ViewModel whenever alerts/filter change — not recomputed per read. */
+    val filteredAlerts: List<Alert> = emptyList(),
+    /** Derived in the ViewModel alongside [filteredAlerts]. */
+    val unreadCount: Int = 0
+)

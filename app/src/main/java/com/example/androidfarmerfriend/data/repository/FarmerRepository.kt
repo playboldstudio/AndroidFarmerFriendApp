@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
 import com.example.androidfarmerfriend.data.api.ItemImageTable
+import com.example.androidfarmerfriend.data.cache.OfflineCache
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
@@ -126,19 +127,29 @@ class FarmerRepository {
         }
     }
 
-    fun getAlerts(): List<Alert> = emptyList()
+    // --- Wikipedia-backed reference lists (offline-cached) ---
+    // These hit Wikipedia's REST search API on every call; without persistence
+    // a slow/down network turned the screens into blank Error states. The cache
+    // serves the last good content for 24h and falls back to stale content if a
+    // refresh fails, so the screens stay populated offline.
 
-    suspend fun getSchemes(language: Language = Language.ENGLISH): List<Scheme> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchSchemes(language)
-    }
+    suspend fun getSchemes(language: Language = Language.ENGLISH): List<Scheme> = OfflineCache.getOrFetch(
+        key = "schemes_${language.code}",
+        ttlMillis = TTL_REFERENCE,
+        type = OfflineCache.listType(Scheme::class.java)
+    ) { WebDataScraper.fetchSchemes(language) }
 
-    suspend fun getCropNotes(language: Language = Language.ENGLISH): List<CropNote> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchCropNotes(language)
-    }
+    suspend fun getCropNotes(language: Language = Language.ENGLISH): List<CropNote> = OfflineCache.getOrFetch(
+        key = "notes_${language.code}",
+        ttlMillis = TTL_REFERENCE,
+        type = OfflineCache.listType(CropNote::class.java)
+    ) { WebDataScraper.fetchCropNotes(language) }
 
-    suspend fun getDiseases(language: Language = Language.ENGLISH): List<Disease> = withContext(Dispatchers.IO) {
-        WebDataScraper.fetchDiseases(language)
-    }
+    suspend fun getDiseases(language: Language = Language.ENGLISH): List<Disease> = OfflineCache.getOrFetch(
+        key = "diseases_${language.code}",
+        ttlMillis = TTL_REFERENCE,
+        type = OfflineCache.listType(Disease::class.java)
+    ) { WebDataScraper.fetchDiseases(language) }
 
     private fun com.example.androidfarmerfriend.data.api.VegetableItem.toCrop(): Crop? {
         val rawName = vegetablename ?: columnNameEng ?: return null
@@ -270,5 +281,10 @@ class FarmerRepository {
             prevPrice = avgVal,
             priceDiffPercent = diffPercent
         )
+    }
+
+    companion object {
+        /** Reference content (Wikipedia-backed lists) — refresh at most once a day. */
+        private const val TTL_REFERENCE = 24L * 60 * 60 * 1000
     }
 }

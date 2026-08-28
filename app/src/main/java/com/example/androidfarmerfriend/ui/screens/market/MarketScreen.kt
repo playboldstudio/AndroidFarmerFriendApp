@@ -1,10 +1,14 @@
 package com.example.androidfarmerfriend.ui.screens.market
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Diamond
@@ -19,12 +23,16 @@ import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.snapshotFlow
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -32,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 import kotlinx.coroutines.withContext
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
@@ -60,12 +69,29 @@ import com.example.androidfarmerfriend.util.RateCardSharer
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     var showMarketPicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     // Honest pull-to-refresh: spinner tracks the real UiState, not a
     // synchronously-set-and-cleared flag.
     val isRefreshing = state.cropsState is UiState.Loading
     val scope = rememberCoroutineScope()
+
+    // Gmail-style FAB: it slides down out of the way while the list scrolls
+    // down and resurfaces when the user scrolls back up. Tracked from the
+    // LazyColumn's own scroll state so it reacts to real scrolling.
+    val listState = rememberLazyListState()
+    var fabHidden by remember { mutableStateOf(false) }
+    var prevScroll by remember { mutableStateOf(0) }
+    LaunchedEffect(listState) {
+        snapshotFlow { listState.firstVisibleItemIndex to listState.firstVisibleItemScrollOffset }
+            .collect { (index, offset) ->
+                val now = index * 10000 + offset
+                val delta = now - prevScroll
+                if (delta > 0 && index > 0) fabHidden = true
+                else if (delta < 0) fabHidden = false
+                prevScroll = now
+            }
+    }
 
     val strings = LocalAppStrings.current
     val colors = FarmerTheme.colors
@@ -113,7 +139,6 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
     ) {
         Box(modifier = Modifier.fillMaxSize()) {
             com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-                maxWidth = 640.dp,
                 modifier = Modifier.background(colors.background)
             ) {
                 Column(
@@ -123,9 +148,12 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 ) {
                     Spacer(Modifier.height(FarmerSpacing.lg))
 
+                    val titleAccent = remember(strings.marketTitle) {
+                        strings.marketTitle.split(" ").getOrNull(1)
+                    }
                     HeroTitle(
                         text = strings.marketTitle,
-                        accent = strings.marketTitle.split(" ").getOrNull(1)
+                        accent = titleAccent
                     )
 
                     Spacer(Modifier.height(FarmerSpacing.s))
@@ -180,10 +208,11 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                                 )
                             } else {
                                 LazyColumn(
+                                    state = listState,
                                     verticalArrangement = Arrangement.spacedBy(10.dp),
                                     contentPadding = PaddingValues(bottom = 16.dp)
                                 ) {
-                                    items(state.filteredCrops) { crop ->
+                                    items(state.filteredCrops, key = { it.id }) { crop ->
                                         MarketCropItem(crop, state.selectedMarket.displayName, strings)
                                     }
                                 }
@@ -193,11 +222,18 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                 }
             }
 
+            val fabOffsetY by animateFloatAsState(
+                targetValue = if (fabHidden) 240f else 0f,
+                label = "fabOffset",
+                animationSpec = tween(durationMillis = 220)
+            )
             FloatingActionButton(
                 onClick = shareRateCard,
                 modifier = Modifier
                     .align(Alignment.BottomEnd)
-                    .padding(FarmerSpacing.lg),
+                    .padding(FarmerSpacing.lg)
+                    .offset { IntOffset(0, fabOffsetY.roundToInt()) }
+                    .alpha(if (fabHidden) 0f else 1f),
                 containerColor = colors.primary,
                 contentColor = colors.onPrimary
             ) {
@@ -317,10 +353,13 @@ private fun CropThumbnail(crop: Crop) {
 }
 
 /** Price with unit subscript. */
+/** Compiled once — avoids per-item per-recomposition Regex allocation in the market list. */
+private val PRICE_UNIT_REGEX = Regex("^(.*?)\\s*/\\s*(.*)$")
+
 @Composable
 private fun PriceText(price: String) {
     val colors = FarmerTheme.colors
-    val unitMatch = Regex("^(.*?)\\s*/\\s*(.*)$").find(price)
+    val unitMatch = PRICE_UNIT_REGEX.find(price)
     if (unitMatch != null) {
         Row(verticalAlignment = Alignment.Bottom) {
             Text(

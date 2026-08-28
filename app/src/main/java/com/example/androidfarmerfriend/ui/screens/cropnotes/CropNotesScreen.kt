@@ -14,6 +14,7 @@ import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -41,8 +42,6 @@ import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.WebSearchUtil
 
-private const val ALL_CROPS = "__all__"
-
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun CropNotesScreen(
@@ -50,7 +49,7 @@ fun CropNotesScreen(
     viewModel: CropNotesViewModel = viewModel()
 ) {
     val strings = LocalAppStrings.current
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var isRefreshing by remember { mutableStateOf(false) }
     val colors = FarmerTheme.colors
@@ -74,7 +73,7 @@ fun CropNotesScreen(
             viewModel.loadData()
         }
     ) {
-        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(maxWidth = 640.dp) {
+        com.example.androidfarmerfriend.ui.components.CenteredMaxWidth {
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -131,7 +130,7 @@ fun CropNotesScreen(
                             verticalArrangement = Arrangement.spacedBy(12.dp),
                             contentPadding = PaddingValues(bottom = 16.dp)
                         ) {
-                            items(state.filteredNotes) { note ->
+                            items(state.filteredNotes, key = { it.id }) { note ->
                                 CropNoteItem(note = note, strings = strings)
                             }
                         }

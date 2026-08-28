@@ -132,7 +132,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     isEditing = true,
                     tempName = placeholderAwareSavedName(),
                     tempPhone = digitsOnly(_state.value.userPhone),
-                    tempEmail = _state.value.userEmail
+                    tempEmail = _state.value.userEmail,
+                    nameError = null,
+                    phoneError = null
                 )
             }
             is ProfileEvent.NavigateToNotifications -> {
@@ -150,17 +152,26 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                     isEditing = true,
                     tempName = placeholderAwareSavedName(),
                     tempPhone = digitsOnly(_state.value.userPhone),
-                    tempEmail = _state.value.userEmail
+                    tempEmail = _state.value.userEmail,
+                    nameError = null,
+                    phoneError = null
                 )
             }
             is ProfileEvent.CancelEditing -> {
-                _state.value = _state.value.copy(isEditing = false)
+                _state.value = _state.value.copy(
+                    isEditing = false,
+                    nameError = null,
+                    phoneError = null
+                )
             }
             is ProfileEvent.SaveProfile -> {
                 saveProfile()
             }
             is ProfileEvent.UpdateTempName -> {
-                _state.value = _state.value.copy(tempName = event.name)
+                _state.value = _state.value.copy(
+                    tempName = event.name.take(NAME_MAX_LENGTH),
+                    nameError = null
+                )
             }
             is ProfileEvent.UpdateTempPhone -> {
                 _state.value = _state.value.copy(
@@ -192,32 +203,35 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     private fun saveProfile() {
         val current = _state.value
         val rawPhone = normalizePhone(current.tempPhone)
+        val strings = current.selectedLanguage.strings()
 
-        if (current.tempName.isBlank()) {
-            _state.value = current.copy(message = "Name cannot be empty")
+        val trimmedName = current.tempName.trim()
+        if (trimmedName.isBlank()) {
+            _state.value = current.copy(nameError = strings.nameError)
             return
         }
         if (rawPhone.isBlank()) {
-            _state.value = current.copy(phoneError = "Phone number is required")
+            _state.value = current.copy(phoneError = strings.phoneRequiredError)
             return
         }
         if (!isValidIndianMobile(rawPhone)) {
-            _state.value = current.copy(phoneError = "Enter a valid 10-digit mobile number")
+            _state.value = current.copy(phoneError = strings.mobileInvalidError)
             return
         }
 
-        userPrefs.userName = current.tempName.trim()
+        userPrefs.userName = trimmedName
         userPrefs.userPhone = rawPhone
 
         _state.value = current.copy(
             isEditing = false,
-            userName = current.tempName.trim(),
+            userName = trimmedName,
             userPhone = rawPhone,
             userEmail = current.userEmail,
-            displayName = displayName(current.tempName.trim(), current.selectedLanguage),
+            displayName = displayName(trimmedName, current.selectedLanguage),
+            nameError = null,
             phoneError = null
         )
-        saveUserToFirestore(current.tempName.trim(), rawPhone, current.userEmail)
+        saveUserToFirestore(trimmedName, rawPhone, current.userEmail)
     }
 
     fun onNavigated() {
@@ -256,14 +270,21 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
     }
 
     companion object {
+        /** Hard cap for the display name — enforced on input and before save. */
+        const val NAME_MAX_LENGTH = 30
+
         private fun digitsOnly(value: String): String =
             value.filter { it.isDigit() }.take(10)
 
-        private fun normalizePhone(input: String): String =
-            input.replace("+91", "").replace("91", "", true)
-                .replace("\\s".toRegex(), "")
-                .filter { it.isDigit() }
-                .take(10)
+        /** Keep only digits; drop a leading +91 / 91 country code exactly once.
+         *  A stray "91" inside the number (e.g. 9141234567) is preserved — the old
+         *  global replace corrupted valid numbers that start with 91. */
+        private fun normalizePhone(input: String): String {
+            var digits = input.filter { it.isDigit() }.take(12)
+            if (digits.length == 12 && digits.startsWith("91")) digits = digits.drop(2)
+            else if (digits.length == 11 && digits.startsWith("91")) digits = digits.drop(2)
+            return digits.take(10)
+        }
 
         private fun isValidIndianMobile(phone: String): Boolean =
             phone.length == 10 && phone.all { it.isDigit() }

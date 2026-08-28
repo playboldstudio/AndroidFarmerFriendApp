@@ -58,15 +58,10 @@ object NotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val icon = when (channelId) {
-            CHANNEL_PRICES -> android.R.drawable.ic_dialog_info
-            CHANNEL_WEATHER -> android.R.drawable.ic_dialog_alert
-            CHANNEL_CROP -> android.R.drawable.ic_menu_agenda
-            else -> android.R.drawable.ic_dialog_info
-        }
-
+        // Match the app logo used on the home/splash screens so every
+        // notification shows Farmer Friend's own mark, not a generic system icon.
         val notification = NotificationCompat.Builder(context, channelId)
-            .setSmallIcon(icon)
+            .setSmallIcon(R.mipmap.ic_launcher_foreground)
             .setContentTitle(title)
             .setContentText(message)
             .setStyle(NotificationCompat.BigTextStyle().bigText(message))

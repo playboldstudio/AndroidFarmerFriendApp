@@ -13,6 +13,7 @@ import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -45,18 +46,14 @@ import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
 fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val strings = LocalAppStrings.current
     var showLocationPicker by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.setStrings(strings)
-        viewModel.onEvent(WeatherEvent.LoadInitial)
-    }
-
     LaunchedEffect(strings) {
         viewModel.setStrings(strings)
+        viewModel.onEvent(WeatherEvent.LoadInitial)
     }
 
     val currentLocation = state.selectedLocation
@@ -73,7 +70,6 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
     }
 
     com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-        maxWidth = 640.dp,
         modifier = Modifier.background(FarmerTheme.colors.background)
     ) {
         Column(

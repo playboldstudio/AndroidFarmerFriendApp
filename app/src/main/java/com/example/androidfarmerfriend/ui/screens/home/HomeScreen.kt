@@ -20,6 +20,7 @@ import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -69,7 +70,7 @@ fun HomeScreen(
     onNavigate: (String) -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
-    val state by viewModel.state.collectAsState()
+    val state by viewModel.state.collectAsStateWithLifecycle()
 
     val strings = LocalAppStrings.current
     var showLocationPicker by remember { mutableStateOf(false) }
@@ -83,13 +84,9 @@ fun HomeScreen(
         onDispose { repo.stopUnreadListening() }
     }
 
-    LaunchedEffect(Unit) {
-        viewModel.setStrings(strings)
-        viewModel.onEvent(HomeEvent.LoadInitial)
-    }
-
     LaunchedEffect(strings) {
         viewModel.setStrings(strings)
+        viewModel.onEvent(HomeEvent.LoadInitial)
     }
 
     val currentLocation = state.selectedLocation
@@ -106,7 +103,6 @@ fun HomeScreen(
     }
 
     com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
-        maxWidth = 640.dp,
         modifier = Modifier.background(FarmerTheme.colors.background)
     ) {
         Column(

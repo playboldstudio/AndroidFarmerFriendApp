@@ -9,6 +9,7 @@ import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.data.util.UserPrefs
+import com.example.androidfarmerfriend.ui.components.loadWeatherState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,6 +25,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     val state: StateFlow<HomeState> = _state.asStateFlow()
 
     private var strings: AppStrings = AppStrings.English
+    private var loadedOnce = false
 
     fun setStrings(strings: AppStrings) {
         this.strings = strings
@@ -46,6 +48,10 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     private fun loadInitial() {
+        // Load data only the first time the screen is shown; returning to the tab
+        // must not re-trigger a full refetch. Error retry is handled separately.
+        if (loadedOnce) return
+        loadedOnce = true
         val saved = locationPrefs.selectedLocation
         refreshGreeting()
         loadWeather(saved)
@@ -83,17 +89,7 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private fun loadWeather(location: SelectedLocation) {
         _state.value = _state.value.copy(selectedLocation = location, weatherState = UiState.Loading)
         viewModelScope.launch {
-            try {
-                val weather = repository.getWeather(location.lat, location.lon, location.name, strings)
-                _state.value = _state.value.copy(
-                    weatherState = if (weather != null) UiState.Success(weather)
-                    else UiState.Error(strings.weatherLoadError)
-                )
-            } catch (e: Exception) {
-                _state.value = _state.value.copy(
-                    weatherState = UiState.Error(e.message ?: strings.weatherLoadError)
-                )
-            }
+            _state.value = _state.value.copy(weatherState = repository.loadWeatherState(location, strings))
         }
     }
 
