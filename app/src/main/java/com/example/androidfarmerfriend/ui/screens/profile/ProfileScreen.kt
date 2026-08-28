@@ -84,6 +84,8 @@ import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 // Google brand red is fixed across themes (official mark color).
 
+/** Mirrors ProfileViewModel.NAME_MAX_LENGTH — used for the live character counter. */
+private const val NAME_MAX_LENGTH = 30
 
 @Composable
 fun ProfileScreen(
@@ -525,6 +527,23 @@ internal fun ProfileEditForm(
             singleLine = true,
             shape = RoundedCornerShape(14.dp),
             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next),
+            isError = state.nameError != null,
+            supportingText = state.nameError?.let { error ->
+                {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(error, color = MaterialTheme.colorScheme.error, modifier = Modifier.weight(1f))
+                        Text(
+                            text = "${state.tempName.length} / ${NAME_MAX_LENGTH}",
+                            color = colors.textTertiary,
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            },
             colors = editFieldColors()
         )
 

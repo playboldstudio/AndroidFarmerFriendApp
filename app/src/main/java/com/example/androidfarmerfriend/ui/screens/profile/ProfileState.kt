@@ -13,6 +13,7 @@ data class ProfileState(
     val tempName: String = "",
     val tempPhone: String = "",
     val tempEmail: String = "",
+    val nameError: String? = null,
     val phoneError: String? = null,
     val selectedLanguage: Language = Language.ENGLISH,
     val showLogoutDialog: Boolean = false,
