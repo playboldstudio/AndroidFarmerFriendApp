@@ -317,6 +317,12 @@ private suspend fun signInWithGoogle(
         }
     } catch (e: androidx.credentials.exceptions.GetCredentialCancellationException) {
         // User closed the account picker — nothing to do.
+    } catch (e: androidx.credentials.exceptions.NoCredentialException) {
+        // No Google accounts are available on the device (or none match the
+        // registered OAuth clients). Surface a clear message instead of the raw
+        // system error so the user can act on it (add a Google account in
+        // Settings, or check the Firebase console's SHA-1 registration).
+        onError(strings.noGoogleAccount)
     } catch (e: GetCredentialException) {
         onError(e.message ?: strings.noGoogleAccount)
     } catch (e: Exception) {
