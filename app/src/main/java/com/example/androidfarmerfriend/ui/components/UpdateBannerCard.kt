@@ -104,20 +104,40 @@ fun UpdateBannerCard(
                     modifier = Modifier.padding(top = 2.dp)
                 )
                 if (banner == UpdateBanner.Available || banner == UpdateBanner.ReadyToInstall) {
-                    Box(
-                        modifier = Modifier
-                            .padding(top = FarmerSpacing.s)
-                            .clip(RoundedCornerShape(10.dp))
-                            .background(colors.primary)
-                            .clickable(onClick = onAction)
-                            .padding(horizontal = 14.dp, vertical = 7.dp)
-                        , contentAlignment = Alignment.Center
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(top = FarmerSpacing.s)
                     ) {
-                        Text(
-                            text = if (banner == UpdateBanner.Available) strings.actionAllow else strings.updateRestartAction,
-                            color = colors.onPrimary,
-                            style = MaterialTheme.typography.labelMedium
-                        )
+                        // Primary action: Update now / Restart.
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .background(colors.primary)
+                                .clickable(onClick = onAction)
+                                .padding(horizontal = 14.dp, vertical = 7.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = if (banner == UpdateBanner.Available) strings.actionAllow else strings.updateRestartAction,
+                                color = colors.onPrimary,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
+                        Spacer(Modifier.width(FarmerSpacing.s))
+                        // Explicit dismiss — a clear "Close" next to the update action.
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(10.dp))
+                                .clickable(onClick = onDismiss)
+                                .padding(horizontal = 14.dp, vertical = 7.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                text = strings.cancelAction,
+                                color = colors.textSecondary,
+                                style = MaterialTheme.typography.labelMedium
+                            )
+                        }
                     }
                 }
             }

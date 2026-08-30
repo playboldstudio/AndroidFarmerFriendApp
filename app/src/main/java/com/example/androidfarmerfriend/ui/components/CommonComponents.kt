@@ -16,7 +16,14 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.example.androidfarmerfriend.util.NetworkUtil
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -31,6 +38,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.withStyle
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -698,5 +706,133 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
         ) {
             Text(LocalAppStrings.current.retry, fontWeight = FontWeight.Bold)
         }
+    }
+}
+
+/**
+ * Distinct "you're offline" state, shown instead of the generic [ErrorState]
+ * when there is no internet. The wifi-off icon and copy make the cause obvious,
+ * and the retry re-checks connectivity rather than silently re-firing a request.
+ */
+@Composable
+fun OfflineState(
+    title: String,
+    body: String,
+    onRetry: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = FarmerTheme.colors
+    Column(
+        modifier = modifier.fillMaxWidth().padding(vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Icon(
+            Icons.Default.SignalWifiOff,
+            contentDescription = null,
+            tint = TrendRed,
+            modifier = Modifier.size(48.dp)
+        )
+        Spacer(Modifier.height(10.dp))
+        Text(
+            title,
+            color = colors.textPrimary,
+            fontWeight = FontWeight.SemiBold,
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center
+        )
+        Spacer(Modifier.height(4.dp))
+        Text(
+            body,
+            color = colors.textSecondary,
+            style = MaterialTheme.typography.bodyMedium,
+            textAlign = TextAlign.Center,
+            modifier = Modifier.padding(horizontal = 32.dp)
+        )
+        Spacer(Modifier.height(14.dp))
+        Button(
+            onClick = onRetry,
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.primary, contentColor = colors.onPrimary),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 10.dp)
+        ) {
+            Text(LocalAppStrings.current.retry, fontWeight = FontWeight.Bold)
+        }
+    }
+}
+
+/**
+ * Honest slow-loading state: renders below/over the shimmer so that a normal
+ * fast load shows nothing extra, but a slow network gets a "still loading…"
+ * hint after [slowAfterMillis]. Uses [SlowSkeleton] for the placeholder.
+ */
+@Composable
+fun SlowNetworkState(
+    title: String,
+    body: String,
+    modifier: Modifier = Modifier,
+    slowAfterMillis: Long = 4_000L
+) {
+    var showHint by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) {
+        delay(slowAfterMillis)
+        showHint = true
+    }
+    Column(modifier = modifier.fillMaxWidth()) {
+        ShimmerList(rowCount = 4, rowHeight = 88.dp)
+        if (showHint) {
+            Spacer(Modifier.height(12.dp))
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .align(Alignment.CenterHorizontally)
+                    .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
+                    .padding(horizontal = 14.dp, vertical = 8.dp)
+            ) {
+                Icon(
+                    Icons.Default.CloudOff,
+                    contentDescription = null,
+                    tint = FarmerTheme.colors.primary,
+                    modifier = Modifier.size(18.dp)
+                )
+                Spacer(Modifier.width(8.dp))
+                Column {
+                    Text(
+                        title,
+                        color = FarmerTheme.colors.primary,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold
+                    )
+                    Text(
+                        body,
+                        color = FarmerTheme.colors.textTertiary,
+                        style = MaterialTheme.typography.labelSmall
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true, widthDp = 400, heightDp = 640)
+@Composable
+private fun OfflineStatePreview() {
+    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
+        OfflineState(
+            title = "You're offline",
+            body = "An internet connection is needed to load prices. Try again.",
+            onRetry = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 400, heightDp = 640)
+@Composable
+private fun SlowNetworkStatePreview() {
+    com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme {
+        SlowNetworkState(
+            title = "Still loading…",
+            body = "Slow network — this can take a moment.",
+            slowAfterMillis = 0L // force the hint to show immediately in preview
+        )
     }
 }
