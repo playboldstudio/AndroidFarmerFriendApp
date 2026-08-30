@@ -44,6 +44,7 @@ import com.example.androidfarmerfriend.R
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
+import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.util.UiState
@@ -84,7 +85,10 @@ fun HomeScreen(
         onDispose { repo.stopUnreadListening() }
     }
 
-    LaunchedEffect(strings) {
+    // Re-key on signed-in state too: logging out (or in) must recompute the
+    // greeting, otherwise the previously cached user name lingers on the tab.
+    val isSignedIn = AuthBridge.LocalIsSignedIn.current
+    LaunchedEffect(strings, isSignedIn) {
         viewModel.setStrings(strings)
         viewModel.onEvent(HomeEvent.LoadInitial)
     }

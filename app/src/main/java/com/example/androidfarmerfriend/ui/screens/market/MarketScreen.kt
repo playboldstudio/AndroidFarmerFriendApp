@@ -54,15 +54,18 @@ import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.MarketPickerSheet
+import com.example.androidfarmerfriend.ui.components.OfflineState
 import com.example.androidfarmerfriend.ui.components.PillChipGroup
 import com.example.androidfarmerfriend.ui.components.RowCard
 import com.example.androidfarmerfriend.ui.components.SearchField
 import com.example.androidfarmerfriend.ui.components.ShimmerList
+import com.example.androidfarmerfriend.ui.components.SlowNetworkState
 import com.example.androidfarmerfriend.ui.components.TrendTag
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.ui.theme.TrendRed
+import com.example.androidfarmerfriend.util.NetworkUtil
 import com.example.androidfarmerfriend.util.RateCardRenderer
 import com.example.androidfarmerfriend.util.RateCardSharer
 
@@ -193,12 +196,27 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                     }
 
                     when (val cropsState = state.cropsState) {
-                        is UiState.Loading -> ShimmerList(modifier = Modifier.weight(1f))
-                        is UiState.Error -> ErrorState(
-                            message = cropsState.message.ifBlank { strings.loadError },
-                            onRetry = { viewModel.onEvent(MarketEvent.Retry) },
+                        is UiState.Loading -> SlowNetworkState(
+                            title = strings.slowNetworkTitle,
+                            body = strings.slowNetworkBody,
                             modifier = Modifier.weight(1f)
                         )
+                        // When there's no connection the generic error is misleading —
+                        // say explicitly that we're offline and let retry re-check.
+                        is UiState.Error -> if (!NetworkUtil.isOnline(context)) {
+                            OfflineState(
+                                title = strings.offlineTitle,
+                                body = strings.offlineBody,
+                                onRetry = { viewModel.onEvent(MarketEvent.Retry) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        } else {
+                            ErrorState(
+                                message = cropsState.message.ifBlank { strings.loadError },
+                                onRetry = { viewModel.onEvent(MarketEvent.Retry) },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
                         is UiState.Success -> {
                             if (state.filteredCrops.isEmpty()) {
                                 EmptyState(

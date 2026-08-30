@@ -191,6 +191,13 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             is ProfileEvent.SignOut -> {
                 _state.value = _state.value.copy(showLogoutDialog = false)
                 FirebaseAuth.getInstance().signOut()
+                // Clear the locally cached profile so the Home greeting and Profile
+                // revert to the guest/placeholder state instead of the signed-out
+                // user's real name. Firebase auth is separate from UserPrefs; without
+                // this the name survives logout.
+                userPrefs.userName = UserPrefs.DEFAULT_NAME
+                userPrefs.userPhone = UserPrefs.DEFAULT_PHONE
+                userPrefs.userEmail = UserPrefs.DEFAULT_EMAIL
             }
         }
     }
