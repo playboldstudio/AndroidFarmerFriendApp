@@ -64,7 +64,6 @@ import com.example.androidfarmerfriend.ui.components.TrendTag
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
-import com.example.androidfarmerfriend.ui.theme.TrendRed
 import com.example.androidfarmerfriend.util.NetworkUtil
 import com.example.androidfarmerfriend.util.RateCardRenderer
 import com.example.androidfarmerfriend.util.RateCardSharer
@@ -268,6 +267,8 @@ private fun MarketInfoChip(text: String) {
         color = FarmerTheme.colors.primary,
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.SemiBold,
+        maxLines = 1,
+        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         modifier = Modifier
             .padding(vertical = 2.dp)
             .background(FarmerTheme.colors.softMint, RoundedCornerShape(999.dp))
@@ -302,7 +303,9 @@ private fun FreshnessChip(text: String) {
             text = text,
             style = MaterialTheme.typography.labelSmall,
             fontWeight = FontWeight.Bold,
-            color = FarmerTheme.colors.primary
+            color = FarmerTheme.colors.primary,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
         )
     }
 }
@@ -310,15 +313,25 @@ private fun FreshnessChip(text: String) {
 @Composable
 fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
     val colors = FarmerTheme.colors
+    // Category-aware icon + tint + container so the RowCard chip
+    // visually matches the CropThumbnail in the leading slot.
+    val (cardIcon, cardTint, cardContainer) = when (crop.category) {
+        "vegetable" -> Triple(Icons.Default.Eco, colors.categoryVegetable, colors.softGreen)
+        "fruit"     -> Triple(Icons.Default.ShoppingBasket, colors.categoryFruit, colors.softOrange)
+        "nonveg"    -> Triple(Icons.Default.Restaurant, colors.categoryNonVeg, colors.softRed)
+        "gold"      -> Triple(Icons.Default.Diamond, colors.categoryGold, colors.softLavender)
+        "egg"       -> Triple(Icons.Default.Egg, colors.categoryEgg, colors.softBrown)
+        else        -> Triple(Icons.Default.ShoppingCart, colors.textSecondary, colors.surfaceMuted)
+    }
 
     RowCard(
         title = crop.name,
         subtitle = crop.retailPrice.takeIf { it.isNotBlank() }
             ?.let { "${strings.retailPriceLabel}: ₹$it" }
             ?: marketName.takeIf { it.isNotEmpty() },
-        icon = Icons.Default.ShoppingCart,
-        iconTint = colors.primary,
-        iconContainer = colors.softMint,
+        icon = cardIcon,
+        iconTint = cardTint,
+        iconContainer = cardContainer,
         leading = { CropThumbnail(crop) },
         end = {
             Column(horizontalAlignment = Alignment.End) {
@@ -333,20 +346,31 @@ fun MarketCropItem(crop: Crop, marketName: String, strings: AppStrings) {
     )
 }
 
-/** Product photo when available; falls back to the category icon tile. */
+/** Product photo when available; falls back to a category-aware icon tile. */
 @Composable
 private fun CropThumbnail(crop: Crop) {
     val colors = FarmerTheme.colors
     if (crop.imageUrl.isBlank()) {
-        Icon(
-            Icons.Default.ShoppingCart,
-            contentDescription = null,
-            tint = colors.primary,
+        // Category-aware fallback: distinct icon + tint + soft background
+        // per category so Fruits/NonVeg/Gold/Egg don't all look like a
+        // placeholder (only vegetable items carry API images).
+        val (icon, tint, container) = when (crop.category) {
+            "vegetable" -> Triple(Icons.Default.Eco, colors.categoryVegetable, colors.softGreen)
+            "fruit"     -> Triple(Icons.Default.ShoppingBasket, colors.categoryFruit, colors.softOrange)
+            "nonveg"    -> Triple(Icons.Default.Restaurant, colors.categoryNonVeg, colors.softRed)
+            "gold"      -> Triple(Icons.Default.Diamond, colors.categoryGold, colors.softLavender)
+            "egg"       -> Triple(Icons.Default.Egg, colors.categoryEgg, colors.softBrown)
+            else        -> Triple(Icons.Default.ShoppingCart, colors.textSecondary, colors.surfaceMuted)
+        }
+        Box(
             modifier = Modifier
                 .size(46.dp)
-                .background(colors.softMint, RoundedCornerShape(15.dp))
-                .padding(12.dp)
-        )
+                .clip(RoundedCornerShape(15.dp))
+                .background(container),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+        }
         return
     }
     SubcomposeAsyncImage(
@@ -360,12 +384,17 @@ private fun CropThumbnail(crop: Crop) {
             Box(Modifier.matchParentSize().background(colors.softMint))
         },
         error = {
-            Icon(
-                Icons.Default.ShoppingCart,
-                contentDescription = null,
-                tint = colors.primary,
-                modifier = Modifier.matchParentSize().padding(12.dp)
-            )
+            val (icon, tint, container) = when (crop.category) {
+                "vegetable" -> Triple(Icons.Default.Eco, colors.categoryVegetable, colors.softGreen)
+                "fruit"     -> Triple(Icons.Default.ShoppingBasket, colors.categoryFruit, colors.softOrange)
+                "nonveg"    -> Triple(Icons.Default.Restaurant, colors.categoryNonVeg, colors.softRed)
+                "gold"      -> Triple(Icons.Default.Diamond, colors.categoryGold, colors.softLavender)
+                "egg"       -> Triple(Icons.Default.Egg, colors.categoryEgg, colors.softBrown)
+                else        -> Triple(Icons.Default.ShoppingCart, colors.textSecondary, colors.surfaceMuted)
+            }
+            Box(Modifier.matchParentSize().background(container), contentAlignment = Alignment.Center) {
+                Icon(icon, contentDescription = null, tint = tint, modifier = Modifier.size(22.dp))
+            }
         }
     )
 }

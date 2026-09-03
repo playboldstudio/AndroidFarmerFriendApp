@@ -37,6 +37,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -46,7 +47,6 @@ import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
-import com.example.androidfarmerfriend.ui.theme.TrendRed
 import kotlin.math.abs
 
 /* ------------------------------------------------------------------ */
@@ -94,6 +94,8 @@ fun HeroTitle(
         text = annotated,
         color = colors.textPrimary,
         style = MaterialTheme.typography.headlineMedium,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )
 }
@@ -159,7 +161,9 @@ fun LocPill(
         Text(
             text = text,
             color = colors.textSecondary,
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.width(3.dp))
         if (onClick != null) {
@@ -302,7 +306,9 @@ fun PillChip(
             text = option.label,
             color = fg,
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -382,7 +388,8 @@ fun RowCard(
                     text = title,
                     color = colors.textPrimary,
                     style = MaterialTheme.typography.titleSmall,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (subtitle != null) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -390,7 +397,8 @@ fun RowCard(
                         text = subtitle,
                         color = colors.textSecondary,
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        maxLines = 2
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -414,7 +422,7 @@ fun TrendTag(percent: Double?) {
     val text = "$arrow ${"%.1f".format(abs(value))}%"
     Text(
         text = text,
-        color = if (up) colors.primary else TrendRed,
+        color = if (up) colors.primary else colors.alertRed,
         style = MaterialTheme.typography.labelMedium.copy(
             fontSize = 11.5.sp,
             fontWeight = FontWeight.Bold
@@ -438,6 +446,8 @@ fun AlertChip(
         color = color,
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(container)
@@ -562,7 +572,9 @@ fun WeatherChipStat(icon: ImageVector, label: String, value: String) {
             text = "$label $value",
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -586,7 +598,7 @@ fun DayPill(
     val fgSub = if (selected) colors.onPrimary.copy(alpha = 0.85f) else colors.textSecondary
     Column(
         modifier = Modifier
-            .width(62.dp)
+            .widthIn(min = 56.dp, max = 80.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(bg)
             .border(
@@ -603,7 +615,9 @@ fun DayPill(
             text = day,
             color = fgSub,
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Icon(
             weatherIconFor(weatherCode),
@@ -694,7 +708,7 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
         modifier = modifier.fillMaxWidth().padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Default.Refresh, contentDescription = null, tint = TrendRed, modifier = Modifier.size(48.dp))
+        Icon(Icons.Default.Refresh, contentDescription = null, tint = colors.alertRed, modifier = Modifier.size(48.dp))
         Spacer(modifier = Modifier.height(10.dp))
         Text(message, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(14.dp))
@@ -729,7 +743,7 @@ fun OfflineState(
         Icon(
             Icons.Default.SignalWifiOff,
             contentDescription = null,
-            tint = TrendRed,
+            tint = colors.alertRed,
             modifier = Modifier.size(48.dp)
         )
         Spacer(Modifier.height(10.dp))
