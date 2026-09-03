@@ -108,7 +108,7 @@ Returns: title, ~200-char excerpt, source URL.
 
 | Type | Source | Issue |
 |------|--------|-------|
-| Price | `PriceAlertWorker` | ⚠️ Hardcodes `"koyambedu"` |
+| Price | `PriceAlertWorker` | ✅ Uses `LocationPrefs` + `resolveMarketSlug()` |
 | Weather | `WeatherAlertWorker` | ✅ Uses user location |
 | Crop | FCM / `AlertSeedData` | ✅ Push |
 
@@ -213,6 +213,7 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 - Honest pull-to-refresh (tracks realtime listener)
 - Unread count badge
 - "Mark all read" button
+- `PriceAlertWorker` reads user location from `LocationPrefs` (was hardcoded koyambedu)
 
 #### Improvements
 
@@ -220,7 +221,6 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 |----------|---|------|--------|------|
 | 🔴 High | 1 | **Swipe-to-dismiss** — mark read on swipe with undo snackbar | Low | `SwipeToDismissBox` |
 | 🔴 High | 2 | **Time-based grouping** — Today / Yesterday / Earlier sections using `Alert.timestamp` | Low | Already in model |
-| 🔴 High | 3 | **Fix `PriceAlertWorker` hardcoded location** — read from `LocationPrefs` like `WeatherAlertWorker` | Low | Already available |
 | 🟡 Med | 4 | **Alert priority visual treatment** — critical (red border), warning (orange), info (gray) based on message content analysis | Low | `Alert.message` |
 
 ---

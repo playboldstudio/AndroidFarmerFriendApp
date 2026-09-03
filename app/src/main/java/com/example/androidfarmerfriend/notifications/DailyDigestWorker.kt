@@ -38,7 +38,7 @@ class DailyDigestWorker(
                 NotificationHelper.showNotification(
                     context = applicationContext,
                     channelId = NotificationHelper.CHANNEL_DIGEST,
-                    title = "📊 Daily Digest",
+                    title = "Daily Digest",
                     message = "You have $unreadCount unread alerts: $summary",
                     notificationId = DAILY_DIGEST_ID
                 )
