@@ -234,7 +234,9 @@ private fun SelectedDayDetailCard(day: ForecastDay, strings: AppStrings) {
                     text = day.day,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = colors.textPrimary
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
@@ -278,7 +280,9 @@ private fun ForecastRangeList(forecast: List<ForecastDay>) {
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = FarmerTheme.colors.textSecondary,
-                    modifier = Modifier.width(64.dp)
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(min = 48.dp, max = 72.dp)
                 )
                 Icon(
                     weatherIconFor(day.weatherCode),
@@ -372,7 +376,8 @@ private fun WeatherStatTile(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.textSecondary,
-                maxLines = 1
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
     }

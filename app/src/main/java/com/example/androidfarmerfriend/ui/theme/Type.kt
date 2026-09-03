@@ -29,6 +29,14 @@ val Typography = Typography(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.ExtraBold,
         fontSize = 28.sp,
+        lineHeight = 36.sp,
+        letterSpacing = (-0.5).sp
+    ),
+    headlineLarge = TextStyle(
+        fontFamily = FontFamily.Default,
+        fontWeight = FontWeight.Bold,
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
         letterSpacing = (-0.5).sp
     ),
     headlineMedium = TextStyle(
@@ -71,7 +79,7 @@ val Typography = Typography(
         fontWeight = FontWeight.Normal,
         fontSize = 16.sp,
         lineHeight = 24.sp,
-        letterSpacing = 0.3.sp
+        letterSpacing = 0.sp
     ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily.Default,

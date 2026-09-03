@@ -43,7 +43,7 @@ import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
-import com.example.androidfarmerfriend.util.relativeTimeLabel
+import com.example.androidfarmerfriend.util.relativeTimeShort
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -162,6 +162,8 @@ private fun UnreadBadge(count: Int) {
         color = Color.White,
         style = MaterialTheme.typography.labelMedium,
         fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(FarmerTheme.colors.alertRed)
@@ -241,7 +243,8 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
                     color = colors.textSecondary,
                     style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
                     lineHeight = 17.sp,
-                    maxLines = 3
+                    maxLines = 3,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(6.dp))
                 Row(
@@ -251,9 +254,10 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
                 ) {
                     AlertChip(text = label, color = iconTint, container = iconContainer)
                     Text(
-                        text = relativeTimeLabel(alert.timestamp, strings),
+                        text = relativeTimeShort(alert.timestamp),
                         color = colors.textTertiary,
-                        style = MaterialTheme.typography.labelSmall
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1
                     )
                 }
             }

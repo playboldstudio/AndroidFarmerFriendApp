@@ -96,7 +96,8 @@ fun FloatingTabBar(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                             color = if (selected) colors.primary else colors.textTertiary,
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }
