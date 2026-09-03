@@ -1,361 +1,397 @@
 # Farmer Friend — Design System Audit
 
-> Living document: current design-system state, data-grounded improvement backlog,
-> and API constraints. Updated as the design system evolves.
+> Screen-by-screen improvement guide grounded in actual API data and current codebase.
+> Every suggestion is verified against what the data sources return.
 >
-> **Last updated:** 2026-09-03 — after Phases 1–4a (v1.7.0-prep on `feature/ui-transformation-v2`).
+> **Last updated:** 2026-09-03 — after Phases 1–4a (`feature/ui-transformation-v2`).
 
 ---
 
-## Part 1 — Current Design System State
+## Part 1 — Design System Tokens
 
-### Color Tokens (`Color.kt`)
-
-`FarmerColors` data class — 49 tokens, exposed via `FarmerTheme.colors`.
+### Color Tokens (`Color.kt`) — 49 tokens via `FarmerTheme.colors`
 
 | Group | Tokens | Purpose |
 |-------|--------|---------|
 | **Neutrals** (7) | `background`, `surface`, `surfaceMuted`, `textPrimary`, `textSecondary`, `textTertiary`, `outline` | Base surface + text hierarchy |
-| **Brand** (4) | `primary`, `primaryDeep`, `primaryBright`, `onPrimary` | Farmer green accent + contrast |
-| **Semantic accents** (8) | `weatherBlue`, `weatherYellow`, `alertRed`, `alertBlue`, `alertGreen`, `alertPurple`, `diseaseOrange`, `cropBrown` | Screen-specific accent colors |
-| **Soft tint containers** (8) | `softGreen`, `softBlue`, `softRed`, `softPurple`, `softOrange`, `softBrown`, `softMint`, `softLavender` | Low-saturation icon/bg backgrounds |
-| **Gold / unlock** (6) | `goldBorder`, `goldTitle`, `goldBody`, `unlockTop`, `unlockBottom`, `unlockTileBg`, `unlockTileIcon` | Profile gold teaser card |
-| **Semantic roles** (9) | `destructive`, `onDestructive`, `destructiveContainer`, `link`, `disabled`, `disabledContainer`, `scrim`, `inverseSurface`, `inverseOnSurface` | Standard M3 semantic roles |
-| **Surface hierarchy** (5) | `surfaceDim`, `surfaceBright`, `surfaceContainer`, `surfaceContainerLow`, `surfaceContainerHigh` | Tonal elevation surfaces |
-| **Category-specific** (5) | `categoryVegetable`, `categoryFruit`, `categoryNonVeg`, `categoryGold`, `categoryEgg` | Market item icon tint per category |
+| **Brand** (4) | `primary`, `primaryDeep`, `primaryBright`, `onPrimary` | Farmer green accent |
+| **Semantic accents** (8) | `weatherBlue`, `weatherYellow`, `alertRed`, `alertBlue`, `alertGreen`, `alertPurple`, `diseaseOrange`, `cropBrown` | Screen-specific accents |
+| **Soft tint containers** (8) | `softGreen`, `softBlue`, `softRed`, `softPurple`, `softOrange`, `softBrown`, `softMint`, `softLavender` | Low-saturation backgrounds |
+| **Gold / unlock** (7) | `goldBorder`, `goldTitle`, `goldBody`, `unlockTop`, `unlockBottom`, `unlockTileBg`, `unlockTileIcon` | Profile gold card |
+| **Semantic roles** (9) | `destructive`, `onDestructive`, `destructiveContainer`, `link`, `disabled`, `disabledContainer`, `scrim`, `inverseSurface`, `inverseOnSurface` | M3 standard roles |
+| **Surface hierarchy** (5) | `surfaceDim`, `surfaceBright`, `surfaceContainer`, `surfaceContainerLow`, `surfaceContainerHigh` | Tonal elevation |
+| **Category-specific** (5) | `categoryVegetable`, `categoryFruit`, `categoryNonVeg`, `categoryGold`, `categoryEgg` | Market icon tints |
 
-**Light/Dark:** Both palettes are fully defined (`LightFarmerColors` / `DarkFarmerColors`). Dark palette uses warm-tinted darks, not pure black.
-
-**Access pattern:**
-```kotlin
-val colors = FarmerTheme.colors
-Text(color = colors.textPrimary)
-Icon(tint = colors.categoryVegetable)
-Box(background = colors.softGreen)
-```
-
-**Anti-patterns to avoid:**
-- Never use `Color(0xFF...)` directly in components — always reference `FarmerTheme.colors.*`
-- Never use `MaterialTheme.colorScheme.*` — the app uses its own token set
-- `soft*` tokens are for container backgrounds, not foreground text
-- `category*` tokens are for icon tints inside their matching `soft*` containers
-
----
+**Rule:** Never hardcode `Color(0xFF...)` — always use `FarmerTheme.colors.*`.
 
 ### Spacing, Motion, Icons (`Dimens.kt`)
 
-```kotlin
-FarmerSpacing   // 10-step scale: xs(4) → screen(56)
-FarmerMotion    // 4 durations + 4 M3 curves + 3 springs
-FarmerIcons     // 5 size tokens + 48dp touch target
-```
-
 | Object | Key Values |
 |--------|-----------|
-| `FarmerSpacing` | `xs=4, s=8, md=12, lg=16, xl=20, xxl=24, xxxl=32, xxxxl=40, section=48, screen=56` (all dp) |
-| `FarmerMotion` | `durationFast=100ms, durationNormal=200ms, durationSlow=300ms, durationModal=250ms` |
+| `FarmerSpacing` | `xs=4, s=8, md=12, lg=16, xl=20, xxl=24, xxxl=32, xxxxl=40, section=48, screen=56` dp |
+| `FarmerMotion` | `durationFast=100, durationNormal=200, durationSlow=300, durationModal=250` ms |
 | `FarmerMotion` curves | `standardDecelerate`, `standardAccelerate`, `emphasizedDecelerate`, `emphasizedAccelerate` |
-| `FarmerMotion` springs | `springBouncy(damping=0.5, stiffness=1500)`, `springSnappy(0.75, 2000)`, `springGentle(0.85, 800)` |
-| `FarmerIcons` | `sizeXs=14, sizeSm=18, sizeMd=22, sizeLg=28, sizeXl=36, touchTarget=48` (all dp) |
+| `FarmerMotion` springs | `springBouncy(0.5, 1500)`, `springSnappy(0.75, 2000)`, `springGentle(0.85, 800)` |
+| `FarmerIcons` | `sizeXs=14, sizeSm=18, sizeMd=22, sizeLg=28, sizeXl=36, touchTarget=48` dp |
 
----
+### Typography (`Type.kt`) — 15 styles
 
-### Typography (`Type.kt`)
+| Role | Size | Weight | Usage |
+|------|------|--------|-------|
+| `displayLarge` | 66sp | Bold | Splash hero |
+| `displayMedium` | 58sp | Bold | Onboarding hero |
+| `displaySmall` | 28sp | ExtraBold | Large accent text |
+| `headlineLarge` | 32sp | Bold | Screen titles |
+| `headlineMedium` | 26sp | ExtraBold | Section headers |
+| `headlineSmall` | 22sp | Bold | Card titles |
+| `titleLarge` | 19sp | ExtraBold | Price text, top bar |
+| `titleMedium` | 17sp | ExtraBold | Section headers, nav |
+| `titleSmall` | 14.5sp | Bold | List item titles |
+| `bodyLarge` | 16sp | Normal | Primary body |
+| `bodyMedium` | 14.5sp | Normal | Secondary body |
+| `bodySmall` | 12.5sp | Normal | Captions |
+| `labelLarge` | 14.5sp | SemiBold | Buttons |
+| `labelMedium` | 12.5sp | SemiBold | Chips, labels |
+| `labelSmall` | 10.5sp | SemiBold | Timestamps |
 
-15 styles via `MaterialTheme.typography`:
+### Overflow Rule
 
-| Role | Size | Weight | Line Height | Usage |
-|------|------|--------|-------------|-------|
-| `displayLarge` | 66sp | Bold | 70sp | Splash hero |
-| `displayMedium` | 58sp | Bold | 64sp | Onboarding hero |
-| `displaySmall` | 28sp | ExtraBold | 36sp | Large accent text |
-| `headlineLarge` | 32sp | Bold | 40sp | Screen titles (new) |
-| `headlineMedium` | 26sp | ExtraBold | 32sp | Section headers |
-| `headlineSmall` | 22sp | Bold | 28sp | Card titles |
-| `titleLarge` | 19sp | ExtraBold | 24sp | Price text, top bar |
-| `titleMedium` | 17sp | ExtraBold | 22sp | Section headers, nav |
-| `titleSmall` | 14.5sp | Bold | 19sp | List item titles |
-| `bodyLarge` | 16sp | Normal | 24sp | Primary body text |
-| `bodyMedium` | 14.5sp | Normal | 21sp | Secondary body |
-| `bodySmall` | 12.5sp | Normal | 18sp | Captions |
-| `labelLarge` | 14.5sp | SemiBold | 20sp | Buttons, prominent labels |
-| `labelMedium` | 12.5sp | SemiBold | 17sp | Chips, small labels |
-| `labelSmall` | 10.5sp | SemiBold | 15sp | Timestamps, annotations |
-
-**All text uses `sp` for user font-scaling.** Line heights are ~1.3–1.5× font size.
-
----
-
-### Shared Components (`CommonComponents.kt`)
-
-| Component | Signature | Notes |
-|-----------|-----------|-------|
-| `HeroTitle` | `(text, accent?, modifier)` | Bold title with optional green accent substring |
-| `LocPill` | `(text, onClick?, modifier)` | Location pill with map icon |
-| `PillChipGroup` | `(filters, selectedFilter, onFilterSelected)` | Horizontal scrollable filter chips |
-| `RowCard` | `(title, subtitle?, icon?, iconTint, iconContainer, leading?, end?, onClick?, modifier, unread?)` | List row — 46dp icon tile, 20dp rounded, 1dp shadow |
-| `TintIconCircle` | `(icon, tint, container, modifier, size, cornerRadius)` | Reusable icon tile (46dp default) |
-| `CompactWeatherCard` | `(weather, strings, modifier, onClick?)` | Gradient weather card with stat chips |
-| `WeatherChipStat` | `(icon, label, value)` | Glass pill inside weather card |
-| `SearchField` | `(value, onValueChange, placeholder)` | Text field with search/clear icons |
-| `EmptyState` | `(icon, title, subtitle?)` | Centered empty state |
-| `ErrorState` | `(message, onRetry, modifier)` | Error with retry button |
-| `OfflineState` | `(title, body, onRetry, modifier)` | Offline-specific empty state |
-| `SlowNetworkState` | `(title, body, modifier)` | Loading hint for slow connections |
-| `ShimmerList` | `(rowCount, rowHeight, modifier)` | Skeleton loading rows |
-| `TrendTag` | `(percent?)` | Up/down percentage pill |
-| `FarmTipCard` | `(title, body)` | Green gradient tip card |
-| `SectionHeaderCompat` | `(title, modifier)` | Section divider title |
-| `DayPill` | `(day, weatherCode, temp, selected, onClick)` | Forecast day selector pill |
-| `AlertChip` | `(text, color, container)` | Small colored chip |
-
----
-
-### Multilingual Overflow Hardening
-
-All user-facing text across 10+ files now has:
-- `maxLines = 1` or `2` (context-dependent)
+Every `Text` displaying user/localized content MUST have:
+- `maxLines` (1 for pills, 2 for titles, 3 for messages)
 - `overflow = TextOverflow.Ellipsis`
-- `widthIn(min, max)` for constrained containers (e.g., `DayPill`, `ForecastRangeList`)
-
-This prevents long Tamil/Hindi/Bengali strings from breaking layout.
-
----
-
-### Category-Aware Market Thumbnails
-
-Market and Home screens use per-category visual identity:
-
-| Category | Icon | Tint | Container |
-|----------|------|------|-----------|
-| vegetable | `Eco` | `categoryVegetable` | `softGreen` |
-| fruit | `ShoppingBasket` | `categoryFruit` | `softOrange` |
-| nonveg | `Restaurant` | `categoryNonVeg` | `softRed` |
-| gold | `Diamond` | `categoryGold` | `softLavender` |
-| egg | `Egg` | `categoryEgg` | `softBrown` |
-
-**API note:** Only vegetables carry image URLs from the API. Other categories fall back to these themed icon tiles.
+- Constrained width via `weight(1f)` or `widthIn(min, max)`
 
 ---
 
 ## Part 2 — API Reality
 
-Before suggesting improvements, here's what each data source provides.
-
 ### Market Prices (`vegetablemarketprice.com`)
 
-| Endpoint | Returns | Has Images | Has Trend |
-|----------|---------|------------|-----------|
+| Endpoint | Returns | Images | Trend |
+|----------|---------|--------|-------|
 | `/api/dataapi/market/{location}/daywisedata` | `VegetableItem` — name, price, units, imageUrl | ✅ | ❌ |
 | `/api/dataapi/fruits/{location}/daywisedata` | `FruitItem` — name, price, units | ❌ | ❌ |
 | `/api/dataapi/nonveg/{location}/daywisedata` | `NonVegItem` — name, price, units | ❌ | ❌ |
 | `/api/dataapi/gold/{location}/daywisedata` | `GoldItem` — name, price, units | ❌ | ❌ |
 
-**Critical:** Only today's data (or yesterday as fallback). No historical endpoint. `Crop.trend` is hardcoded to `0.0` for 4 of 5 categories.
+**Critical:** Only today's data (or yesterday fallback). No historical endpoint. `Crop.trend = 0.0` for 4/5 categories.
 
 ### Egg Prices (`ncee-ten.vercel.app`)
 
-| Endpoint | Returns | Has Trend |
-|----------|---------|-----------|
+| Endpoint | Returns | Trend |
+|----------|---------|-------|
 | `GET /api/egg-prices?month=MM&year=YYYY` | City, price, avg | ✅ (`priceDiffPercent` from `avg`) |
 
-**Only category with trend data** — `avg` (historical average) enables `((price - avg) / avg) * 100`.
+**Only category with trend data** — `avg` enables `((price - avg) / avg) * 100`.
 
 ### Open-Meteo Weather
 
-**Currently fetched:** temperature, humidity, feels-like, wind speed/direction, weather code, 5-day daily forecast (high/low, rain probability).
+**Fetched:** temp, humidity, feels-like, wind speed/direction, weather code, 5-day forecast.
 
-**Available but unused (free, no new API):**
+**Free but unused:**
 
 | Field | Farm Use | Effort |
 |-------|----------|--------|
-| `hourly` (temperature, weather code) | Hourly forecast row | Medium |
-| `daily.sunrise` / `daily.sunset` | Spray timing, field work windows | Low |
-| `daily.uv_index_max` | UV safety warnings | Low |
-| `daily.wind_speed_10m_max` | Wind-based spray advisory | Low |
-| `daily.soil_temperature_6cm_max/min` | Seed germination timing | Low |
+| `hourly` (temp, weather code) | Hourly forecast row | Medium |
+| `daily.sunrise` / `daily.sunset` | Spray timing | Low |
+| `daily.uv_index_max` | UV warnings | Low |
+| `daily.wind_speed_10m_max` | Spray advisory | Low |
+| `daily.soil_temperature_6cm_max/min` | Seed germination | Low |
 | `daily.et0_fao_evapotranspiration` | Irrigation scheduling | Low |
 
 ### Wikipedia Scraper
 
-Returns: article title, ~200-char cleaned excerpt, source URL.
-
-**Does NOT return:** Structured disease data (symptoms, treatment), scheme eligibility, seasonal relevance, crop-specific images.
+Returns: title, ~200-char excerpt, source URL.
+**Does NOT return:** disease symptoms/treatment, scheme eligibility, seasonal data, crop images.
 
 ### Firestore (Alerts)
 
 | Type | Source | Issue |
 |------|--------|-------|
-| Price alerts | `PriceAlertWorker` | ⚠️ Hardcodes `"koyambedu"` — ignores user location |
-| Weather alerts | `WeatherAlertWorker` | ✅ Uses user's saved location |
-| Crop alerts | FCM / `AlertSeedData` | ✅ Push notifications |
+| Price | `PriceAlertWorker` | ⚠️ Hardcodes `"koyambedu"` |
+| Weather | `WeatherAlertWorker` | ✅ Uses user location |
+| Crop | FCM / `AlertSeedData` | ✅ Push |
 
 ---
 
-## Part 3 — Completed Improvements
+## Part 3 — Screen-by-Screen Audit
 
-These were implemented in Phases 1–4a (`feature/ui-transformation-v2` branch):
-
-| Phase | What | Files Changed |
-|-------|------|---------------|
-| **1** | Dead code cleanup — removed 28 legacy standalone color vals | `Color.kt` |
-| **1** | Added 19 new semantic tokens to `FarmerColors` | `Color.kt` |
-| **1** | Added `FarmerMotion` and `FarmerIcons` objects | `Dimens.kt` |
-| **1** | Typography fixes — `headlineLarge`, `displaySmall` lineHeight, `bodyLarge` letterSpacing | `Type.kt` |
-| **2** | Multilingual overflow hardening — `maxLines` + `TextOverflow.Ellipsis` across 10 files | `CommonComponents.kt`, `AlertsScreen.kt`, `WeatherScreen.kt`, `HomeScreen.kt`, `FloatingTabBar.kt`, `MarketScreen.kt` |
-| **2** | Added `relativeTimeShort()` for compact timestamps | `RelativeTime.kt` |
-| **3** | Market screen category-aware thumbnails + RowCard chips | `MarketScreen.kt` |
-| **4a** | Home screen `MarketPreviewStrip` category-aware thumbnails | `HomeScreen.kt` |
+Each screen section includes: **Current State**, **✅ Done**, **Improvements** (prioritized), and **❌ Not Feasible** (API limits).
 
 ---
 
-## Part 4 — Remaining Improvements (Backlog)
+### 🏠 Home Screen
 
-Prioritized by impact × effort. Each item links to the relevant screen section.
+**File:** `ui/screens/home/HomeScreen.kt`
+**Current state:** Header with logo + bell + profile, greeting, date, location pill, compact weather card, market preview strip (3 crops), quick-access grid (6 tiles), farm tip card.
 
-### High Impact, Low Effort
+#### ✅ Done
+- Category-aware market preview thumbnails (Phase 4a)
+- Text overflow hardening on all text elements
+- Unread alert count badge on bell icon
 
-| # | Improvement | Screen | Data Needed |
-|---|-------------|--------|-------------|
-| 1 | **Fix `PriceAlertWorker` hardcoded location** — read from `LocationPrefs` like `WeatherAlertWorker` | Notifications | Already available |
-| 2 | **Keyboard padding** — add `imePadding()` on search screens (Market, Disease, Schemes, CropNotes) | All search screens | None |
-| 3 | **Swipe-to-dismiss alerts** — mark read on swipe with undo snackbar | Alerts | `SwipeToDismissBox` |
-| 4 | **Time-based alert grouping** — Today / Yesterday / Earlier sections | Alerts | `Alert.timestamp` |
-| 5 | **Disease inline excerpt preview** — show Wikipedia excerpt before opening browser | Disease | Add `excerpt` field to `Disease` model |
-| 6 | **Scheme inline excerpt preview** — show `description` in card | Schemes | Already in model |
-| 7 | **Expandable note cards** — collapse/expand `CropNote.content` | CropNotes | Already in model |
+#### Improvements
 
-### High Impact, Medium Effort
-
-| # | Improvement | Screen | Data Needed |
-|---|-------------|--------|-------------|
-| 8 | **Hourly forecast row** — add `hourly` query param + LazyRow | Weather | Free from Open-Meteo |
-| 9 | **Weather-based farm tips** — replace static tip with data-driven advice | Home, Weather | `WeatherInfo` fields |
-| 10 | **Dynamic Color (Android 12+)** — wallpaper-derived palette as opt-in | Global | `dynamicDarkColorScheme`/`dynamicLightColorScheme` |
-| 11 | **Navigation transitions** — slide-push for sub-screens, crossfade for tabs | Navigation | `enterTransition`/`exitTransition` |
-| 12 | **Predictive back gesture** — Android 13+ live preview on edge swipe | Navigation | `enableOnBackInvokedCallback` |
-| 13 | **Swipeable market preview** — `LazyRow` with "See All" card | Home | Already available |
-| 14 | **Sort options** — price low→high, high→low, name A→Z | Market | `Crop.priceValue`, `Crop.nameEng` |
-
-### Medium Impact, Low Effort
-
-| # | Improvement | Screen | Data Needed |
-|---|-------------|--------|-------------|
-| 15 | **Snackbar feedback** — share/location/language change confirmations | Global | None |
-| 16 | **Haptic feedback** — PTR, chip tap, FAB tap | Global | `LocalHapticFeedback` |
-| 17 | **Time-of-day greeting** — contextual greeting based on system clock | Home | `java.util.Calendar` |
-| 18 | **Sunrise/sunset times** — add `daily.sunrise,sunset` to weather query | Weather | Free from Open-Meteo |
-| 19 | **UV index warning** — add `daily.uv_index_max` | Weather | Free from Open-Meteo |
-| 20 | **Wind spray advisory** — based on `wind_speed_10m_max` | Weather | Free from Open-Meteo |
-| 21 | **Soil temp + ET0** — add `daily.soil_temperature_6cm_max,min,et0_fao_evapotranspiration` | Weather | Free from Open-Meteo |
-| 22 | **Quick-access grid badge counts** — unread alerts, market item count | Home | Already available |
-| 23 | **Egg trend prominence** — make `priceDiffPercent` more visible in egg cards | Market | Already computed |
-| 24 | **Expand weather card** — reveal 3-day mini-forecast on tap | Home | `WeatherInfo.forecast` |
-| 25 | **Emoji-enhanced crop filter chips** — 🌾 Rice, 🥬 Vegetables, etc. | CropNotes | `CropNote.cropName` |
-| 26 | **Seasonal tips section** — hardcoded calendar keyed to month | CropNotes | `java.util.Calendar` |
-
-### Medium Impact, Medium Effort
-
-| # | Improvement | Screen | Data Needed |
-|---|-------------|--------|-------------|
-| 27 | **Animated filter switch** — crossfade content on filter change | Market | `AnimatedContent` |
-| 28 | **Retail price comparison** — show `retailPrice` alongside wholesale | Market | Already mapped for veg/fruit |
-| 29 | **Bookmark/save schemes** — local storage with heart icon | Schemes | `DataStore` or Room |
-| 30 | **Disease category color coding** — group by crop type | Disease | `Disease.cropAffected` |
-| 31 | **Settings with icons + descriptions** — upgrade profile settings rows | Profile | Hardcoded |
-| 32 | **Social login** — Google Sign-In one-tap option | Auth | Firebase Auth |
-
-### NOT Feasible (API Limitations)
-
-| Idea | Why Not | What Would Be Needed |
-|------|---------|---------------------|
-| Price history sparklines | No historical endpoint | Backend that stores daily snapshots |
-| Price comparison across days | No historical data | Same as above |
-| Disease detail (symptoms/treatment) | Wikipedia returns only title + excerpt | Dedicated disease API or on-device ML |
-| Camera-based disease detection | ML/TFLite model | Significant new feature, out of scope |
-| Scheme eligibility quick-check | Wikipedia excerpts have no eligibility fields | MyScheme.gov.in API |
-| Scheme status indicators (active/deadline) | No status data in Wikipedia | Dedicated schemes API |
-| Hourly forecast for 7+ days | `forecast_days=5` intentional for density | Could extend to 7 but mobile UX tradeoff |
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Weather-based farm tips** — replace static `farmTipGeneric` with data-driven advice based on `WeatherInfo` (rain > 60% → "skip irrigation", wind > 30 → "no spraying", humidity > 85 → "fungal risk") | Low | Already have `WeatherInfo` |
+| 🔴 High | 2 | **Swipeable market preview** — `LazyRow` with "See All" card, show 4+ crops instead of hardcoded `.take(3)` | Low | `marketPreview` list |
+| 🟡 Med | 3 | **Time-of-day greeting** — contextual greeting based on clock (5–7AM "Early riser 🌅", 12–2PM "Markets are active", 8PM+ "Tomorrow's forecast") | Low | `java.util.Calendar` |
+| 🟡 Med | 4 | **Expand weather card** — tap to reveal 3-day mini-forecast in-place using `animateContentSize` | Low | `WeatherInfo.forecast` |
+| 🟡 Med | 5 | **Quick-access badge counts** — show unread alert count and market item count on grid tiles | Low | Already available |
+| 🟡 Med | 6 | **Haptic feedback** — PTR, chip tap, FAB tap via `LocalHapticFeedback` | Low | None |
 
 ---
 
-## Part 5 — Architecture Notes
+### 📊 Market Screen
 
-### Screen-by-Screen Token Usage
+**File:** `ui/screens/market/MarketScreen.kt`
+**Current state:** Hero title, market picker pill, search, chip filters (Veg/Fruit/NonVeg/Gold/Egg), LazyColumn with crop cards (category-aware thumbnails), pull-to-refresh, share FAB.
 
-| Screen | Icon | Tint | Container | Shape |
-|--------|------|------|-----------|-------|
-| Market (veg) | `Eco` | `categoryVegetable` | `softGreen` | 15dp rounded |
-| Market (fruit) | `ShoppingBasket` | `categoryFruit` | `softOrange` | 15dp rounded |
-| Market (nonveg) | `Restaurant` | `categoryNonVeg` | `softRed` | 15dp rounded |
-| Market (gold) | `Diamond` | `categoryGold` | `softLavender` | 15dp rounded |
-| Market (egg) | `Egg` | `categoryEgg` | `softBrown` | 15dp rounded |
-| Disease | `BugReport` | `diseaseOrange` | `softOrange` | 15dp rounded |
-| Schemes | `AccountBalance` | `alertGreen` | `softLavender` | 15dp rounded |
-| CropNotes | `MenuBook` | `cropBrown` | `softBrown` | 15dp rounded |
-| Alerts (price) | `Paid` | `alertGreen` | `softGreen` | 15dp rounded |
-| Alerts (weather) | `WbCloudy` | `alertBlue` | `softBlue` | 15dp rounded |
-| Alerts (crop) | `Eco` | `alertPurple` | `softPurple` | 15dp rounded |
-| Weather (rain) | `WaterDrop` | `weatherBlue` | `softBlue` | 11dp rounded |
-| Weather (humidity) | `Opacity` | `primary` | `softMint` | 11dp rounded |
-| Weather (wind) | `Air` | `alertPurple` | `softLavender` | 11dp rounded |
-| Weather (direction) | `Explore` | `diseaseOrange` | `softOrange` | 11dp rounded |
+#### ✅ Done
+- Category-aware thumbnails + RowCard chips (Phase 3)
+- Text overflow hardening
+- Honest pull-to-refresh (spinner tracks real `UiState`)
+- Scroll-aware FAB (hides on scroll down, shows on scroll up)
 
-### RowCard Standard
+#### Improvements
 
-All list rows follow:
-- 46dp icon tile (`TintIconCircle`, 15dp corner radius)
-- 14dp inner padding
-- 13dp gap between icon and text
-- 20dp card corner radius
-- 1dp shadow elevation
-- Title: `titleSmall` (14.5sp Bold), subtitle: `bodySmall` (12.5sp, 12sp font size)
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Sort options** — price low→high, high→low, name A→Z via sort icon | Low | `Crop.priceValue`, `Crop.nameEng` |
+| 🔴 High | 2 | **Keyboard padding** — add `imePadding()` so keyboard doesn't cover search field | Low | None |
+| 🟡 Med | 3 | **Retail price comparison** — show `retailPrice` alongside wholesale for veg/fruit | Low | Already mapped |
+| 🟡 Med | 4 | **Egg trend prominence** — make `priceDiffPercent` more visible (larger, colored arrow) | Low | Already computed |
+| 🟡 Med | 5 | **Animated filter switch** — crossfade content when switching categories | Low | `AnimatedContent` |
+| 🟡 Med | 6 | **Pull-to-refresh status messages** — "Fetching latest prices…" → "Market servers are slow…" | Low | Timer-based |
 
-### Overflow Hardening Rule
-
-Every `Text` composable that displays user-generated or localized content MUST have:
-- `maxLines` set (1 for pills/chips, 2 for titles, 3 for messages)
-- `overflow = TextOverflow.Ellipsis`
-- Constrained width via `Modifier.weight(1f)` or `widthIn(min, max)` when in a Row
-
-### Adding New Tokens
-
-When adding a new color token:
-1. Add field to `FarmerColors` data class
-2. Add light value to `LightFarmerColors`
-3. Add dark value to `DarkFarmerColors`
-4. Use in components via `FarmerTheme.colors.newToken`
-
-When adding a new spacing/motion/icon token:
-1. Add to the appropriate object (`FarmerSpacing`, `FarmerMotion`, `FarmerIcons`)
-2. Reference via `FarmerSpacing.newToken` (not hardcoded dp)
+#### ❌ Not Feasible
+| Idea | Why |
+|------|-----|
+| Price history sparklines | No historical endpoint — only today's data |
+| Price comparison across days | Same — no historical data |
+| Product images for fruit/nonveg/gold/egg | API only returns images for vegetables |
 
 ---
 
-## Part 6 — Accessibility Checklist
+### 🌤 Weather Screen
+
+**File:** `ui/screens/weather/WeatherScreen.kt`
+**Current state:** Hero title, location picker, compact weather card (gradient + 3 stat chips), 5-day forecast pills, selected-day detail card, min–max range chart, stat tiles (rain/humidity/wind/direction), farm tip card.
+
+#### ✅ Done
+- Text overflow hardening on all labels
+- `widthIn(min, max)` on forecast day labels for multilingual safety
+- Location picker with search
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Hourly forecast row** — add `hourly` query param + horizontal LazyRow below daily forecast | Medium | Free from Open-Meteo |
+| 🟡 Med | 2 | **Sunrise/sunset times** — add `daily.sunrise,sunset` + visual arc for field work planning | Low | Free from Open-Meteo |
+| 🟡 Med | 3 | **UV index warning** — add `daily.uv_index_max` + color-coded advisory chip | Low | Free from Open-Meteo |
+| 🟡 Med | 4 | **Wind spray advisory** — based on `wind_speed_10m_max` (> 30 → "no spraying", < 10 → "ideal") | Low | Free from Open-Meteo |
+| 🟡 Med | 5 | **Soil temperature + ET0** — add `daily.soil_temperature_6cm_max,min` and `et0_fao_evapotranspiration` for irrigation scheduling | Low | Free from Open-Meteo |
+| 🟡 Med | 6 | **Weather-based farm tips** — replace static tip with data-driven advice (same logic as Home screen) | Low | Already have `WeatherInfo` |
+
+#### ❌ Not Feasible
+| Idea | Why |
+|------|-----|
+| 7-day forecast | `forecast_days=5` is intentional for mobile density — extending to 7 is feasible but may clutter |
+
+---
+
+### 🔔 Alerts Screen
+
+**File:** `ui/screens/alerts/AlertsScreen.kt`
+**Current state:** Hero title with unread badge, "Mark all read" link, location pill, chip filters (All/Price/Weather/Crop), alert list with left accent bar + icon + title + message + timestamp + type chip.
+
+#### ✅ Done
+- Compact `relativeTimeShort()` timestamps ("5m", "3h", "2d")
+- Text overflow hardening on all elements
+- Honest pull-to-refresh (tracks realtime listener)
+- Unread count badge
+- "Mark all read" button
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Swipe-to-dismiss** — mark read on swipe with undo snackbar | Low | `SwipeToDismissBox` |
+| 🔴 High | 2 | **Time-based grouping** — Today / Yesterday / Earlier sections using `Alert.timestamp` | Low | Already in model |
+| 🔴 High | 3 | **Fix `PriceAlertWorker` hardcoded location** — read from `LocationPrefs` like `WeatherAlertWorker` | Low | Already available |
+| 🟡 Med | 4 | **Alert priority visual treatment** — critical (red border), warning (orange), info (gray) based on message content analysis | Low | `Alert.message` |
+
+---
+
+### 🐛 Disease Screen
+
+**File:** `ui/screens/disease/DiseaseScreen.kt`
+**Current state:** SubScreenHeader, search field, RowCard list (BugReport icon, orange tint), source chips, tapping opens Wikipedia in browser.
+
+#### ✅ Done
+- Category-appropriate theming (`diseaseOrange` / `softOrange`)
+- Text overflow hardening
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Inline excerpt preview** — show Wikipedia excerpt in card body before opening browser | Low | Add `excerpt` field to `Disease` model |
+| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
+| 🟡 Med | 3 | **Disease category color coding** — group by crop type with colored chips (`Disease.cropAffected`) | Low | Already in model |
+
+#### ❌ Not Feasible
+| Idea | Why |
+|------|-----|
+| Disease detail (symptoms/treatment) | Wikipedia returns only title + excerpt — no structured disease data |
+| Camera-based detection | ML/TFLite model — significant new feature, out of scope |
+
+---
+
+### 🏛 Schemes Screen
+
+**File:** `ui/screens/schemes/SchemesScreen.kt`
+**Current state:** SubScreenHeader, search, RowCard list (AccountBalance icon, green tint), source chips, tapping opens Wikipedia.
+
+#### ✅ Done
+- Category-appropriate theming (`alertGreen` / `softLavender`)
+- Text overflow hardening
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Inline excerpt preview** — show `Scheme.description` in card (already in model, just not displayed) | Low | Already in model |
+| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
+| 🟡 Med | 3 | **Bookmark/save schemes** — local storage with heart icon + "Saved" filter tab | Medium | `DataStore` or Room |
+
+#### ❌ Not Feasible
+| Idea | Why |
+|------|-----|
+| Scheme eligibility quick-check | Wikipedia excerpts have no eligibility fields |
+| Scheme status (active/deadline) | No status data in Wikipedia |
+
+---
+
+### 📝 Crop Notes Screen
+
+**File:** `ui/screens/cropnotes/CropNotesScreen.kt`
+**Current state:** SubScreenHeader, location pill, search, horizontal crop filter chips, LazyColumn of CropNoteItems (title + content + source chip).
+
+#### ✅ Done
+- Category-appropriate theming (`cropBrown` / `softBrown`)
+- Text overflow hardening
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🔴 High | 1 | **Expandable note cards** — collapse/expand `CropNote.content` with `animateContentSize` | Low | Already in model |
+| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
+| 🟡 Med | 3 | **Emoji-enhanced crop filter chips** — 🌾 Rice, 🥬 Vegetables, 🌽 Pulses, etc. | Low | `CropNote.cropName` |
+| 🟡 Med | 4 | **Seasonal tips section** — hardcoded calendar keyed to `Calendar.MONTH` | Low | `java.util.Calendar` |
+
+---
+
+### 👤 Profile Screen
+
+**File:** `ui/screens/profile/ProfileScreen.kt`
+**Current state:** Identity card, settings sections (language, notifications, appearance, share, logout), gold unlock teaser.
+
+#### ✅ Done
+- Per-item themed icons (Person/green, Landscape/green, Logout/red, Language/blue, Notifications/purple)
+- Text overflow hardening
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🟡 Med | 1 | **Settings with icons + descriptions** — upgrade plain text rows to icon + title + subtitle | Low | Hardcoded |
+| 🟡 Med | 2 | **Fix profile location staleness** — re-read from `LocationPrefs` on resume | Low | Already available |
+| 🟡 Med | 3 | **Fix TempEmail dead field** — remove or add email edit capability | Low | `ProfileState.tempEmail` |
+
+---
+
+### 🎬 Splash Screen
+
+**File:** `ui/screens/splash/SplashScreen.kt`
+**Current state:** Logo scale animation (0.7→1.0, 450ms), text fade (400ms), 900ms hold, then navigate.
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🟡 Med | 1 | **Reduce dead time** — add tagline fade-in during 900ms hold, navigate sooner | Low | None |
+| ⚪ Low | 2 | **Shared element transition to Home** — logo animates into header (requires Nav Compose 2.8+) | Medium | Check dep version |
+
+---
+
+### 🔐 Auth Screen
+
+**File:** `ui/screens/auth/` (AuthBridge, login/signup)
+**Current state:** Full-screen sign in/up with email/password.
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🟡 Med | 1 | **Google Sign-In** — one-tap option above email/password | Medium | Firebase Auth |
+
+---
+
+### 🧭 Navigation (FloatingTabBar)
+
+**File:** `ui/components/FloatingTabBar.kt`
+**Current state:** 5-tab floating bar (Home, Market, Weather, Alerts, Profile).
+
+#### Improvements
+
+| Priority | # | What | Effort | Data |
+|----------|---|------|--------|------|
+| 🟡 Med | 1 | **Tab switch crossfade** — 200ms crossfade when switching tabs | Low | `AnimatedContent` |
+| 🟡 Med | 2 | **Sub-screen slide transitions** — 300ms enter, 200ms exit for push navigation | Low | `enterTransition`/`exitTransition` |
+| 🟡 Med | 3 | **Predictive back gesture** — Android 13+ live preview on edge swipe | Low | `enableOnBackInvokedCallback` |
+
+---
+
+## Part 4 — Global Improvements
+
+These apply across all screens:
+
+| Priority | # | What | Effort |
+|----------|---|------|--------|
+| 🔴 High | 1 | **Dynamic Color (Android 12+)** — wallpaper-derived palette as opt-in toggle in Profile → Appearance | Medium |
+| 🟡 Med | 2 | **Snackbar feedback** — share/location/language change confirmations | Low |
+| 🟡 Med | 3 | **Edge-to-edge display** — `enableEdgeToEdge()` in MainActivity | Low |
+
+---
+
+## Part 5 — Accessibility Checklist
 
 | # | Change | Status |
 |---|--------|--------|
-| 1 | `contentDescription` on all icon-only composables | ⬜ Pending |
-| 2 | 48dp touch targets (HeaderIconButton is 44dp — borderline) | ⬜ Pending |
-| 3 | `textTertiary` contrast ratio (darken in both palettes) | ⬜ Pending |
-| 4 | `mergeDescendants` on RowCard items for TalkBack grouping | ⬜ Pending |
-| 5 | Test at 200% font scale — no clipping/overlap | ⬜ Pending |
-| 6 | Add `imePadding()` on search screens | ⬜ Pending |
+| 1 | `contentDescription` on all icon-only composables | ⬜ |
+| 2 | 48dp touch targets (HeaderIconButton is 44dp) | ⬜ |
+| 3 | `textTertiary` contrast ratio (darken both palettes) | ⬜ |
+| 4 | `mergeDescendants` on RowCard items for TalkBack | ⬜ |
+| 5 | Test at 200% font scale | ⬜ |
+| 6 | `imePadding()` on all search screens | ⬜ |
 
 ---
 
-## Part 7 — Dark Mode Polish
+## Part 6 — Dark Mode Checklist
 
 | Area | Check |
 |------|-------|
-| CompactWeatherCard gradient | Green gradient on green-tinted dark surface — verify text readability |
-| WeatherChipStat glass pill | `Color.White.copy(alpha=0.18f)` on gradient — verify in dark mode |
-| Bottom sheet background | Should use `surface` token, not hardcoded white |
-| Splash screen gradient | `softMint → background` — verify both look intentional in dark |
-| SearchField clear button | 32dp touch target in dark mode — verify visibility |
-| SourceChip in DiseaseScreen | `surfaceMuted` in dark — verify enough contrast with `textTertiary` |
-| Category icon tiles | `softGreen`/`softOrange`/etc. in dark — verify icons are legible |
+| CompactWeatherCard gradient | Green gradient on dark surface — verify text readability |
+| WeatherChipStat glass pill | `White.copy(0.18f)` on gradient — verify dark mode |
+| Bottom sheet background | Use `surface` token, not hardcoded |
+| Splash gradient | `softMint → background` — verify both look intentional |
+| SearchField clear button | 32dp target visibility in dark |
+| SourceChip | `surfaceMuted` contrast with `textTertiary` |
+| Category icon tiles | `softGreen`/`softOrange` etc. — verify icon legibility |
 
 ---
 
@@ -363,11 +399,11 @@ When adding a new spacing/motion/icon token:
 
 | Principle | Rule |
 |-----------|------|
-| **60/30/10 Color** | 60% neutral base, 30% text/dark, 10% accent (green) |
-| **8-Point Grid** | All spacing via `FarmerSpacing` (divisible by 4) |
-| **48dp Touch Target** | `FarmerIcons.touchTarget` — Android minimum |
+| **60/30/10 Color** | 60% neutral base, 30% text/dark, 10% accent |
+| **8-Point Grid** | All spacing via `FarmerSpacing` |
+| **48dp Touch Target** | `FarmerIcons.touchTarget` |
 | **One FAB Per Screen** | Market screen only (share) |
-| **Honest Loading** | Real timing, not fake instant (PullToRefresh tied to UiState) |
-| **Category Identity** | Each market category has distinct icon + tint + container |
-| **Overflow Safety** | Every Text has `maxLines` + `Ellipsis` — works across 11 languages |
-| **Token-First** | Never hardcode colors/sizes — always use `FarmerTheme.colors.*` or `FarmerSpacing.*` |
+| **Honest Loading** | PullToRefresh tied to real `UiState` |
+| **Category Identity** | Each market category = distinct icon + tint + container |
+| **Overflow Safety** | Every Text has `maxLines` + `Ellipsis` — 11 languages |
+| **Token-First** | Never hardcode — `FarmerTheme.colors.*` / `FarmerSpacing.*` |
