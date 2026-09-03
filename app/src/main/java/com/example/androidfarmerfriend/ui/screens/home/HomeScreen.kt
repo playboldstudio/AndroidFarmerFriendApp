@@ -13,10 +13,15 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudOff
+import androidx.compose.material.icons.filled.Diamond
+import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.filled.Egg
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.MenuBook
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -337,6 +342,16 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
     Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         crops.take(3).forEach { crop ->
             val unit = crop.price.substringAfter("/ ", "").ifBlank { crop.units }
+            // Category-aware icon + tint + soft background for the
+            // thumbnail tile — mirrors the MarketScreen pattern.
+            val (fallbackIcon, iconTint, bg) = when (crop.category) {
+                "vegetable" -> Triple(Icons.Default.Eco, colors.categoryVegetable, colors.softGreen)
+                "fruit"     -> Triple(Icons.Default.ShoppingBasket, colors.categoryFruit, colors.softOrange)
+                "nonveg"    -> Triple(Icons.Default.Restaurant, colors.categoryNonVeg, colors.softRed)
+                "gold"      -> Triple(Icons.Default.Diamond, colors.categoryGold, colors.softLavender)
+                "egg"       -> Triple(Icons.Default.Egg, colors.categoryEgg, colors.softBrown)
+                else        -> Triple(Icons.Default.BarChart, colors.primary, colors.softMint)
+            }
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -346,12 +361,11 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
                     .padding(12.dp),
                 horizontalAlignment = Alignment.CenterHorizontally
             ) {
-                // Veg image
                 Box(
                     modifier = Modifier
                         .size(48.dp)
                         .clip(RoundedCornerShape(14.dp))
-                        .background(colors.softMint),
+                        .background(bg),
                     contentAlignment = Alignment.Center
                 ) {
                     if (crop.imageUrl.isNotBlank()) {
@@ -363,29 +377,14 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
                                 .clip(RoundedCornerShape(14.dp)),
                             contentScale = ContentScale.Crop,
                             loading = {
-                                Icon(
-                                    Icons.Default.BarChart,
-                                    contentDescription = null,
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(22.dp)
-                                )
+                                Icon(fallbackIcon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
                             },
                             error = {
-                                Icon(
-                                    Icons.Default.BarChart,
-                                    contentDescription = null,
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(22.dp)
-                                )
+                                Icon(fallbackIcon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
                             }
                         )
                     } else {
-                        Icon(
-                            Icons.Default.BarChart,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(22.dp)
-                        )
+                        Icon(fallbackIcon, contentDescription = null, tint = iconTint, modifier = Modifier.size(22.dp))
                     }
                 }
                 Spacer(Modifier.height(8.dp))
@@ -474,7 +473,8 @@ private fun QuickAccessTile(
             style = MaterialTheme.typography.labelMedium,
             fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center,
-            maxLines = 2
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
