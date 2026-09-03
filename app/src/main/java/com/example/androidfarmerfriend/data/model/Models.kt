@@ -73,7 +73,9 @@ data class Disease(
     val name: String,
     val cropAffected: String,
     val sourceUrl: String = "",
-    val imageUrl: String = ""
+    val imageUrl: String = "",
+    /** Wikipedia excerpt summarising the disease — shown as an inline preview. */
+    val excerpt: String = ""
 )
 
 data class CropNote(

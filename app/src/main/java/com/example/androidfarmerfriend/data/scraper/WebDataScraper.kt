@@ -128,8 +128,9 @@ object WebDataScraper {
             Disease(
                 id = index + 1,
                 name = page.title ?: "${t.fallbackDisease} ${index + 1}",
-                cropAffected = page.description ?: cleanExcerpt(page.excerpt) ?: t.fallbackGeneral,
-                sourceUrl = pageUrl(host, page.key)
+                cropAffected = page.description ?: t.fallbackGeneral,
+                sourceUrl = pageUrl(host, page.key),
+                excerpt = cleanExcerpt(page.excerpt) ?: page.description ?: ""
             )
         }
     }

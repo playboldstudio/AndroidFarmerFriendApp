@@ -68,6 +68,7 @@ fun DiseaseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .background(colors.background)
                 .padding(horizontal = 16.dp)
         ) {
@@ -121,7 +122,7 @@ fun DiseaseItem(disease: Disease) {
     val colors = FarmerTheme.colors
     RowCard(
         title = disease.name,
-        subtitle = disease.cropAffected.ifBlank { null },
+        subtitle = disease.excerpt.ifBlank { disease.cropAffected.ifBlank { null } },
         icon = Icons.Default.BugReport,
         iconTint = colors.diseaseOrange,
         iconContainer = colors.softOrange,

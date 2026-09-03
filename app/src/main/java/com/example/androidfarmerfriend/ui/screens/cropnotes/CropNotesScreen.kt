@@ -1,5 +1,6 @@
 package com.example.androidfarmerfriend.ui.screens.cropnotes
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.horizontalScroll
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.SearchOff
 import androidx.compose.material3.*
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -77,6 +79,7 @@ fun CropNotesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .background(colors.background)
                 .padding(horizontal = FarmerSpacing.lg)
         ) {
@@ -146,19 +149,21 @@ fun CropNotesScreen(
 fun CropNoteItem(note: CropNote, strings: AppStrings) {
     val context = LocalContext.current
     val colors = FarmerTheme.colors
+    // Tapping toggles the in-place expand/collapse; the source link is opened
+    // via the separate "Read full article" action below.
+    var expanded by rememberSaveable(note.id) { mutableStateOf(false) }
 
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable {
-                if (note.sourceUrl.isNotBlank()) {
-                    WebSearchUtil.openUrl(context, note.sourceUrl)
-                }
-            },
+        modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(24.dp),
         colors = CardDefaults.cardColors(containerColor = colors.surface)
     ) {
-        Column(modifier = Modifier.padding(16.dp)) {
+        Column(
+            modifier = Modifier
+                .animateContentSize()
+                .clickable { expanded = !expanded }
+                .padding(16.dp)
+        ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -195,7 +200,7 @@ fun CropNoteItem(note: CropNote, strings: AppStrings) {
                     text = note.content,
                     color = colors.textSecondary,
                     style = MaterialTheme.typography.bodySmall,
-                    maxLines = 3,
+                    maxLines = if (expanded) Int.MAX_VALUE else 3,
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
                 Spacer(Modifier.height(10.dp))
@@ -204,17 +209,20 @@ fun CropNoteItem(note: CropNote, strings: AppStrings) {
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(
-                        text = "${strings.readMoreLabel} ›",
+                        text = if (expanded) strings.collapseLabel else strings.readMoreLabel,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.Bold,
                         color = colors.primary,
                         modifier = Modifier.weight(1f)
                     )
-                    if (note.sourceUrl.isNotBlank()) {
+                    if (note.sourceUrl.isNotBlank() && expanded) {
                         Text(
                             text = urlHostLabel(note.sourceUrl),
                             style = MaterialTheme.typography.labelSmall,
-                            color = colors.textTertiary
+                            color = colors.textTertiary,
+                            modifier = Modifier.clickable {
+                                WebSearchUtil.openUrl(context, note.sourceUrl)
+                            }
                         )
                     }
                 }

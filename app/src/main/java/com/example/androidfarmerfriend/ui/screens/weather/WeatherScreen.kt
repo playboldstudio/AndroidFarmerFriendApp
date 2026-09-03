@@ -33,6 +33,7 @@ import com.example.androidfarmerfriend.ui.components.DayPill
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.FarmTipCard
+import com.example.androidfarmerfriend.ui.components.WeatherFarmTips
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.LocPill
@@ -194,7 +195,8 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
 
     Spacer(Modifier.height(14.dp))
 
-    FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
+    val farmTipBody = WeatherFarmTips.tipFor(weather) ?: strings.farmTipGeneric
+    FarmTipCard(title = strings.farmTipTitle, body = farmTipBody)
 }
 
 /** Detail card for whichever forecast day-pill is selected. */

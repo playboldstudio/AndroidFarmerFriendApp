@@ -4,6 +4,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListScope
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -14,8 +15,10 @@ import androidx.compose.material.icons.filled.Paid
 import androidx.compose.material.icons.filled.TrendingUp
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
+import androidx.compose.material3.SwipeToDismissBoxValue
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +47,7 @@ import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.relativeTimeShort
+import java.util.Calendar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -133,17 +137,29 @@ fun AlertsScreen(
                                 verticalArrangement = Arrangement.spacedBy(10.dp),
                                 contentPadding = PaddingValues(bottom = 16.dp)
                             ) {
-                                items(state.filteredAlerts, key = { it.id }) { alert ->
-                                    AlertItem(
-                                        alert = alert,
-                                        strings = strings,
-                                        onClick = {
-                                            viewModel.onEvent(AlertEvent.MarkRead(alert.id))
-                                            if (alert.actionRoute.isNotEmpty()) {
-                                                onNavigateToAlert(alert.actionRoute)
+                                // Group alerts by recency: Today / Yesterday / Earlier.
+                                val grouped = groupAlertsByTime(state.filteredAlerts)
+                                grouped.forEach { (groupKey, alerts) ->
+                                    item(key = "header_$groupKey") {
+                                        SectionLabel(text = when (groupKey) {
+                                            "today" -> strings.today
+                                            "yesterday" -> strings.yesterday
+                                            else -> strings.earlierLabel
+                                        })
+                                    }
+                                    items(alerts, key = { it.id }) { alert ->
+                                        SwipeableAlertItem(
+                                            alert = alert,
+                                            strings = strings,
+                                            onMarkRead = { viewModel.onEvent(AlertEvent.MarkRead(alert.id)) },
+                                            onClick = {
+                                                viewModel.onEvent(AlertEvent.MarkRead(alert.id))
+                                                if (alert.actionRoute.isNotEmpty()) {
+                                                    onNavigateToAlert(alert.actionRoute)
+                                                }
                                             }
-                                        }
-                                    )
+                                        )
+                                    }
                                 }
                             }
                         }
@@ -263,6 +279,99 @@ fun AlertItem(alert: Alert, strings: AppStrings, onClick: () -> Unit = {}) {
             }
         }
     }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SwipeableAlertItem(
+    alert: Alert,
+    strings: AppStrings,
+    onMarkRead: () -> Unit,
+    onClick: () -> Unit
+) {
+    // Only unread alerts are swipeable — swiping marks them read.
+    if (!alert.isRead) {
+        val dismissState = rememberSwipeToDismissBoxState()
+        // The state settles to EndToStart once the dismiss threshold is crossed.
+        LaunchedEffect(dismissState.currentValue) {
+            if (dismissState.currentValue == SwipeToDismissBoxValue.EndToStart) {
+                onMarkRead()
+            }
+        }
+        SwipeToDismissBox(
+            state = dismissState,
+            enableDismissFromStartToEnd = false,
+            enableDismissFromEndToStart = true,
+            backgroundContent = {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(20.dp))
+                        .background(FarmerTheme.colors.softGreen),
+                    contentAlignment = Alignment.CenterEnd
+                ) {
+                    Icon(
+                        Icons.Default.Notifications,
+                        contentDescription = null,
+                        tint = FarmerTheme.colors.alertGreen,
+                        modifier = Modifier
+                            .padding(horizontal = 24.dp)
+                            .size(24.dp)
+                    )
+                }
+            }
+        ) {
+            AlertItem(alert = alert, strings = strings, onClick = onClick)
+        }
+    } else {
+        AlertItem(alert = alert, strings = strings, onClick = onClick)
+    }
+}
+
+/** Small section header used between time-grouped alert rows. */
+@Composable
+private fun SectionLabel(text: String) {
+    val colors = FarmerTheme.colors
+    Text(
+        text = text,
+        style = MaterialTheme.typography.labelMedium,
+        fontWeight = FontWeight.Bold,
+        color = colors.textSecondary,
+        maxLines = 1,
+        overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        modifier = Modifier.padding(top = 6.dp, bottom = 2.dp)
+    )
+}
+
+/**
+ * Buckets alerts into Today / Yesterday / Earlier groups based on their
+ * timestamp, preserving newest-first order within each group.
+ */
+private fun groupAlertsByTime(alerts: List<Alert>): LinkedHashMap<String, List<Alert>> {
+    val todayStart = Calendar.getInstance().apply {
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+    val yesterdayStart = Calendar.getInstance().apply {
+        add(Calendar.DATE, -1)
+        set(Calendar.HOUR_OF_DAY, 0)
+        set(Calendar.MINUTE, 0)
+        set(Calendar.SECOND, 0)
+        set(Calendar.MILLISECOND, 0)
+    }
+
+    val result = LinkedHashMap<String, List<Alert>>()
+    alerts.sortedByDescending { it.timestamp }.forEach { alert ->
+        val group = when {
+            alert.timestamp >= todayStart.timeInMillis -> "today"
+            alert.timestamp >= yesterdayStart.timeInMillis -> "yesterday"
+            else -> "earlier"
+        }
+        result.merge(group, listOf(alert)) { a, b -> a + b }
+    }
+    return result
 }
 
 @Composable

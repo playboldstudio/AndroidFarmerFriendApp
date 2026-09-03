@@ -67,6 +67,7 @@ fun SchemesScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .background(colors.background)
                 .padding(horizontal = 16.dp)
         ) {

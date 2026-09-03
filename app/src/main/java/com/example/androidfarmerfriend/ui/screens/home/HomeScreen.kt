@@ -5,6 +5,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -15,6 +17,7 @@ import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.Eco
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Egg
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.MenuBook
@@ -56,6 +59,7 @@ import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.FarmTipCard
+import com.example.androidfarmerfriend.ui.components.WeatherFarmTips
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.CompactWeatherCard
@@ -182,7 +186,7 @@ fun HomeScreen(
                     modifier = Modifier.clickable { onNavigate(Screen.Market.route) }
                 )
             }
-            MarketPreviewStrip(crops = state.marketPreview)
+            MarketPreviewStrip(crops = state.marketPreview, onNavigate = onNavigate)
         }
 
         SectionHeader(title = strings.quickAccess)
@@ -191,7 +195,11 @@ fun HomeScreen(
 
         Spacer(Modifier.height(FarmerSpacing.lg))
 
-        FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
+        val farmTipBody = when (val ws = state.weatherState) {
+            is UiState.Success -> WeatherFarmTips.tipFor(ws.data) ?: strings.farmTipGeneric
+            else -> strings.farmTipGeneric
+        }
+        FarmTipCard(title = strings.farmTipTitle, body = farmTipBody)
 
         Spacer(Modifier.height(FarmerSpacing.xxl))
         }
@@ -337,10 +345,11 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun MarketPreviewStrip(crops: List<Crop>) {
+private fun MarketPreviewStrip(crops: List<Crop>, onNavigate: (String) -> Unit = {}) {
     val colors = FarmerTheme.colors
-    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        crops.take(3).forEach { crop ->
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        items(crops.size) { index ->
+            val crop = crops[index]
             val unit = crop.price.substringAfter("/ ", "").ifBlank { crop.units }
             // Category-aware icon + tint + soft background for the
             // thumbnail tile — mirrors the MarketScreen pattern.
@@ -354,7 +363,7 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
             }
             Column(
                 modifier = Modifier
-                    .weight(1f)
+                    .width(110.dp)
                     .clip(RoundedCornerShape(18.dp))
                     .background(colors.surface)
                     .border(1.dp, colors.outline, RoundedCornerShape(18.dp))
@@ -403,6 +412,37 @@ private fun MarketPreviewStrip(crops: List<Crop>) {
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = colors.primaryDeep,
+                    textAlign = TextAlign.Center
+                )
+            }
+        }
+        // "See All" card at the end of the strip
+        item {
+            Column(
+                modifier = Modifier
+                    .width(110.dp)
+                    .height(130.dp)
+                    .clip(RoundedCornerShape(18.dp))
+                    .background(colors.softGreen)
+                    .border(1.dp, colors.primary.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
+                    .clickable { onNavigate(Screen.Market.route) }
+                    .padding(12.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.Center
+            ) {
+                Icon(
+                    Icons.AutoMirrored.Filled.ArrowForward,
+                    contentDescription = null,
+                    tint = colors.primaryDeep,
+                    modifier = Modifier.size(28.dp)
+                )
+                Spacer(Modifier.height(6.dp))
+                Text(
+                    text = "View All",
+                    style = MaterialTheme.typography.labelMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = colors.primaryDeep,
+                    maxLines = 1,
                     textAlign = TextAlign.Center
                 )
             }

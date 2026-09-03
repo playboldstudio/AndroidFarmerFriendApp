@@ -45,6 +45,9 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                 _state.value = rerender(_state.value.copy(selectedMarket = event.market))
                 loadData(_state.value.selectedFilter, event.market)
             }
+            is MarketEvent.Sort -> {
+                _state.value = rerender(_state.value.copy(sortBy = event.order))
+            }
             is MarketEvent.Retry -> loadData(_state.value.selectedFilter, _state.value.selectedMarket)
         }
     }
@@ -106,9 +109,15 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
     private fun computeFilteredCrops(s: MarketState): List<Crop> {
         val data = s.cropsState.orEmpty()
         val query = s.searchQuery.trim().lowercase()
-        return if (query.isEmpty()) data
+        val filtered = if (query.isEmpty()) data
         else data.filter {
             it.name.lowercase().contains(query) || it.nameEng.lowercase().contains(query)
+        }
+        return when (s.sortBy) {
+            SortOrder.NAME_ASC -> filtered.sortedBy { it.nameEng.ifBlank { it.name } }
+            SortOrder.NAME_DESC -> filtered.sortedByDescending { it.nameEng.ifBlank { it.name } }
+            SortOrder.PRICE_LOW -> filtered.sortedBy { it.priceValue }
+            SortOrder.PRICE_HIGH -> filtered.sortedByDescending { it.priceValue }
         }
     }
 

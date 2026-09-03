@@ -129,14 +129,14 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 - Category-aware market preview thumbnails (Phase 4a)
 - Text overflow hardening on all text elements
 - Unread alert count badge on bell icon
+- Weather-based dynamic farm tips (rain/wind/humidity/heat-aware) via `WeatherFarmTips`
+- Swipeable market preview `LazyRow` with "See All" card
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Weather-based farm tips** — replace static `farmTipGeneric` with data-driven advice based on `WeatherInfo` (rain > 60% → "skip irrigation", wind > 30 → "no spraying", humidity > 85 → "fungal risk") | Low | Already have `WeatherInfo` |
-| 🔴 High | 2 | **Swipeable market preview** — `LazyRow` with "See All" card, show 4+ crops instead of hardcoded `.take(3)` | Low | `marketPreview` list |
-| 🟡 Med | 3 | **Time-of-day greeting** — contextual greeting based on clock (5–7AM "Early riser 🌅", 12–2PM "Markets are active", 8PM+ "Tomorrow's forecast") | Low | `java.util.Calendar` |
+| 🟡 Med | 3 | **Time-of-day greeting** — contextual greeting based on clock (5–7AM "Early riser", 12–2PM "Markets are active", 8PM+ "Tomorrow's forecast") | Low | `java.util.Calendar` |
 | 🟡 Med | 4 | **Expand weather card** — tap to reveal 3-day mini-forecast in-place using `animateContentSize` | Low | `WeatherInfo.forecast` |
 | 🟡 Med | 5 | **Quick-access badge counts** — show unread alert count and market item count on grid tiles | Low | Already available |
 | 🟡 Med | 6 | **Haptic feedback** — PTR, chip tap, FAB tap via `LocalHapticFeedback` | Low | None |
@@ -153,13 +153,17 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 - Text overflow hardening
 - Honest pull-to-refresh (spinner tracks real `UiState`)
 - Scroll-aware FAB (hides on scroll down, shows on scroll up)
+- Sort options (name A-Z / Z-A, price low-high / high-low) via sort icon
+- `imePadding()` so keyboard doesn't cover the search field
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Sort options** — price low→high, high→low, name A→Z via sort icon | Low | `Crop.priceValue`, `Crop.nameEng` |
-| 🔴 High | 2 | **Keyboard padding** — add `imePadding()` so keyboard doesn't cover search field | Low | None |
+| 🟡 Med | 3 | **Retail price comparison** — show `retailPrice` alongside wholesale for veg/fruit | Low | Already mapped |
+| 🟡 Med | 4 | **Egg trend prominence** — make `priceDiffPercent` more visible (larger, colored arrow) | Low | Already computed |
+| 🟡 Med | 5 | **Animated filter switch** — crossfade content when switching categories | Low | `AnimatedContent` |
+| 🟡 Med | 6 | **Pull-to-refresh status messages** — "Fetching latest prices…" → "Market servers are slow…" | Low | Timer-based |
 | 🟡 Med | 3 | **Retail price comparison** — show `retailPrice` alongside wholesale for veg/fruit | Low | Already mapped |
 | 🟡 Med | 4 | **Egg trend prominence** — make `priceDiffPercent` more visible (larger, colored arrow) | Low | Already computed |
 | 🟡 Med | 5 | **Animated filter switch** — crossfade content when switching categories | Low | `AnimatedContent` |
@@ -183,6 +187,7 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 - Text overflow hardening on all labels
 - `widthIn(min, max)` on forecast day labels for multilingual safety
 - Location picker with search
+- Weather-based dynamic farm tips (same `WeatherFarmTips` logic as Home)
 
 #### Improvements
 
@@ -193,7 +198,6 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 | 🟡 Med | 3 | **UV index warning** — add `daily.uv_index_max` + color-coded advisory chip | Low | Free from Open-Meteo |
 | 🟡 Med | 4 | **Wind spray advisory** — based on `wind_speed_10m_max` (> 30 → "no spraying", < 10 → "ideal") | Low | Free from Open-Meteo |
 | 🟡 Med | 5 | **Soil temperature + ET0** — add `daily.soil_temperature_6cm_max,min` and `et0_fao_evapotranspiration` for irrigation scheduling | Low | Free from Open-Meteo |
-| 🟡 Med | 6 | **Weather-based farm tips** — replace static tip with data-driven advice (same logic as Home screen) | Low | Already have `WeatherInfo` |
 
 #### ❌ Not Feasible
 | Idea | Why |
@@ -214,14 +218,14 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 - Unread count badge
 - "Mark all read" button
 - `PriceAlertWorker` reads user location from `LocationPrefs` (was hardcoded koyambedu)
+- Time-based grouping — Today / Yesterday / Earlier sections
+- Swipe-to-dismiss marks unread alerts read
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Swipe-to-dismiss** — mark read on swipe with undo snackbar | Low | `SwipeToDismissBox` |
-| 🔴 High | 2 | **Time-based grouping** — Today / Yesterday / Earlier sections using `Alert.timestamp` | Low | Already in model |
-| 🟡 Med | 4 | **Alert priority visual treatment** — critical (red border), warning (orange), info (gray) based on message content analysis | Low | `Alert.message` |
+| 🟡 Med | 3 | **Alert priority visual treatment** — critical (red border), warning (orange), info (gray) based on message content analysis | Low | `Alert.message` |
 
 ---
 
@@ -233,13 +237,13 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 #### ✅ Done
 - Category-appropriate theming (`diseaseOrange` / `softOrange`)
 - Text overflow hardening
+- Inline Wikipedia excerpt preview in card body (added `excerpt` field to `Disease` model)
+- `imePadding()` on search field
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Inline excerpt preview** — show Wikipedia excerpt in card body before opening browser | Low | Add `excerpt` field to `Disease` model |
-| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
 | 🟡 Med | 3 | **Disease category color coding** — group by crop type with colored chips (`Disease.cropAffected`) | Low | Already in model |
 
 #### ❌ Not Feasible
@@ -258,13 +262,13 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 #### ✅ Done
 - Category-appropriate theming (`alertGreen` / `softLavender`)
 - Text overflow hardening
+- Inline excerpt preview — `Scheme.description` shown as the card subtitle
+- `imePadding()` on search field
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Inline excerpt preview** — show `Scheme.description` in card (already in model, just not displayed) | Low | Already in model |
-| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
 | 🟡 Med | 3 | **Bookmark/save schemes** — local storage with heart icon + "Saved" filter tab | Medium | `DataStore` or Room |
 
 #### ❌ Not Feasible
@@ -283,15 +287,14 @@ Each screen section includes: **Current State**, **✅ Done**, **Improvements** 
 #### ✅ Done
 - Category-appropriate theming (`cropBrown` / `softBrown`)
 - Text overflow hardening
+- Expandable note cards — tap to collapse/expand `CropNote.content` with `animateContentSize`
+- `imePadding()` on search field
 
 #### Improvements
 
 | Priority | # | What | Effort | Data |
 |----------|---|------|--------|------|
-| 🔴 High | 1 | **Expandable note cards** — collapse/expand `CropNote.content` with `animateContentSize` | Low | Already in model |
-| 🔴 High | 2 | **Keyboard padding** — `imePadding()` on search field | Low | None |
-| 🟡 Med | 3 | **Emoji-enhanced crop filter chips** — 🌾 Rice, 🥬 Vegetables, 🌽 Pulses, etc. | Low | `CropNote.cropName` |
-| 🟡 Med | 4 | **Seasonal tips section** — hardcoded calendar keyed to `Calendar.MONTH` | Low | `java.util.Calendar` |
+| 🟡 Med | 3 | **Seasonal tips section** — hardcoded calendar keyed to `Calendar.MONTH` | Low | `java.util.Calendar` |
 
 ---
 
@@ -377,7 +380,7 @@ These apply across all screens:
 | 3 | `textTertiary` contrast ratio (darken both palettes) | ⬜ |
 | 4 | `mergeDescendants` on RowCard items for TalkBack | ⬜ |
 | 5 | Test at 200% font scale | ⬜ |
-| 6 | `imePadding()` on all search screens | ⬜ |
+| 6 | `imePadding()` on all search screens | ✅ |
 
 ---
 

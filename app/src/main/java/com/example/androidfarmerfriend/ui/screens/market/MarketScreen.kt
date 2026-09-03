@@ -18,6 +18,7 @@ import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.SearchOff
+import androidx.compose.material.icons.automirrored.filled.Sort
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.*
@@ -139,7 +140,7 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
         isRefreshing = isRefreshing,
         onRefresh = { viewModel.onEvent(MarketEvent.Retry) }
     ) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Box(modifier = Modifier.fillMaxSize().imePadding()) {
             com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
                 modifier = Modifier.background(colors.background)
             ) {
@@ -179,6 +180,49 @@ fun MarketScreen(viewModel: MarketViewModel = viewModel()) {
                         onValueChange = { viewModel.onEvent(MarketEvent.Search(it)) },
                         placeholder = strings.searchHint
                     )
+
+                    // Sort control
+                    var sortMenuExpanded by remember { mutableStateOf(false) }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Box {
+                            IconButton(onClick = { sortMenuExpanded = true }) {
+                                Icon(
+                                    Icons.AutoMirrored.Filled.Sort,
+                                    contentDescription = "Sort",
+                                    tint = FarmerTheme.colors.textSecondary
+                                )
+                            }
+                            DropdownMenu(
+                                expanded = sortMenuExpanded,
+                                onDismissRequest = { sortMenuExpanded = false }
+                            ) {
+                                SortOrder.entries.forEach { order ->
+                                    DropdownMenuItem(
+                                        text = {
+                                            Text(
+                                                text = order.label(strings),
+                                                style = MaterialTheme.typography.labelLarge,
+                                                fontWeight = if (order == state.sortBy) FontWeight.Bold else FontWeight.Normal,
+                                                color = if (order == state.sortBy) FarmerTheme.colors.primary else FarmerTheme.colors.textPrimary
+                                            )
+                                        },
+                                        onClick = {
+                                            viewModel.onEvent(MarketEvent.Sort(order))
+                                            sortMenuExpanded = false
+                                        }
+                                    )
+                                }
+                            }
+                        }
+                        Text(
+                            text = state.sortBy.label(strings),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = FarmerTheme.colors.textSecondary
+                        )
+                    }
 
                     PillChipGroup(
                         filters = FilterType.entries.map { ChipOption(it.displayKey(strings), it.icon()) },
