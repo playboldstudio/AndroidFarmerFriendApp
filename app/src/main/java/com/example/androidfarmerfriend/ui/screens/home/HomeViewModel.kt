@@ -3,6 +3,7 @@ package com.example.androidfarmerfriend.ui.screens.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.location.SelectedLocation
@@ -72,8 +73,9 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val crops = repository.getVegetablePrices(slug)
                     .ifEmpty { repository.getVegetablePrices("koyambedu") }
                 _state.value = _state.value.copy(marketPreview = crops.take(4))
-            } catch (_: Exception) {
-                // Preview is optional; home works without it.
+            } catch (e: Exception) {
+                // Preview is optional; home works without it — but still report the failure.
+                NetworkErrors.record("HomeViewModel.loadMarketPreview", e)
             }
         }
     }

@@ -3,6 +3,7 @@ package com.example.androidfarmerfriend.notifications
 import android.content.Context
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
 import com.example.androidfarmerfriend.data.model.AlertType
 
@@ -45,6 +46,7 @@ class DailyDigestWorker(
 
             Result.success()
         } catch (e: Exception) {
+            NetworkErrors.record("DailyDigestWorker.doWork", e)
             Result.retry()
         }
     }

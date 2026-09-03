@@ -2,6 +2,7 @@ package com.example.androidfarmerfriend.ui.screens.market
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.model.Crop
 import com.example.androidfarmerfriend.data.model.MarketData
 import com.example.androidfarmerfriend.data.model.MarketOption
@@ -69,6 +70,14 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                     yesterdayCal.add(java.util.Calendar.DATE, -1)
                     effectiveDate = dateFormat().format(yesterdayCal.time)
                     crops = fetchCrops(filter, slug, effectiveDate)
+                    // Both today and yesterday returned nothing (no exception thrown) —
+                    // record a diagnostic so an empty market isn't invisible in Crashlytics.
+                    if (crops.isEmpty()) {
+                        NetworkErrors.record(
+                            "MarketViewModel.emptyData",
+                            IllegalStateException("No data for ${filter.id} at $slug (today+${effectiveDate})")
+                        )
+                    }
                 }
 
                 _state.value = rerender(
@@ -80,9 +89,11 @@ class MarketViewModel(private val repository: FarmerRepository = FarmerRepositor
                     )
                 )
             } catch (e: Exception) {
+                // Record the real exception+stack, then surface a friendly message.
+                NetworkErrors.record("MarketViewModel.loadData", e)
                 _state.value = rerender(
                     _state.value.copy(
-                        cropsState = UiState.Error(e.message ?: "Failed to load data")
+                        cropsState = UiState.Error(NetworkErrors.friendlyMessage(e))
                     )
                 )
             }

@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
@@ -79,7 +80,7 @@ class WeatherAlertWorker(
 
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Weather alert check failed", e)
+            NetworkErrors.record("WeatherAlertWorker.doWork", e)
             Result.retry()
         }
     }

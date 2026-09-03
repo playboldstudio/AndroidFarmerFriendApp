@@ -2,13 +2,13 @@ package com.example.androidfarmerfriend.data.repository
 
 import com.example.androidfarmerfriend.data.api.ApiClient
 import com.example.androidfarmerfriend.data.api.ItemImageTable
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.Language
 import com.example.androidfarmerfriend.data.location.SelectedLocation
 import com.example.androidfarmerfriend.data.model.*
 import com.example.androidfarmerfriend.data.scraper.WebDataScraper
 import com.example.androidfarmerfriend.util.WeatherCodeMapper
-import com.google.firebase.crashlytics.FirebaseCrashlytics
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -19,7 +19,6 @@ class FarmerRepository {
     private val weatherApi = ApiClient.weatherApi
     private val vegetableMarketApi = ApiClient.vegetableMarketApi
     private val eggRatesApi = ApiClient.eggRatesApi
-    private val crashlytics = FirebaseCrashlytics.getInstance()
 
     private fun todayDate(): String = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
 
@@ -63,29 +62,49 @@ class FarmerRepository {
                 forecast = forecast
             )
         } catch (e: Exception) {
-            crashlytics.recordException(e)
+            NetworkErrors.record("getWeather", e)
             null
         }
     }
 
     suspend fun getVegetablePrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getVegetablePrices(location, date)
-        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        try {
+            val response = vegetableMarketApi.getVegetablePrices(location, date)
+            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        } catch (e: Exception) {
+            NetworkErrors.record("getVegetablePrices", e)
+            emptyList()
+        }
     }
 
     suspend fun getFruitPrices(location: String = "koyambedu", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getFruitPrices(location, date)
-        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        try {
+            val response = vegetableMarketApi.getFruitPrices(location, date)
+            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        } catch (e: Exception) {
+            NetworkErrors.record("getFruitPrices", e)
+            emptyList()
+        }
     }
 
     suspend fun getNonVegPrices(location: String = "bangalore", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getNonVegPrices(location, date)
-        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        try {
+            val response = vegetableMarketApi.getNonVegPrices(location, date)
+            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        } catch (e: Exception) {
+            NetworkErrors.record("getNonVegPrices", e)
+            emptyList()
+        }
     }
 
     suspend fun getGoldPrices(location: String = "chennai", date: String = todayDate()): List<Crop> = withContext(Dispatchers.IO) {
-        val response = vegetableMarketApi.getGoldPrices(location, date)
-        response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        try {
+            val response = vegetableMarketApi.getGoldPrices(location, date)
+            response.data?.mapNotNull { it.toCrop() } ?: emptyList()
+        } catch (e: Exception) {
+            NetworkErrors.record("getGoldPrices", e)
+            emptyList()
+        }
     }
 
     suspend fun getEggPrices(location: String = "chennai"): List<Crop> = withContext(Dispatchers.IO) {
@@ -100,7 +119,7 @@ class FarmerRepository {
                 ?: response.firstOrNull()
             eggData?.let { listOf(it.toCrop()) } ?: emptyList()
         } catch (e: Exception) {
-            crashlytics.recordException(e)
+            NetworkErrors.record("getEggPrices", e)
             emptyList()
         }
     }
@@ -121,7 +140,7 @@ class FarmerRepository {
                 )
             } ?: emptyList()
         } catch (e: Exception) {
-            crashlytics.recordException(e)
+            NetworkErrors.record("searchLocations", e)
             emptyList()
         }
     }

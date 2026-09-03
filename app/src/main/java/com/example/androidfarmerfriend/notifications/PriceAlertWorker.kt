@@ -6,6 +6,7 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -53,7 +54,7 @@ class PriceAlertWorker(
                     messages.add("🥬 Top Vegetable Prices (Koyambedu):\n$summary")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch vegetable prices", e)
+                NetworkErrors.record("PriceAlertWorker.veg", e)
             }
 
             // Fetch fruit prices
@@ -71,7 +72,7 @@ class PriceAlertWorker(
                     messages.add("🍎 Top Fruit Prices (Koyambedu):\n$summary")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch fruit prices", e)
+                NetworkErrors.record("PriceAlertWorker.fruit", e)
             }
 
             // Fetch egg prices
@@ -87,7 +88,7 @@ class PriceAlertWorker(
                     messages.add("🥚 Egg Rate ($city): ₹${"%.2f".format(price)}/piece")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch egg prices", e)
+                NetworkErrors.record("PriceAlertWorker.egg", e)
             }
 
             if (messages.isEmpty()) {
@@ -136,7 +137,7 @@ class PriceAlertWorker(
 
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Price alert failed", e)
+            NetworkErrors.record("PriceAlertWorker.overall", e)
             Result.retry()
         }
     }

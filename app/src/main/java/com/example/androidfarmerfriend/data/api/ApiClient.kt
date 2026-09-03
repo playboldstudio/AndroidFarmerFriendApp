@@ -23,9 +23,13 @@ object ApiClient {
         val cache = cacheDir?.let { Cache(it, 10L * 1024 * 1024) } // 10MB
 
         OkHttpClient.Builder()
-            .connectTimeout(15, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(20, TimeUnit.SECONDS)
+            .writeTimeout(20, TimeUnit.SECONDS)
+            // The market/scrape endpoints are slow and flaky on mobile networks.
+            // Retrying connection-level failures (not HTTP errors or timeouts)
+            // is safe: every call here is a GET, so a retry has no side effects.
+            .retryOnConnectionFailure(true)
             .cache(cache)
             .addInterceptor(
                 HttpLoggingInterceptor().apply {
