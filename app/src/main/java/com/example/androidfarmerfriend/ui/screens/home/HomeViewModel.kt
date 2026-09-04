@@ -11,6 +11,7 @@ import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.components.loadWeatherState
+import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +45,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
             is HomeEvent.Retry -> {
                 val loc = _state.value.selectedLocation ?: return
                 loadWeather(loc)
+            }
+            is HomeEvent.Refresh -> {
+                val loc = _state.value.selectedLocation ?: return
+                loadWeather(loc)
+                loadMarketPreview(loc)
             }
         }
     }
@@ -82,10 +88,18 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private fun refreshGreeting() {
         val name = personalizedName(userPrefs.userName)
+        val base = timeGreeting()
         _state.value = _state.value.copy(
             greetingName = name,
-            greeting = if (name != null) "${strings.welcomeBack}, $name" else strings.welcomeBack
+            greeting = if (name != null) "$base, $name" else base
         )
+    }
+
+    /** Picks the greeting to match the current time of day (morning / afternoon / evening). */
+    private fun timeGreeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 5..11 -> strings.goodMorning
+        in 12..16 -> strings.goodAfternoon
+        else -> strings.goodEvening
     }
 
     private fun loadWeather(location: SelectedLocation) {

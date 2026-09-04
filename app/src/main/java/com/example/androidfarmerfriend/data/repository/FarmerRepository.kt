@@ -12,6 +12,8 @@ import com.example.androidfarmerfriend.util.WeatherCodeMapper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
 import java.util.Date
 import java.util.Locale
 
@@ -47,6 +49,12 @@ class FarmerRepository {
             val todayLow = daily?.tempMin?.getOrNull(0)?.toInt()
             val rainProb = daily?.precipitationProbabilityMax?.getOrNull(0)
 
+            // Hourly strip: take the next ~8 hours from now so farmers see
+            // what's coming today (spraying / irrigation windows).
+            val hourly = buildHourly(response.hourly)
+            val sunrise = daily?.sunrise?.getOrNull(0)?.timeOfDay() ?: ""
+            val sunset = daily?.sunset?.getOrNull(0)?.timeOfDay() ?: ""
+
             WeatherInfo(
                 temperature = "${current.temperature?.toInt() ?: 0}°C",
                 condition = WeatherCodeMapper.condition(code, strings),
@@ -59,7 +67,10 @@ class FarmerRepository {
                 todayHigh = todayHigh?.let { "$it°" } ?: "",
                 todayLow = todayLow?.let { "$it°" } ?: "",
                 weatherCode = code,
-                forecast = forecast
+                forecast = forecast,
+                hourly = hourly,
+                sunrise = sunrise,
+                sunset = sunset
             )
         } catch (e: Exception) {
             NetworkErrors.record("getWeather", e)
@@ -290,4 +301,43 @@ class FarmerRepository {
             priceDiffPercent = diffPercent
         )
     }
+
+    // ---- Hourly mapping ----
+
+    private fun buildHourly(hourly: com.example.androidfarmerfriend.data.api.OpenMeteoHourly?): List<HourlyForecast> {
+        if (hourly == null) return emptyList()
+        val times = hourly.time ?: return emptyList()
+        val temps = hourly.temperature ?: return emptyList()
+        val codes = hourly.weatherCode ?: emptyList()
+        val rain = hourly.precipitationProbability ?: emptyList()
+
+        val nowHour = LocalTime.now().hour
+        // Find the index of the current (or nearest past) hour and take the next 8.
+        val startIndex = times.indexOfFirst { entry ->
+            val h = entry.timeOrNull()?.hour ?: return@indexOfFirst false
+            h >= nowHour
+        }.coerceAtLeast(0)
+
+        return (startIndex until minOf(startIndex + 8, times.size)).mapNotNull { i ->
+            val timeStr = times.getOrNull(i) ?: return@mapNotNull null
+            val hour = timeStr.timeOrNull() ?: return@mapNotNull null
+            HourlyForecast(
+                hourLabel = hour.format(DateTimeFormatter.ofPattern("HH:mm")),
+                temp = "${temps.getOrNull(i)?.toInt() ?: 0}°",
+                weatherCode = codes.getOrNull(i) ?: 0,
+                rainChance = rain.getOrNull(i)
+            )
+        }
+    }
+
+    /** Extract the time portion from an ISO datetime string like "2026-09-04T06:12". */
+    private fun String.timeOrNull(): LocalTime? = try {
+        val timePart = this.substringAfter('T')
+        LocalTime.parse(timePart, DateTimeFormatter.ofPattern("HH:mm"))
+    } catch (_: Exception) {
+        null
+    }
+
+    /** Return just "HH:MM" from an ISO datetime string, for sunrise/sunset display. */
+    private fun String.timeOfDay(): String = timeOrNull()?.format(DateTimeFormatter.ofPattern("HH:mm")) ?: ""
 }

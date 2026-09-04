@@ -17,5 +17,6 @@ data class ProfileState(
     val phoneError: String? = null,
     val selectedLanguage: Language = Language.ENGLISH,
     val showLogoutDialog: Boolean = false,
-    val message: String? = null
+    val message: String? = null,
+    val dynamicColorEnabled: Boolean = false
 )

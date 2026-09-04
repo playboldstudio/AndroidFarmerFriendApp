@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.coil.compose)
     implementation(libs.play.app.update.ktx)
+    implementation(libs.play.billing.ktx)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.google.id)

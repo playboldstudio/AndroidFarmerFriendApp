@@ -7,6 +7,7 @@ data class OpenMeteoResponse(
     val longitude: Double?,
     val timezone: String?,
     val current: OpenMeteoCurrent?,
+    val hourly: OpenMeteoHourly?,
     val daily: OpenMeteoDaily?
 )
 
@@ -21,10 +22,20 @@ data class OpenMeteoCurrent(
     @SerializedName("wind_direction_10m") val windDirection: Double?
 )
 
+data class OpenMeteoHourly(
+    val time: List<String>?,
+    @SerializedName("temperature_2m") val temperature: List<Double>?,
+    @SerializedName("weather_code") val weatherCode: List<Int>?,
+    @SerializedName("precipitation_probability") val precipitationProbability: List<Int?>?
+)
+
 data class OpenMeteoDaily(
     val time: List<String>?,
     @SerializedName("temperature_2m_max") val tempMax: List<Double>?,
     @SerializedName("temperature_2m_min") val tempMin: List<Double>?,
     @SerializedName("precipitation_probability_max") val precipitationProbabilityMax: List<Int?>?,
-    @SerializedName("weather_code") val weatherCode: List<Int>?
+    @SerializedName("weather_code") val weatherCode: List<Int>?,
+    val sunrise: List<String>?,
+    val sunset: List<String>?,
+    @SerializedName("wind_speed_10m_max") val windSpeedMax: List<Double>?
 )

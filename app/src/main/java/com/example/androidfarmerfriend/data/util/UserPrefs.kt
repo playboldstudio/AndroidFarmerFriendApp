@@ -19,10 +19,16 @@ class UserPrefs(context: Context) {
         get() = prefs.getString(KEY_EMAIL, DEFAULT_EMAIL) ?: DEFAULT_EMAIL
         set(value) { prefs.edit().putString(KEY_EMAIL, value).commit() }
 
+    /** Wallpaper-derived dynamic color (Android 12+). Off by default. */
+    var dynamicColorEnabled: Boolean
+        get() = prefs.getBoolean(KEY_DYNAMIC_COLOR, false)
+        set(value) { prefs.edit().putBoolean(KEY_DYNAMIC_COLOR, value).commit() }
+
     companion object {
         private const val KEY_NAME = "user_name"
         private const val KEY_PHONE = "user_phone"
         private const val KEY_EMAIL = "user_email"
+        private const val KEY_DYNAMIC_COLOR = "dynamic_color"
 
         const val DEFAULT_NAME = "Farmer"
         const val DEFAULT_PHONE = "9876543210"

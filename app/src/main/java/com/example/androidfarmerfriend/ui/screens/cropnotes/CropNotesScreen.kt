@@ -30,6 +30,7 @@ import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.CropNote
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.ChipOption
+import com.example.androidfarmerfriend.ui.components.CrossfadeUiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.LocPill
@@ -89,10 +90,6 @@ fun CropNotesScreen(
 
             Spacer(Modifier.height(FarmerSpacing.s))
 
-            LocPill(text = strings.cropNotesSubtitle)
-
-            Spacer(Modifier.height(FarmerSpacing.s))
-
             SearchField(
                 value = state.searchQuery,
                 onValueChange = { viewModel.onEvent(CropNoteEvent.Search(it)) },
@@ -118,23 +115,25 @@ fun CropNotesScreen(
                 }
             }
 
-            when (val notesState = state.notesState) {
-                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 120.dp)
-                is UiState.Error -> ErrorState(
-                    message = notesState.message.ifBlank { strings.notesLoadError },
-                    onRetry = { viewModel.onEvent(CropNoteEvent.Retry) },
-                    modifier = Modifier.padding(top = 32.dp)
-                )
-                is UiState.Success -> {
-                    if (state.filteredNotes.isEmpty()) {
-                        EmptyState(icon = Icons.Default.SearchOff, title = strings.noNotes)
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            items(state.filteredNotes, key = { it.id }) { note ->
-                                CropNoteItem(note = note, strings = strings)
+            CrossfadeUiState(state = state.notesState) { notesState ->
+                when (notesState) {
+                    is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 120.dp)
+                    is UiState.Error -> ErrorState(
+                        message = notesState.message.ifBlank { strings.notesLoadError },
+                        onRetry = { viewModel.onEvent(CropNoteEvent.Retry) },
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                    is UiState.Success -> {
+                        if (state.filteredNotes.isEmpty()) {
+                            EmptyState(icon = Icons.Default.SearchOff, title = strings.noNotes)
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                items(state.filteredNotes, key = { it.id }) { note ->
+                                    CropNoteItem(note = note, strings = strings)
+                                }
                             }
                         }
                     }

@@ -4,6 +4,9 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ExperimentalSharedTransitionApi
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -16,6 +19,8 @@ import androidx.compose.material.icons.filled.BarChart
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.CloudOff
 import androidx.compose.material.icons.filled.Diamond
+import androidx.compose.material.icons.filled.ExpandLess
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Eco
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Egg
@@ -27,6 +32,7 @@ import androidx.compose.material.icons.filled.Restaurant
 import androidx.compose.material.icons.filled.ShoppingBasket
 import androidx.compose.material.icons.filled.WbCloudy
 import androidx.compose.material3.*
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.DisposableEffect
@@ -54,17 +60,21 @@ import com.example.androidfarmerfriend.data.localization.LanguagePrefs
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.data.model.Crop
+import com.example.androidfarmerfriend.data.model.ForecastDay
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.data.repository.FirestoreAlertRepository
+import com.example.androidfarmerfriend.ui.components.CrossfadeUiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.FarmTipCard
 import com.example.androidfarmerfriend.ui.components.WeatherFarmTips
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.CompactWeatherCard
+import com.example.androidfarmerfriend.ui.components.DayPill
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.NotificationPermissionBanner
+import com.example.androidfarmerfriend.ui.components.ShimmerBlockList
 import com.example.androidfarmerfriend.ui.components.ShimmerList
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.ui.navigation.Screen
@@ -75,8 +85,11 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
+    sharedTransitionScope: androidx.compose.animation.SharedTransitionScope? = null,
+    animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope? = null,
     onNavigate: (String) -> Unit = {},
     viewModel: HomeViewModel = viewModel()
 ) {
@@ -115,8 +128,14 @@ fun HomeScreen(
         )
     }
 
-    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+    // Honest pull-to-refresh: spinner tracks the real weather UiState.
+    PullToRefreshBox(
+        isRefreshing = state.weatherState is UiState.Loading,
+        onRefresh = { viewModel.onEvent(HomeEvent.Refresh) },
         modifier = Modifier.background(FarmerTheme.colors.background)
+    ) {
+    com.example.androidfarmerfriend.ui.components.CenteredMaxWidth(
+        modifier = Modifier.fillMaxWidth()
     ) {
         Column(
             modifier = Modifier
@@ -148,18 +167,21 @@ fun HomeScreen(
 
         Spacer(Modifier.height(FarmerSpacing.s))
 
-        when (val weatherState = state.weatherState) {
-            is UiState.Loading -> ShimmerList(rowCount = 1, rowHeight = 150.dp)
-            is UiState.Error -> EmptyState(
-                icon = Icons.Default.CloudOff,
-                title = strings.weatherNoData
-            )
-            is UiState.Success -> CompactWeatherCard(
-                weather = weatherState.data,
-                strings = strings,
-                modifier = Modifier.padding(top = FarmerSpacing.s),
-                onClick = { onNavigate(Screen.Weather.route) }
-            )
+        CrossfadeUiState(state = state.weatherState) { weatherState ->
+            when (weatherState) {
+                is UiState.Loading -> ShimmerBlockList(blockHeight = 150.dp)
+                is UiState.Error -> EmptyState(
+                    icon = Icons.Default.CloudOff,
+                    title = strings.weatherNoData
+                )
+                is UiState.Success -> ExpandableWeatherCard(
+                    weather = weatherState.data,
+                    strings = strings,
+                    sharedTransitionScope = sharedTransitionScope,
+                    animatedVisibilityScope = animatedVisibilityScope,
+                    onExpand = { onNavigate(Screen.Weather.route) }
+                )
+            }
         }
 
         Spacer(Modifier.height(FarmerSpacing.md))
@@ -191,7 +213,12 @@ fun HomeScreen(
 
         SectionHeader(title = strings.quickAccess)
 
-        QuickAccessGrid(onNavigate = onNavigate, strings = strings)
+        QuickAccessGrid(
+            onNavigate = onNavigate,
+            strings = strings,
+            alertBadge = unreadCount,
+            marketBadge = state.marketPreview.size
+        )
 
         Spacer(Modifier.height(FarmerSpacing.lg))
 
@@ -203,6 +230,7 @@ fun HomeScreen(
 
         Spacer(Modifier.height(FarmerSpacing.xxl))
         }
+    }
     }
 }
 
@@ -251,7 +279,7 @@ private fun HomeHeader(
         Spacer(Modifier.width(10.dp))
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = strings.appName,
+                text = "Farmer Friend",
                 style = MaterialTheme.typography.titleLarge,
                 color = colors.primary
             )
@@ -421,7 +449,6 @@ private fun MarketPreviewStrip(crops: List<Crop>, onNavigate: (String) -> Unit =
             Column(
                 modifier = Modifier
                     .width(110.dp)
-                    .height(130.dp)
                     .clip(RoundedCornerShape(18.dp))
                     .background(colors.softGreen)
                     .border(1.dp, colors.primary.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
@@ -459,7 +486,12 @@ data class QuickActionItem(
 )
 
 @Composable
-fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = AppStrings.English) {
+fun QuickAccessGrid(
+    onNavigate: (String) -> Unit = {},
+    strings: AppStrings = AppStrings.English,
+    alertBadge: Int = 0,
+    marketBadge: Int = 0
+) {
     val colors = FarmerTheme.colors
     val items = listOf(
         QuickActionItem(strings.navMarket, Icons.Default.BarChart, colors.primary, colors.softMint, Screen.Market.route),
@@ -474,7 +506,12 @@ fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = App
         items.chunked(3).forEach { rowItems ->
             Row(horizontalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
                 rowItems.forEach { item ->
-                    QuickAccessTile(item, onNavigate, Modifier.weight(1f))
+                    val badge = when (item.route) {
+                        Screen.Alerts.route -> alertBadge
+                        Screen.Market.route -> marketBadge
+                        else -> 0
+                    }
+                    QuickAccessTile(item, onNavigate, Modifier.weight(1f), badge = badge)
                 }
                 if (rowItems.size < 3) {
                     repeat(3 - rowItems.size) { Spacer(modifier = Modifier.weight(1f)) }
@@ -488,7 +525,8 @@ fun QuickAccessGrid(onNavigate: (String) -> Unit = {}, strings: AppStrings = App
 private fun QuickAccessTile(
     item: QuickActionItem,
     onNavigate: (String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    badge: Int = 0
 ) {
     val colors = FarmerTheme.colors
     Column(
@@ -505,6 +543,25 @@ private fun QuickAccessTile(
             contentAlignment = Alignment.Center
         ) {
             Icon(item.icon, contentDescription = item.title, tint = item.tint, modifier = Modifier.size(21.dp))
+            // Numeric badge — shows unread alerts or market item count.
+            if (badge > 0) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .offset(x = 4.dp, y = (-4).dp)
+                        .size(18.dp)
+                        .background(colors.alertRed, CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(
+                        text = if (badge > 9) "9+" else "$badge",
+                        color = Color.White,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                        fontWeight = FontWeight.Bold,
+                        maxLines = 1
+                    )
+                }
+            }
         }
         Spacer(Modifier.height(8.dp))
         Text(
@@ -515,6 +572,102 @@ private fun QuickAccessTile(
             textAlign = TextAlign.Center,
             maxLines = 2,
             overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+
+/**
+ * Home weather card that expands in-place to show a 3-day mini-forecast.
+ * Tapping the card itself navigates to the full Weather screen.
+ */
+@OptIn(ExperimentalSharedTransitionApi::class)
+@Composable
+private fun ExpandableWeatherCard(
+    weather: WeatherInfo,
+    strings: AppStrings,
+    sharedTransitionScope: androidx.compose.animation.SharedTransitionScope?,
+    animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope?,
+    onExpand: () -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val previewDays = weather.forecast.take(3)
+
+    // No shared-element transition: it renders on its own overlay layer and,
+    // paired with the weather screen's crossfaded scrolling column, caused the
+    // card to overlap the sections below it. The expand/collapse animation
+    // (animateContentSize) and the mini-forecast reveal are kept.
+    val cardModifier = Modifier
+        .animateContentSize()
+        .padding(top = FarmerSpacing.s)
+
+    Column(modifier = cardModifier) {
+        Box {
+            CompactWeatherCard(
+                weather = weather,
+                strings = strings,
+                onClick = onExpand
+            )
+            // Chevron hint in the bottom-right corner.
+            if (previewDays.isNotEmpty()) {
+                Icon(
+                    imageVector = if (expanded)
+                        Icons.Default.ExpandLess
+                    else
+                        Icons.Default.ExpandMore,
+                    contentDescription = if (expanded) strings.viewAllLabel else strings.viewAllLabel,
+                    tint = Color.White.copy(alpha = 0.8f),
+                    modifier = Modifier
+                        .align(Alignment.BottomEnd)
+                        .padding(end = 14.dp, bottom = 10.dp)
+                        .size(22.dp)
+                        .clickable { expanded = !expanded }
+                )
+            }
+        }
+
+        AnimatedVisibility(visible = expanded && previewDays.isNotEmpty()) {
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(FarmerSpacing.s),
+                modifier = Modifier.padding(top = FarmerSpacing.s)
+            ) {
+                previewDays.forEach { day ->
+                    MiniForecastTile(day = day, modifier = Modifier.weight(1f))
+                }
+            }
+        }
+    }
+}
+
+/** Compact tile for the home expandable-weather mini forecast. */
+@Composable
+private fun MiniForecastTile(day: ForecastDay, modifier: Modifier = Modifier) {
+    val colors = FarmerTheme.colors
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = modifier
+            .background(colors.surface, RoundedCornerShape(16.dp))
+            .padding(vertical = FarmerSpacing.s, horizontal = FarmerSpacing.xs),
+        verticalArrangement = Arrangement.spacedBy(FarmerSpacing.xs)
+    ) {
+        Text(
+            text = day.day,
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.textSecondary,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+        Icon(
+            weatherIconFor(day.weatherCode),
+            contentDescription = null,
+            tint = colors.textPrimary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = "${day.maxTemp} / ${day.minTemp}",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = colors.textPrimary,
+            maxLines = 1
         )
     }
 }

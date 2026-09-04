@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Sync
@@ -53,6 +54,8 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -90,6 +93,7 @@ private const val NAME_MAX_LENGTH = 30
 @Composable
 fun ProfileScreen(
     onNavigate: (String) -> Unit = {},
+    onRestart: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
     val strings = LocalAppStrings.current
@@ -197,6 +201,15 @@ fun ProfileScreen(
                             onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) }
                         )
                     }
+
+                    ThemeSection(
+                        strings = strings,
+                        dynamicColorEnabled = state.dynamicColorEnabled,
+                        onToggle = { enabled ->
+                            viewModel.onEvent(ProfileEvent.ToggleDynamicColor(enabled))
+                            onRestart()
+                        }
+                    )
                 } else {
                     GuestHero(strings = strings)
 
@@ -633,6 +646,56 @@ private fun EditPillButton(onClick: () -> Unit, label: String) {
 }
 
 /* ------------------------------ Menus ---------------------------- */
+
+/**
+ * Appearance section: a dynamic-color opt-in (wallpaper-derived palette on
+ * Android 12+). Hidden on devices below API 31 where dynamic color is
+ * unavailable. Toggling persists the choice and recreates the activity so the
+ * theme reapplies across every screen.
+ */
+@Composable
+private fun ThemeSection(
+    strings: AppStrings,
+    dynamicColorEnabled: Boolean,
+    onToggle: (Boolean) -> Unit
+) {
+    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
+
+    val colors = FarmerTheme.colors
+    MenuSection(title = strings.appearanceSection) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TintedIconTile(
+                icon = Icons.Default.Palette,
+                tint = colors.alertPurple,
+                container = colors.softPurple
+            )
+            Spacer(Modifier.width(FarmerSpacing.md))
+            Text(
+                text = strings.dynamicColorLabel,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+            Switch(
+                checked = dynamicColorEnabled,
+                onCheckedChange = onToggle,
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = colors.onPrimary,
+                    checkedTrackColor = colors.primary,
+                    uncheckedThumbColor = colors.textSecondary,
+                    uncheckedTrackColor = colors.surfaceMuted,
+                    uncheckedBorderColor = colors.outline
+                )
+            )
+        }
+    }
+}
 
 @Composable
 private fun MenuSection(

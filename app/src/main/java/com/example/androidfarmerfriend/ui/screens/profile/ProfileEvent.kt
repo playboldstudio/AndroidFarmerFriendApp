@@ -20,4 +20,5 @@ sealed interface ProfileEvent {
     data class UpdateTempPhone(val phone: String) : ProfileEvent
     
     data object DismissMessage : ProfileEvent
+    data class ToggleDynamicColor(val enabled: Boolean) : ProfileEvent
 }

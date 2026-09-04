@@ -30,7 +30,11 @@ data class WeatherInfo(
     val todayHigh: String = "",
     val todayLow: String = "",
     val weatherCode: Int = 0,
-    val forecast: List<ForecastDay> = emptyList()
+    val forecast: List<ForecastDay> = emptyList(),
+    /** Hourly forecast for the next few hours, from Open-Meteo. */
+    val hourly: List<HourlyForecast> = emptyList(),
+    val sunrise: String = "",
+    val sunset: String = ""
 )
 
 data class ForecastDay(
@@ -38,6 +42,14 @@ data class ForecastDay(
     val maxTemp: String,
     val minTemp: String,
     val weatherCode: Int
+)
+
+/** One hour in the upcoming-hourly strip. */
+data class HourlyForecast(
+    val hourLabel: String,
+    val temp: String,
+    val weatherCode: Int,
+    val rainChance: Int?
 )
 
 data class QuickAction(

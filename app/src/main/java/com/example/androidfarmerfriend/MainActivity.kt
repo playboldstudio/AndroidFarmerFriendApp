@@ -17,6 +17,7 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LanguagePrefs
+import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.components.UpdateBannerCard
 import com.example.androidfarmerfriend.ui.screens.MainScreen
 import com.example.androidfarmerfriend.ui.screens.SplashScreen
@@ -79,7 +80,8 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { systemSplashVisible }
 
         setContent {
-            AndroidFarmerFriendTheme {
+            val dynamicColor = UserPrefs(this).dynamicColorEnabled
+            AndroidFarmerFriendTheme(dynamicColor = dynamicColor) {
                 if (composeSplashVisible) {
                     SplashScreen(
                         onReady = { systemSplashVisible = false },
