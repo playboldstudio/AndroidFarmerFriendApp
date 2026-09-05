@@ -191,10 +191,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             }
             composable(Screen.Market.route) { MarketScreen() }
             composable(Screen.Weather.route) {
-                WeatherScreen(
-                    sharedTransitionScope = sharedScope,
-                    animatedVisibilityScope = this
-                )
+                WeatherScreen()
             }
             composable(Screen.Alerts.route) {
                 AlertsScreen(

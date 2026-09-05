@@ -56,7 +56,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             locationName = locationPrefs.selectedLocation.name,
             languageLabel = language.displayEnglish,
             selectedLanguage = language,
-            dynamicColorEnabled = userPrefs.dynamicColorEnabled
+            themeMode = userPrefs.themeMode
         )
     }
 
@@ -200,9 +200,9 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
                 userPrefs.userPhone = UserPrefs.DEFAULT_PHONE
                 userPrefs.userEmail = UserPrefs.DEFAULT_EMAIL
             }
-            is ProfileEvent.ToggleDynamicColor -> {
-                userPrefs.dynamicColorEnabled = event.enabled
-                _state.value = _state.value.copy(dynamicColorEnabled = event.enabled)
+            is ProfileEvent.SelectThemeMode -> {
+                userPrefs.themeMode = event.mode
+                _state.value = _state.value.copy(themeMode = event.mode)
             }
         }
     }
@@ -258,7 +258,7 @@ class ProfileViewModel(application: Application) : AndroidViewModel(application)
             displayName = displayName(freshState.userName, language),
             languageLabel = language.displayEnglish,
             selectedLanguage = language,
-            dynamicColorEnabled = userPrefs.dynamicColorEnabled
+            themeMode = userPrefs.themeMode
         )
         val firebaseUser = auth.currentUser
         if (firebaseUser != null) {

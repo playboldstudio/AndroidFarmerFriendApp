@@ -22,7 +22,6 @@ import androidx.compose.material.icons.filled.Diamond
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.filled.Eco
-import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Egg
 import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.MenuBook
@@ -208,7 +207,7 @@ fun HomeScreen(
                     modifier = Modifier.clickable { onNavigate(Screen.Market.route) }
                 )
             }
-            MarketPreviewStrip(crops = state.marketPreview, onNavigate = onNavigate)
+            MarketPreviewStrip(crops = state.marketPreview)
         }
 
         SectionHeader(title = strings.quickAccess)
@@ -373,7 +372,7 @@ private fun SectionHeader(
 }
 
 @Composable
-private fun MarketPreviewStrip(crops: List<Crop>, onNavigate: (String) -> Unit = {}) {
+private fun MarketPreviewStrip(crops: List<Crop>) {
     val colors = FarmerTheme.colors
     LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         items(crops.size) { index ->
@@ -440,36 +439,6 @@ private fun MarketPreviewStrip(crops: List<Crop>, onNavigate: (String) -> Unit =
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.ExtraBold,
                     color = colors.primaryDeep,
-                    textAlign = TextAlign.Center
-                )
-            }
-        }
-        // "See All" card at the end of the strip
-        item {
-            Column(
-                modifier = Modifier
-                    .width(110.dp)
-                    .clip(RoundedCornerShape(18.dp))
-                    .background(colors.softGreen)
-                    .border(1.dp, colors.primary.copy(alpha = 0.3f), RoundedCornerShape(18.dp))
-                    .clickable { onNavigate(Screen.Market.route) }
-                    .padding(12.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.Center
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.ArrowForward,
-                    contentDescription = null,
-                    tint = colors.primaryDeep,
-                    modifier = Modifier.size(28.dp)
-                )
-                Spacer(Modifier.height(6.dp))
-                Text(
-                    text = "View All",
-                    style = MaterialTheme.typography.labelMedium,
-                    fontWeight = FontWeight.Bold,
-                    color = colors.primaryDeep,
-                    maxLines = 1,
                     textAlign = TextAlign.Center
                 )
             }

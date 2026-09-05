@@ -1,26 +1,32 @@
 package com.example.androidfarmerfriend.ui.theme
 
-import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
+import com.example.androidfarmerfriend.data.util.UserPrefs
+
+/** The user's theme preference: follow the system, or force light/dark. */
+enum class ThemeMode(val key: String) {
+    SYSTEM(UserPrefs.THEME_SYSTEM),
+    LIGHT(UserPrefs.THEME_LIGHT),
+    DARK(UserPrefs.THEME_DARK);
+
+    companion object {
+        fun fromKey(key: String?): ThemeMode =
+            entries.firstOrNull { it.key == key } ?: SYSTEM
+    }
+}
 
 // Design-system tokens made available via CompositionLocal.
 val LocalFarmerColors = staticCompositionLocalOf { LightFarmerColors }
-
-/** True when the user has opted in to wallpaper-derived dynamic color. */
-val LocalDynamicColorEnabled = staticCompositionLocalOf { false }
 
 // Accessor: FarmerTheme.colors from anywhere under the theme.
 object FarmerTheme {
@@ -40,21 +46,17 @@ private val FarmerShapes = Shapes(
 
 @Composable
 fun AndroidFarmerFriendTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = false,
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
     val farmerColors = if (darkTheme) DarkFarmerColors else LightFarmerColors
 
-    // Dynamic color: wallpaper-derived M3 palette on Android 12+ (API 31).
-    // When enabled, the M3 colorScheme uses the device wallpaper palette while
-    // FarmerTheme.colors (our custom token set) stays unchanged — the two systems
-    // coexist: M3 components use the dynamic scheme, our custom composables use
-    // FarmerTheme.colors.
-    val useDynamic = dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     val colorScheme = when {
-        useDynamic && darkTheme -> dynamicDarkColorScheme(LocalContext.current)
-        useDynamic -> dynamicLightColorScheme(LocalContext.current)
         darkTheme -> darkColorScheme(
             primary = farmerColors.primary,
             onPrimary = farmerColors.onPrimary,
@@ -106,8 +108,7 @@ fun AndroidFarmerFriendTheme(
     }
 
     CompositionLocalProvider(
-        LocalFarmerColors provides farmerColors,
-        LocalDynamicColorEnabled provides dynamicColor
+        LocalFarmerColors provides farmerColors
     ) {
         MaterialTheme(
             colorScheme = colorScheme,

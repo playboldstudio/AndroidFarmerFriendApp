@@ -57,8 +57,6 @@ import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
 fun WeatherScreen(
-    sharedTransitionScope: androidx.compose.animation.SharedTransitionScope? = null,
-    animatedVisibilityScope: androidx.compose.animation.AnimatedVisibilityScope? = null,
     viewModel: WeatherViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()

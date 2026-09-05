@@ -18,5 +18,5 @@ data class ProfileState(
     val selectedLanguage: Language = Language.ENGLISH,
     val showLogoutDialog: Boolean = false,
     val message: String? = null,
-    val dynamicColorEnabled: Boolean = false
+    val themeMode: String = "system"
 )

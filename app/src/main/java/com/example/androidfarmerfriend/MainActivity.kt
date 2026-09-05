@@ -22,6 +22,7 @@ import com.example.androidfarmerfriend.ui.components.UpdateBannerCard
 import com.example.androidfarmerfriend.ui.screens.MainScreen
 import com.example.androidfarmerfriend.ui.screens.SplashScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.ThemeMode
 import com.example.androidfarmerfriend.util.InAppUpdateHelper
 import com.example.androidfarmerfriend.util.UpdateBanner
 
@@ -80,8 +81,9 @@ class MainActivity : ComponentActivity() {
         splashScreen.setKeepOnScreenCondition { systemSplashVisible }
 
         setContent {
-            val dynamicColor = UserPrefs(this).dynamicColorEnabled
-            AndroidFarmerFriendTheme(dynamicColor = dynamicColor) {
+            val userPrefs = UserPrefs(this)
+            val themeMode = ThemeMode.fromKey(userPrefs.themeMode)
+            AndroidFarmerFriendTheme(themeMode = themeMode) {
                 if (composeSplashVisible) {
                     SplashScreen(
                         onReady = { systemSplashVisible = false },

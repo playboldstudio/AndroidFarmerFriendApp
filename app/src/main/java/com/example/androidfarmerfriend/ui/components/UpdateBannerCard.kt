@@ -34,8 +34,10 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.androidfarmerfriend.data.localization.AppStrings
+import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 import com.example.androidfarmerfriend.util.UpdateBanner
@@ -246,5 +248,45 @@ private fun UpdateDialogButtons(
                 )
             }
         }
+    }
+}
+
+// Previews for the three flexible-update states.
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun UpdateBannerCardAvailablePreview() {
+    AndroidFarmerFriendTheme {
+        UpdateBannerCard(
+            banner = UpdateBanner.Available,
+            strings = AppStrings.English,
+            onAction = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun UpdateBannerCardDownloadingPreview() {
+    AndroidFarmerFriendTheme {
+        UpdateBannerCard(
+            banner = UpdateBanner.Downloading,
+            strings = AppStrings.English,
+            onAction = {},
+            onDismiss = {}
+        )
+    }
+}
+
+@Preview(showBackground = true, widthDp = 360)
+@Composable
+private fun UpdateBannerCardReadyPreview() {
+    AndroidFarmerFriendTheme {
+        UpdateBannerCard(
+            banner = UpdateBanner.ReadyToInstall,
+            strings = AppStrings.English,
+            onAction = {},
+            onDismiss = {}
+        )
     }
 }

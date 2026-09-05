@@ -52,10 +52,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -78,6 +79,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.BuildConfig
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
+import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.screens.auth.AuthMode
@@ -204,9 +206,9 @@ fun ProfileScreen(
 
                     ThemeSection(
                         strings = strings,
-                        dynamicColorEnabled = state.dynamicColorEnabled,
-                        onToggle = { enabled ->
-                            viewModel.onEvent(ProfileEvent.ToggleDynamicColor(enabled))
+                        themeMode = state.themeMode,
+                        onSelectThemeMode = { mode ->
+                            viewModel.onEvent(ProfileEvent.SelectThemeMode(mode))
                             onRestart()
                         }
                     )
@@ -648,19 +650,16 @@ private fun EditPillButton(onClick: () -> Unit, label: String) {
 /* ------------------------------ Menus ---------------------------- */
 
 /**
- * Appearance section: a dynamic-color opt-in (wallpaper-derived palette on
- * Android 12+). Hidden on devices below API 31 where dynamic color is
- * unavailable. Toggling persists the choice and recreates the activity so the
- * theme reapplies across every screen.
+ * Appearance section: a System / Light / Dark theme choice (works on every
+ * API level). Selecting an option persists the choice and recreates the
+ * activity so the theme reapplies across every screen.
  */
 @Composable
 private fun ThemeSection(
     strings: AppStrings,
-    dynamicColorEnabled: Boolean,
-    onToggle: (Boolean) -> Unit
+    themeMode: String,
+    onSelectThemeMode: (String) -> Unit
 ) {
-    if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) return
-
     val colors = FarmerTheme.colors
     MenuSection(title = strings.appearanceSection) {
         Row(
@@ -676,23 +675,48 @@ private fun ThemeSection(
             )
             Spacer(Modifier.width(FarmerSpacing.md))
             Text(
-                text = strings.dynamicColorLabel,
+                text = strings.themeLabel,
                 style = MaterialTheme.typography.labelLarge,
                 fontWeight = FontWeight.SemiBold,
                 color = colors.textPrimary,
                 modifier = Modifier.weight(1f)
             )
-            Switch(
-                checked = dynamicColorEnabled,
-                onCheckedChange = onToggle,
-                colors = SwitchDefaults.colors(
-                    checkedThumbColor = colors.onPrimary,
-                    checkedTrackColor = colors.primary,
-                    uncheckedThumbColor = colors.textSecondary,
-                    uncheckedTrackColor = colors.surfaceMuted,
-                    uncheckedBorderColor = colors.outline
-                )
+        }
+        // SegmentedButton for the exclusive 3-option theme choice (M3 §5.7).
+        // M3 draws the check on the selected segment (non-color cue, R6.8) —
+        // do not add a second icon manually or the selection shows two checks.
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 14.dp)
+        ) {
+            val options = listOf(
+                strings.themeSystem to UserPrefs.THEME_SYSTEM,
+                strings.themeLight to UserPrefs.THEME_LIGHT,
+                strings.themeDark to UserPrefs.THEME_DARK
             )
+            options.forEachIndexed { index, (label, key) ->
+                SegmentedButton(
+                    selected = themeMode == key,
+                    onClick = { onSelectThemeMode(key) },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = options.size
+                    ),
+                    icon = {
+                        // Built-in check on the active segment only.
+                        SegmentedButtonDefaults.Icon(active = themeMode == key)
+                    },
+                    label = {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                )
+            }
         }
     }
 }
