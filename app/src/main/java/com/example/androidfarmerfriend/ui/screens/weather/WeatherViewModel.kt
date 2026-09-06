@@ -50,6 +50,10 @@ class WeatherViewModel(application: Application) : AndroidViewModel(application)
                 val loc = _state.value.selectedLocation ?: return
                 loadWeather(loc)
             }
+            is WeatherEvent.Refresh -> {
+                val loc = _state.value.selectedLocation ?: return
+                loadWeather(loc)
+            }
         }
     }
 

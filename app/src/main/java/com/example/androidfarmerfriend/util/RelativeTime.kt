@@ -20,3 +20,23 @@ fun relativeTimeLabel(timestamp: Long, strings: AppStrings): String {
         else -> SimpleDateFormat("dd MMM", Locale.getDefault()).format(Date(timestamp))
     }
 }
+
+/**
+ * Ultra-compact relative timestamp for tight UI slots (alert end-caps, badges).
+ * Uses numeric letter-suffix form ("5m", "3h", "2d") so it stays short across
+ * all languages — long-form translations ("5 நிமிடத்திற்கு முன்") overflow pills.
+ */
+fun relativeTimeShort(timestamp: Long): String {
+    val diff = System.currentTimeMillis() - timestamp
+    val minutes = diff / 60000
+    val hours = diff / 3600000
+    val days = diff / 86400000
+
+    return when {
+        minutes < 1 -> "now"
+        minutes < 60 -> "${minutes}m"
+        hours < 24 -> "${hours}h"
+        days < 365 -> "${days}d"
+        else -> "${days / 365}y"
+    }
+}

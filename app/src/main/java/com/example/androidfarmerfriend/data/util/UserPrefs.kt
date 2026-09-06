@@ -19,10 +19,21 @@ class UserPrefs(context: Context) {
         get() = prefs.getString(KEY_EMAIL, DEFAULT_EMAIL) ?: DEFAULT_EMAIL
         set(value) { prefs.edit().putString(KEY_EMAIL, value).commit() }
 
+    /** Theme mode chosen by the user: "system", "light", or "dark". */
+    var themeMode: String
+        get() = prefs.getString(KEY_THEME_MODE, THEME_SYSTEM) ?: THEME_SYSTEM
+        set(value) { prefs.edit().putString(KEY_THEME_MODE, value).commit() }
+
     companion object {
         private const val KEY_NAME = "user_name"
         private const val KEY_PHONE = "user_phone"
         private const val KEY_EMAIL = "user_email"
+        private const val KEY_THEME_MODE = "theme_mode"
+
+        /** Theme-mode identifiers — mirror [com.example.androidfarmerfriend.ui.theme.ThemeMode]. */
+        const val THEME_SYSTEM = "system"
+        const val THEME_LIGHT = "light"
+        const val THEME_DARK = "dark"
 
         const val DEFAULT_NAME = "Farmer"
         const val DEFAULT_PHONE = "9876543210"

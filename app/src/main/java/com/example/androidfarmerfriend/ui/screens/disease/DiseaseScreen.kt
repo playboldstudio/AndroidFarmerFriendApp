@@ -20,6 +20,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.Disease
 import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.ui.components.CrossfadeUiState
 import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.SubScreenHeader
@@ -68,6 +69,7 @@ fun DiseaseScreen(
         Column(
             modifier = Modifier
                 .fillMaxSize()
+                .imePadding()
                 .background(colors.background)
                 .padding(horizontal = 16.dp)
         ) {
@@ -85,26 +87,28 @@ fun DiseaseScreen(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            when (val diseaseState = state.diseasesState) {
-                is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 72.dp, modifier = Modifier.padding(top = 16.dp))
-                is UiState.Error -> ErrorState(
-                    message = diseaseState.message.ifBlank { strings.diseaseLoadError },
-                    onRetry = { viewModel.onEvent(DiseaseEvent.Retry) },
-                    modifier = Modifier.padding(top = 32.dp)
-                )
-                is UiState.Success -> {
-                    if (state.filteredDiseases.isEmpty()) {
-                        EmptyState(
-                            icon = Icons.Default.SearchOff,
-                            title = strings.noDiseases
-                        )
-                    } else {
-                        LazyColumn(
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
-                            contentPadding = PaddingValues(bottom = 16.dp)
-                        ) {
-                            items(state.filteredDiseases, key = { it.id }) { disease ->
-                                DiseaseItem(disease)
+            CrossfadeUiState(state = state.diseasesState) { diseaseState ->
+                when (diseaseState) {
+                    is UiState.Loading -> ShimmerList(rowCount = 4, rowHeight = 72.dp, modifier = Modifier.padding(top = 16.dp))
+                    is UiState.Error -> ErrorState(
+                        message = diseaseState.message.ifBlank { strings.diseaseLoadError },
+                        onRetry = { viewModel.onEvent(DiseaseEvent.Retry) },
+                        modifier = Modifier.padding(top = 32.dp)
+                    )
+                    is UiState.Success -> {
+                        if (state.filteredDiseases.isEmpty()) {
+                            EmptyState(
+                                icon = Icons.Default.SearchOff,
+                                title = strings.noDiseases
+                            )
+                        } else {
+                            LazyColumn(
+                                verticalArrangement = Arrangement.spacedBy(10.dp),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+                                items(state.filteredDiseases, key = { it.id }) { disease ->
+                                    DiseaseItem(disease)
+                                }
                             }
                         }
                     }
@@ -121,7 +125,7 @@ fun DiseaseItem(disease: Disease) {
     val colors = FarmerTheme.colors
     RowCard(
         title = disease.name,
-        subtitle = disease.cropAffected.ifBlank { null },
+        subtitle = disease.excerpt.ifBlank { disease.cropAffected.ifBlank { null } },
         icon = Icons.Default.BugReport,
         iconTint = colors.diseaseOrange,
         iconContainer = colors.softOrange,

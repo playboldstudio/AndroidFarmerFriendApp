@@ -3,6 +3,7 @@ package com.example.androidfarmerfriend.ui.screens.home
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.androidfarmerfriend.data.api.NetworkErrors
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.example.androidfarmerfriend.data.location.SelectedLocation
@@ -10,6 +11,7 @@ import com.example.androidfarmerfriend.data.repository.FarmerRepository
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.components.loadWeatherState
+import java.util.Calendar
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -44,6 +46,11 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val loc = _state.value.selectedLocation ?: return
                 loadWeather(loc)
             }
+            is HomeEvent.Refresh -> {
+                val loc = _state.value.selectedLocation ?: return
+                loadWeather(loc)
+                loadMarketPreview(loc)
+            }
         }
     }
 
@@ -72,18 +79,27 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                 val crops = repository.getVegetablePrices(slug)
                     .ifEmpty { repository.getVegetablePrices("koyambedu") }
                 _state.value = _state.value.copy(marketPreview = crops.take(4))
-            } catch (_: Exception) {
-                // Preview is optional; home works without it.
+            } catch (e: Exception) {
+                // Preview is optional; home works without it — but still report the failure.
+                NetworkErrors.record("HomeViewModel.loadMarketPreview", e)
             }
         }
     }
 
     private fun refreshGreeting() {
         val name = personalizedName(userPrefs.userName)
+        val base = timeGreeting()
         _state.value = _state.value.copy(
             greetingName = name,
-            greeting = if (name != null) "${strings.welcomeBack}, $name" else strings.welcomeBack
+            greeting = if (name != null) "$base, $name" else base
         )
+    }
+
+    /** Picks the greeting to match the current time of day (morning / afternoon / evening). */
+    private fun timeGreeting(): String = when (Calendar.getInstance().get(Calendar.HOUR_OF_DAY)) {
+        in 5..11 -> strings.goodMorning
+        in 12..16 -> strings.goodAfternoon
+        else -> strings.goodEvening
     }
 
     private fun loadWeather(location: SelectedLocation) {

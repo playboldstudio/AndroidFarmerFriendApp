@@ -18,12 +18,20 @@ enum class FilterType(val id: String, val displayKey: (AppStrings) -> String) {
     }
 }
 
+enum class SortOrder(val label: (AppStrings) -> String) {
+    NAME_ASC({ it.sortNameAZ }),
+    NAME_DESC({ it.sortNameZA }),
+    PRICE_LOW({ it.sortPriceLow }),
+    PRICE_HIGH({ it.sortPriceHigh });
+}
+
 data class MarketState(
     val cropsState: UiState<List<Crop>> = UiState.Loading,
     val selectedFilter: FilterType = FilterType.VEGETABLES,
     val selectedMarket: MarketOption = MarketData.defaultMarketForCategory(FilterType.VEGETABLES),
     val searchQuery: String = "",
     val fetchDate: String = "",
+    val sortBy: SortOrder = SortOrder.NAME_ASC,
     /** Derived in the ViewModel whenever search/filter/data change — not recomputed per read. */
     val filteredCrops: List<Crop> = emptyList()
 )

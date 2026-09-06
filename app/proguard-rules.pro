@@ -17,6 +17,17 @@
 -keep class com.example.androidfarmerfriend.data.scraper.** { *; }
 -keep class com.example.androidfarmerfriend.data.location.** { *; }
 
+# --- Generic Gson wrappers (defense-in-depth) ---
+# These are already covered by the package keeps above, but R8 generic
+# stripping has historically crashed release builds on this project (see the
+# v1.5.0 OfflineCache issue). Pin the generic wrappers + their DTOs explicitly
+# so Gson's reflective, by-field-name deserialization can never be broken by
+# R8 renaming/removing members or generic signatures.
+-keep class com.example.androidfarmerfriend.data.api.VegetableMarketResponse { *; }
+-keep class com.example.androidfarmerfriend.data.api.ItemImageTable { *; }
+-keep class com.example.androidfarmerfriend.data.scraper.WikipediaSearchResult { *; }
+-keep class com.example.androidfarmerfriend.data.scraper.WikipediaPage { *; }
+
 # Jsoup rules
 -keep class org.jsoup.** { *; }
 

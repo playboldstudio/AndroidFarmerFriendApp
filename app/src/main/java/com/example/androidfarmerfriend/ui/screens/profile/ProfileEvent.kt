@@ -20,4 +20,5 @@ sealed interface ProfileEvent {
     data class UpdateTempPhone(val phone: String) : ProfileEvent
     
     data object DismissMessage : ProfileEvent
+    data class SelectThemeMode(val mode: String) : ProfileEvent
 }

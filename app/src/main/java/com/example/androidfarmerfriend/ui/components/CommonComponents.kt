@@ -15,6 +15,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -22,7 +28,9 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import com.example.androidfarmerfriend.util.NetworkUtil
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalHapticFeedback
 import kotlinx.coroutines.delay
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -37,6 +45,7 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
@@ -45,8 +54,9 @@ import androidx.compose.ui.unit.sp
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.WeatherInfo
+import com.example.androidfarmerfriend.data.util.UiState
+import com.example.androidfarmerfriend.ui.theme.FarmerMotion
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
-import com.example.androidfarmerfriend.ui.theme.TrendRed
 import kotlin.math.abs
 
 /* ------------------------------------------------------------------ */
@@ -94,6 +104,8 @@ fun HeroTitle(
         text = annotated,
         color = colors.textPrimary,
         style = MaterialTheme.typography.headlineMedium,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis,
         modifier = modifier
     )
 }
@@ -159,7 +171,9 @@ fun LocPill(
         Text(
             text = text,
             color = colors.textSecondary,
-            style = MaterialTheme.typography.labelMedium
+            style = MaterialTheme.typography.labelMedium,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Spacer(modifier = Modifier.width(3.dp))
         if (onClick != null) {
@@ -173,20 +187,22 @@ fun LocPill(
     }
 }
 
-/** Muted search field — matches `.search`. */
+/** Muted search field — matches `.search`. Optional [trailing] content is
+ *  rendered at the end of the field so a sort/filter control can share the row. */
 @Composable
 fun SearchField(
     value: String,
     onValueChange: (String) -> Unit,
     placeholder: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null
 ) {
     val colors = FarmerTheme.colors
     Row(
         modifier = modifier
             .fillMaxWidth()
             .background(colors.surfaceMuted, RoundedCornerShape(15.dp))
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .padding(horizontal = 14.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Icon(
@@ -232,6 +248,10 @@ fun SearchField(
                 )
             }
         }
+        if (trailing != null) {
+            Spacer(modifier = Modifier.width(4.dp))
+            trailing()
+        }
     }
 }
 
@@ -269,7 +289,8 @@ fun PillChipGroup(
     }
 }
 
-/** Single pill chip with optional icon. */
+/** Single pill chip with optional icon. Selection colors animate so a filter
+ *  change visibly settles instead of swapping instantly. */
 @Composable
 fun PillChip(
     option: ChipOption,
@@ -277,16 +298,32 @@ fun PillChip(
     onClick: () -> Unit
 ) {
     val colors = FarmerTheme.colors
-    val bg = if (selected) colors.primary else colors.surface
-    val fg = if (selected) colors.onPrimary else colors.textSecondary
-    val border = if (selected) colors.primary else colors.outline
+    val haptics = LocalHapticFeedback.current
+    val bg by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.surface,
+        animationSpec = tween(durationMillis = FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate),
+        label = "pillBg"
+    )
+    val fg by animateColorAsState(
+        targetValue = if (selected) colors.onPrimary else colors.textSecondary,
+        animationSpec = tween(durationMillis = FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate),
+        label = "pillFg"
+    )
+    val border by animateColorAsState(
+        targetValue = if (selected) colors.primary else colors.outline,
+        animationSpec = tween(durationMillis = FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate),
+        label = "pillBorder"
+    )
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .clip(RoundedCornerShape(999.dp))
             .background(bg)
             .border(BorderStroke(1.dp, border), RoundedCornerShape(999.dp))
-            .clickable(onClick = onClick)
+            .clickable {
+                haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                onClick()
+            }
             .padding(horizontal = 14.dp, vertical = 7.dp)
     ) {
         if (option.icon != null) {
@@ -302,8 +339,40 @@ fun PillChip(
             text = option.label,
             color = fg,
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.SemiBold
+            fontWeight = FontWeight.SemiBold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
+    }
+}
+/* ------------------------------------------------------------------ */
+/* Crossfading state blocks (G3)                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Crossfades between the Loading / Error / Success branches of a [UiState].
+ * Wrap an existing `when (state)` block with this so state swaps (load → data,
+ * error → retry) settle calmly instead of blinking. Content renders from the
+ * animated slot's captured state (the lambda parameter), not the live field,
+ * which is what makes the fade visible rather than a no-op.
+ */
+@Composable
+fun <T> CrossfadeUiState(
+    state: UiState<T>,
+    modifier: Modifier = Modifier,
+    content: @Composable (UiState<T>) -> Unit
+) {
+    AnimatedContent(
+        targetState = state,
+        modifier = modifier,
+        transitionSpec = {
+            (fadeIn(animationSpec = tween(FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate))
+                togetherWith
+                fadeOut(animationSpec = tween(FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate)))
+        },
+        label = "uiStateCrossfade"
+    ) { currentState ->
+        content(currentState)
     }
 }
 /* ------------------------------------------------------------------ */
@@ -382,7 +451,8 @@ fun RowCard(
                     text = title,
                     color = colors.textPrimary,
                     style = MaterialTheme.typography.titleSmall,
-                    maxLines = 2
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis
                 )
                 if (subtitle != null) {
                     Spacer(modifier = Modifier.height(2.dp))
@@ -390,7 +460,8 @@ fun RowCard(
                         text = subtitle,
                         color = colors.textSecondary,
                         style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp),
-                        maxLines = 2
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
                     )
                 }
             }
@@ -402,28 +473,47 @@ fun RowCard(
     }
 }
 
-/** Rising / falling percent tag — matches `.trend.up` / `.trend.down`. */
+/**
+ * Rising / falling percent tag — matches `.trend.up` / `.trend.down`.
+ *
+ * Uses a real arrow icon + percentage + soft tint so direction reads by icon
+ * and text, not color alone (a11y). Egg is the only category that supplies
+ * trend data ([Crop.priceDiffPercent]), so this is the app's sole price
+ * "signal" and is rendered as a clear, self-explanatory badge.
+ */
 @Composable
-fun TrendTag(percent: Double?) {
+fun TrendTag(percent: Double?, large: Boolean = false) {
     val colors = FarmerTheme.colors
     val value = percent ?: 0.0
     if (value == 0.0) return
     val up = value > 0
-    val arrow = if (up) "▲" else "▼"
-    // One decimal keeps small moves (e.g. 0.4%) visible instead of "▲ 0%".
-    val text = "$arrow ${"%.1f".format(abs(value))}%"
-    Text(
-        text = text,
-        color = if (up) colors.primary else TrendRed,
-        style = MaterialTheme.typography.labelMedium.copy(
-            fontSize = 11.5.sp,
-            fontWeight = FontWeight.Bold
-        ),
+    // One decimal keeps small moves (e.g. 0.4%) visible instead of a bare 0%.
+    val tint = if (up) colors.primary else colors.alertRed
+    val container = if (up) colors.softGreen else colors.softRed
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clip(RoundedCornerShape(8.dp))
-            .background(if (up) colors.softGreen else colors.softRed)
-            .padding(horizontal = 8.dp, vertical = 3.dp)
-    )
+            .clip(RoundedCornerShape(if (large) 10.dp else 8.dp))
+            .background(container)
+            .padding(horizontal = if (large) 10.dp else 8.dp, vertical = if (large) 5.dp else 3.dp)
+    ) {
+        Icon(
+            imageVector = if (up) Icons.Filled.ArrowUpward else Icons.Filled.ArrowDownward,
+            contentDescription = if (up) "up" else "down",
+            tint = tint,
+            modifier = Modifier.size(if (large) 16.dp else 13.dp)
+        )
+        Spacer(Modifier.width(if (large) 4.dp else 3.dp))
+        Text(
+            text = "${"%.1f".format(abs(value))}%",
+            color = tint,
+            style = MaterialTheme.typography.labelMedium.copy(
+                fontSize = if (large) 14.sp else 11.5.sp,
+                fontWeight = FontWeight.Bold
+            ),
+            maxLines = 1
+        )
+    }
 }
 
 /** Colored label chip on matching soft background — matches `.alert-chip`. */
@@ -438,6 +528,8 @@ fun AlertChip(
         color = color,
         style = MaterialTheme.typography.labelSmall,
         fontWeight = FontWeight.Bold,
+        maxLines = 1,
+        overflow = TextOverflow.Ellipsis,
         modifier = Modifier
             .clip(RoundedCornerShape(8.dp))
             .background(container)
@@ -562,7 +654,9 @@ fun WeatherChipStat(icon: ImageVector, label: String, value: String) {
             text = "$label $value",
             color = Color.White,
             style = MaterialTheme.typography.labelSmall,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
     }
 }
@@ -586,7 +680,7 @@ fun DayPill(
     val fgSub = if (selected) colors.onPrimary.copy(alpha = 0.85f) else colors.textSecondary
     Column(
         modifier = Modifier
-            .width(62.dp)
+            .widthIn(min = 56.dp, max = 80.dp)
             .clip(RoundedCornerShape(20.dp))
             .background(bg)
             .border(
@@ -603,7 +697,9 @@ fun DayPill(
             text = day,
             color = fgSub,
             style = MaterialTheme.typography.labelMedium,
-            fontWeight = FontWeight.Bold
+            fontWeight = FontWeight.Bold,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
         )
         Icon(
             weatherIconFor(weatherCode),
@@ -694,7 +790,7 @@ fun ErrorState(message: String, onRetry: () -> Unit, modifier: Modifier = Modifi
         modifier = modifier.fillMaxWidth().padding(vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Icon(Icons.Default.Refresh, contentDescription = null, tint = TrendRed, modifier = Modifier.size(48.dp))
+        Icon(Icons.Default.Refresh, contentDescription = null, tint = colors.alertRed, modifier = Modifier.size(48.dp))
         Spacer(modifier = Modifier.height(10.dp))
         Text(message, color = colors.textSecondary, style = MaterialTheme.typography.bodyMedium)
         Spacer(modifier = Modifier.height(14.dp))
@@ -729,7 +825,7 @@ fun OfflineState(
         Icon(
             Icons.Default.SignalWifiOff,
             contentDescription = null,
-            tint = TrendRed,
+            tint = colors.alertRed,
             modifier = Modifier.size(48.dp)
         )
         Spacer(Modifier.height(10.dp))

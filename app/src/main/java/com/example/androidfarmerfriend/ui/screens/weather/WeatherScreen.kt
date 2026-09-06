@@ -1,8 +1,15 @@
 package com.example.androidfarmerfriend.ui.screens.weather
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -11,6 +18,8 @@ import androidx.compose.material.icons.filled.Air
 import androidx.compose.material.icons.filled.Explore
 import androidx.compose.material.icons.filled.Opacity
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.filled.WbSunny
+import androidx.compose.material.icons.filled.WbTwilight
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,26 +35,30 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
 import com.example.androidfarmerfriend.data.model.ForecastDay
+import com.example.androidfarmerfriend.data.model.HourlyForecast
 import com.example.androidfarmerfriend.data.model.WeatherInfo
 import com.example.androidfarmerfriend.data.util.UiState
 import com.example.androidfarmerfriend.ui.components.CompactWeatherCard
 import com.example.androidfarmerfriend.ui.components.DayPill
-import com.example.androidfarmerfriend.ui.components.EmptyState
 import com.example.androidfarmerfriend.ui.components.ErrorState
 import com.example.androidfarmerfriend.ui.components.FarmTipCard
+import com.example.androidfarmerfriend.ui.components.WeatherFarmTips
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.components.LocationPickerSheet
 import com.example.androidfarmerfriend.ui.components.LocPill
 import com.example.androidfarmerfriend.ui.components.SectionHeaderCompat
-import com.example.androidfarmerfriend.ui.components.ShimmerList
+import com.example.androidfarmerfriend.ui.components.ShimmerBlockList
 import com.example.androidfarmerfriend.ui.components.TintIconCircle
 import com.example.androidfarmerfriend.ui.components.weatherIconFor
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerMotion
 import com.example.androidfarmerfriend.ui.theme.FarmerSpacing
 import com.example.androidfarmerfriend.ui.theme.FarmerTheme
 
 @Composable
-fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
+fun WeatherScreen(
+    viewModel: WeatherViewModel = viewModel()
+) {
     val state by viewModel.state.collectAsStateWithLifecycle()
 
     val strings = LocalAppStrings.current
@@ -89,9 +102,12 @@ fun WeatherScreen(viewModel: WeatherViewModel = viewModel()) {
                 onClick = { showLocationPicker = true }
             )
 
+        // Plain when() — no CrossfadeUiState here. AnimatedContent inside
+        // a verticalScroll Column causes vertical overlap of outgoing/incoming
+        // content, stacking the weather card behind stat rows and farm tip.
         when (val weatherState = state.weatherState) {
-            is UiState.Loading -> ShimmerList(
-                rowCount = 1, rowHeight = 140.dp,
+            is UiState.Loading -> ShimmerBlockList(
+                blockHeight = 140.dp,
                 modifier = Modifier.padding(top = FarmerSpacing.md)
             )
             is UiState.Error -> ErrorState(
@@ -117,6 +133,40 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
         modifier = Modifier.padding(top = FarmerSpacing.md)
     )
 
+    // Hourly strip — next few hours so farmers plan spraying / irrigation.
+    if (weather.hourly.isNotEmpty()) {
+        Spacer(Modifier.height(FarmerSpacing.lg))
+        SectionHeaderCompat(title = strings.hourlyForecastLabel)
+        HourlyForecastStrip(hourly = weather.hourly)
+    }
+
+    // Sunrise / sunset — golden-hour windows for spraying.
+    if (weather.sunrise.isNotBlank() || weather.sunset.isNotBlank()) {
+        Spacer(Modifier.height(FarmerSpacing.lg))
+        Row(horizontalArrangement = Arrangement.spacedBy(FarmerSpacing.s)) {
+            if (weather.sunrise.isNotBlank()) {
+                SunTimeTile(
+                    icon = Icons.Default.WbSunny,
+                    label = strings.sunriseLabel,
+                    time = weather.sunrise,
+                    iconTint = FarmerTheme.colors.diseaseOrange,
+                    iconContainer = FarmerTheme.colors.softOrange,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            if (weather.sunset.isNotBlank()) {
+                SunTimeTile(
+                    icon = Icons.Default.WbTwilight,
+                    label = strings.sunsetLabel,
+                    time = weather.sunset,
+                    iconTint = FarmerTheme.colors.alertPurple,
+                    iconContainer = FarmerTheme.colors.softLavender,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        }
+    }
+
     if (weather.forecast.isNotEmpty()) {
         SectionHeaderCompat(title = strings.nextDaysLabel)
         Row(
@@ -136,9 +186,29 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
             }
         }
 
-        // The selected pill drives a detail card so the selection has an effect.
+        // The selected pill drives a detail card so the selection has an effect;
+        // a crossfade makes the swap feel settled instead of instant.
         val detail = weather.forecast[selectedDay.coerceIn(weather.forecast.indices)]
-        SelectedDayDetailCard(day = detail, strings = strings)
+        AnimatedContent(
+            targetState = detail,
+            transitionSpec = {
+                (fadeIn(
+                    animationSpec = tween(
+                        FarmerMotion.durationNormal,
+                        easing = FarmerMotion.standardDecelerate
+                    )
+                ) togetherWith
+                    fadeOut(
+                        animationSpec = tween(
+                            FarmerMotion.durationNormal,
+                            easing = FarmerMotion.standardDecelerate
+                        )
+                    ))
+            },
+            label = "dayDetailCrossfade"
+        ) { day ->
+            SelectedDayDetailCard(day = day, strings = strings)
+        }
 
         SectionHeaderCompat(title = strings.rangeTitle)
         ForecastRangeList(forecast = weather.forecast)
@@ -194,7 +264,8 @@ fun WeatherDetailedView(weather: WeatherInfo, strings: AppStrings = AppStrings.E
 
     Spacer(Modifier.height(14.dp))
 
-    FarmTipCard(title = strings.farmTipTitle, body = strings.farmTipGeneric)
+    val farmTipBody = WeatherFarmTips.tipFor(weather) ?: strings.farmTipGeneric
+    FarmTipCard(title = strings.farmTipTitle, body = farmTipBody)
 }
 
 /** Detail card for whichever forecast day-pill is selected. */
@@ -234,7 +305,9 @@ private fun SelectedDayDetailCard(day: ForecastDay, strings: AppStrings) {
                     text = day.day,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.Bold,
-                    color = colors.textPrimary
+                    color = colors.textPrimary,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
             }
             Column(horizontalAlignment = Alignment.End) {
@@ -278,7 +351,9 @@ private fun ForecastRangeList(forecast: List<ForecastDay>) {
                     style = MaterialTheme.typography.labelMedium,
                     fontWeight = FontWeight.Bold,
                     color = FarmerTheme.colors.textSecondary,
-                    modifier = Modifier.width(64.dp)
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.widthIn(min = 48.dp, max = 72.dp)
                 )
                 Icon(
                     weatherIconFor(day.weatherCode),
@@ -360,19 +435,124 @@ private fun WeatherStatTile(
     ) {
         TintIconCircle(icon = icon, tint = iconTint, container = iconContainer, size = 34.dp, cornerRadius = 11.dp)
         Spacer(Modifier.width(10.dp))
-        Column {
+        // weight(1f) lets both tiles in the row share width evenly; every text is
+        // constrained + ellipsized so a long localized value/label never overflows
+        // the tile or pushes its neighbour.
+        Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = value,
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Bold,
                 color = colors.textPrimary,
-                maxLines = 1
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
             Text(
                 text = label,
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.textSecondary,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+        }
+    }
+}
+
+/** Horizontal strip of hourly forecast tiles (next ~8 hours). */
+@Composable
+private fun HourlyForecastStrip(hourly: List<HourlyForecast>) {
+    LazyRow(
+        horizontalArrangement = Arrangement.spacedBy(FarmerSpacing.s),
+        contentPadding = PaddingValues(horizontal = FarmerSpacing.xs)
+    ) {
+        items(hourly, key = { it.hourLabel }) { hour ->
+            HourlyTile(hour)
+        }
+    }
+}
+
+@Composable
+private fun HourlyTile(hour: HourlyForecast) {
+    val colors = FarmerTheme.colors
+    Column(
+        modifier = Modifier
+            .width(62.dp)
+            .background(colors.surface, RoundedCornerShape(16.dp))
+            .padding(vertical = FarmerSpacing.s, horizontal = FarmerSpacing.xs),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(FarmerSpacing.xs)
+    ) {
+        Text(
+            text = hour.hourLabel,
+            style = MaterialTheme.typography.labelSmall,
+            color = colors.textSecondary,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+        )
+        Icon(
+            weatherIconFor(hour.weatherCode),
+            contentDescription = null,
+            tint = colors.textPrimary,
+            modifier = Modifier.size(20.dp)
+        )
+        Text(
+            text = hour.temp,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Bold,
+            color = colors.textPrimary,
+            maxLines = 1
+        )
+        if (hour.rainChance != null && hour.rainChance > 0) {
+            Text(
+                text = "${hour.rainChance}%",
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.weatherBlue,
                 maxLines = 1
+            )
+        }
+    }
+}
+
+/** Sunrise or sunset tile — sits in a pair inside a Row. */
+@Composable
+private fun SunTimeTile(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    label: String,
+    time: String,
+    iconTint: Color,
+    iconContainer: Color,
+    modifier: Modifier = Modifier
+) {
+    val colors = FarmerTheme.colors
+    Row(
+        modifier = modifier
+            .background(colors.surface, RoundedCornerShape(18.dp))
+            .padding(horizontal = 14.dp, vertical = 12.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        TintIconCircle(
+            icon = icon,
+            tint = iconTint,
+            container = iconContainer,
+            size = 36.dp,
+            cornerRadius = 12.dp
+        )
+        Spacer(Modifier.width(FarmerSpacing.s))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = time,
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold,
+                color = colors.textPrimary,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+            )
+            Text(
+                text = label,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.textSecondary,
+                maxLines = 1,
+                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
             )
         }
     }

@@ -6,6 +6,8 @@ import android.util.Log
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.androidfarmerfriend.data.api.ApiClient
+import com.example.androidfarmerfriend.data.api.NetworkErrors
+import com.example.androidfarmerfriend.data.location.LocationPrefs
 import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.tasks.await
 import java.text.SimpleDateFormat
@@ -35,12 +37,19 @@ class PriceAlertWorker(
 
             Log.d(TAG, "Fetching market prices for daily alert")
 
+            // Read user's saved location instead of hardcoding koyambedu.
+            val locationPrefs = LocationPrefs(applicationContext)
+            val userLocation = locationPrefs.selectedLocation
+            val marketSlug = resolveMarketSlug(userLocation.name)
+            val marketDisplayName = userLocation.marketName
+            Log.d(TAG, "Using market: $marketSlug (from location: ${userLocation.name})")
+
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
             val messages = mutableListOf<String>()
 
             // Fetch vegetable prices
             try {
-                val vegResponse = ApiClient.vegetableMarketApi.getVegetablePrices("koyambedu", dateStr)
+                val vegResponse = ApiClient.vegetableMarketApi.getVegetablePrices(marketSlug, dateStr)
                 val vegData = vegResponse.data
                 if (!vegData.isNullOrEmpty()) {
                     val topVeg = vegData.take(5)
@@ -48,17 +57,17 @@ class PriceAlertWorker(
                         val name = item.vegetablename ?: item.columnNameEng ?: "Unknown"
                         val price = item.price ?: 0
                         val unit = item.units ?: "kg"
-                        "• $name — ₹${"%.0f".format(price)}/$unit"
+                        "  - $name: Rs.${"%.0f".format(price)}/$unit"
                     }
-                    messages.add("🥬 Top Vegetable Prices (Koyambedu):\n$summary")
+                    messages.add("Top Vegetable Prices ($marketDisplayName):\n$summary")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch vegetable prices", e)
+                NetworkErrors.record("PriceAlertWorker.veg", e)
             }
 
             // Fetch fruit prices
             try {
-                val fruitResponse = ApiClient.vegetableMarketApi.getFruitPrices("koyambedu", dateStr)
+                val fruitResponse = ApiClient.vegetableMarketApi.getFruitPrices(marketSlug, dateStr)
                 val fruitData = fruitResponse.data
                 if (!fruitData.isNullOrEmpty()) {
                     val topFruit = fruitData.take(3)
@@ -66,12 +75,12 @@ class PriceAlertWorker(
                         val name = item.fruitname ?: item.columnNameEng ?: "Unknown"
                         val price = item.price ?: 0
                         val unit = item.units ?: "kg"
-                        "• $name — ₹${"%.0f".format(price)}/$unit"
+                        "  - $name: Rs.${"%.0f".format(price)}/$unit"
                     }
-                    messages.add("🍎 Top Fruit Prices (Koyambedu):\n$summary")
+                    messages.add("Top Fruit Prices ($marketDisplayName):\n$summary")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch fruit prices", e)
+                NetworkErrors.record("PriceAlertWorker.fruit", e)
             }
 
             // Fetch egg prices
@@ -84,10 +93,10 @@ class PriceAlertWorker(
                 if (eggData != null) {
                     val price = eggData.price ?: 0
                     val city = eggData.city ?: "Chennai"
-                    messages.add("🥚 Egg Rate ($city): ₹${"%.2f".format(price)}/piece")
+                    messages.add("Egg Rate ($city): Rs.${"%.2f".format(price)}/piece")
                 }
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to fetch egg prices", e)
+                NetworkErrors.record("PriceAlertWorker.egg", e)
             }
 
             if (messages.isEmpty()) {
@@ -95,7 +104,7 @@ class PriceAlertWorker(
                 return Result.success()
             }
 
-            val title = "📊 Daily Market Prices"
+            val title = "Daily Market Prices"
             val body = buildString {
                 append("Today's market update:\n\n")
                 append(messages.joinToString("\n\n"))
@@ -108,7 +117,7 @@ class PriceAlertWorker(
                 "message" to body,
                 "type" to "PRICE",
                 "timestamp" to System.currentTimeMillis(),
-                "location" to "Koyambedu",
+                "location" to marketDisplayName,
                 "isRead" to false,
                 "actionRoute" to "market",
                 "time" to "Just now",
@@ -126,7 +135,7 @@ class PriceAlertWorker(
                 context = applicationContext,
                 channelId = NotificationHelper.CHANNEL_PRICES,
                 title = title,
-                message = "Market prices updated — tap to view details",
+                message = "Market prices updated - tap to view details",
                 notificationId = DAILY_MARKET_NOTIFICATION_ID
             )
 
@@ -136,7 +145,7 @@ class PriceAlertWorker(
 
             Result.success()
         } catch (e: Exception) {
-            Log.e(TAG, "Price alert failed", e)
+            NetworkErrors.record("PriceAlertWorker.overall", e)
             Result.retry()
         }
     }
@@ -147,5 +156,19 @@ class PriceAlertWorker(
         private const val LAST_RUN_KEY = "last_run_date"
         const val WORK_NAME = "price_alerts"
         const val DAILY_MARKET_NOTIFICATION_ID = 7001
+
+        /**
+         * Maps a user location name (e.g. "Chennai, Tamil Nadu") to the
+         * closest matching market API slug. Falls back to "koyambedu"
+         * (major market with veg + fruit support) when no match is found.
+         */
+        fun resolveMarketSlug(locationName: String): String {
+            val city = locationName.substringBefore(",").trim().lowercase()
+            return when {
+                "chennai" in city -> "chennai"
+                "bangalore" in city || "bengaluru" in city -> "bangalore"
+                else -> "koyambedu"
+            }
+        }
     }
 }

@@ -15,8 +15,8 @@ android {
         applicationId = "com.playboldstudio.farmerfriend"
         minSdk = 24
         targetSdk = 37
-        versionCode = 8
-        versionName = "1.6.0"
+        versionCode = 9
+        versionName = "1.7.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
@@ -84,6 +84,7 @@ dependencies {
     implementation(libs.androidx.fragment.ktx)
     implementation(libs.coil.compose)
     implementation(libs.play.app.update.ktx)
+    implementation(libs.play.billing.ktx)
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services)
     implementation(libs.google.id)

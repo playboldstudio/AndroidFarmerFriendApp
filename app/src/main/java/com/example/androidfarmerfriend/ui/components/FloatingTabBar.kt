@@ -20,6 +20,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.example.androidfarmerfriend.data.localization.AppStrings
@@ -48,6 +50,7 @@ fun FloatingTabBar(
     onTabSelected: (BottomNavItem) -> Unit
 ) {
     val colors = FarmerTheme.colors
+    val haptics = LocalHapticFeedback.current
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -74,7 +77,10 @@ fun FloatingTabBar(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         modifier = Modifier
                             .clip(RoundedCornerShape(16.dp))
-                            .clickable { onTabSelected(item) }
+                            .clickable {
+                                if (!selected) haptics.performHapticFeedback(HapticFeedbackType.TextHandleMove)
+                                onTabSelected(item)
+                            }
                             .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
                         Box(
@@ -96,7 +102,8 @@ fun FloatingTabBar(
                             style = MaterialTheme.typography.labelSmall,
                             fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
                             color = if (selected) colors.primary else colors.textTertiary,
-                            maxLines = 1
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                         )
                     }
                 }

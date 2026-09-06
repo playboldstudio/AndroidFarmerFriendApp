@@ -2,12 +2,20 @@ package com.example.androidfarmerfriend.ui.screens
 
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
@@ -37,6 +45,7 @@ import com.example.androidfarmerfriend.ui.screens.language.LanguageScreen
 import com.example.androidfarmerfriend.ui.screens.privacy.PrivacyPolicyScreen
 import com.example.androidfarmerfriend.ui.screens.privacy.TermsOfUseScreen
 import com.example.androidfarmerfriend.ui.theme.AndroidFarmerFriendTheme
+import com.example.androidfarmerfriend.ui.theme.FarmerMotion
 
 /** Routes where the floating tab bar is visible; sub-screens hide it. */
 private val TOP_LEVEL_ROUTES = setOf(
@@ -46,6 +55,39 @@ private val TOP_LEVEL_ROUTES = setOf(
     Screen.Alerts.route,
     Screen.Profile.route
 )
+
+/**
+ * Screen transition spec. Push: new screen slides in from the start edge (a
+ * quarter of its width) while the old fades out; pop reverses it. Durations and
+ * easing come from the design system so every screen moves in the same voice.
+ * Slide transitions animate an IntOffset, fades animate a Float — they need
+ * matching spec types, so each has its own tween.
+ */
+private val navForwardSlide = tween<IntOffset>(FarmerMotion.durationSlow, easing = FarmerMotion.emphasizedDecelerate)
+private val navForwardFade = tween<Float>(FarmerMotion.durationSlow, easing = FarmerMotion.emphasizedDecelerate)
+private val navForwardExitSlide = tween<IntOffset>(FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate)
+private val navForwardExitFade = tween<Float>(FarmerMotion.durationNormal, easing = FarmerMotion.standardDecelerate)
+private val navBackSlide = tween<IntOffset>(FarmerMotion.durationSlow, easing = FarmerMotion.emphasizedAccelerate)
+private val navBackFade = tween<Float>(FarmerMotion.durationSlow, easing = FarmerMotion.emphasizedAccelerate)
+private val navBackExitSlide = tween<IntOffset>(FarmerMotion.durationNormal, easing = FarmerMotion.standardAccelerate)
+private val navBackExitFade = tween<Float>(FarmerMotion.durationNormal, easing = FarmerMotion.standardAccelerate)
+
+private val screenNavEnter = slideInHorizontally(
+    initialOffsetX = { it / 4 },
+    animationSpec = navForwardSlide
+) + fadeIn(navForwardFade)
+private val screenNavExit = slideOutHorizontally(
+    targetOffsetX = { -it / 8 },
+    animationSpec = navForwardExitSlide
+) + fadeOut(navForwardExitFade)
+private val screenNavPopEnter = slideInHorizontally(
+    initialOffsetX = { -it / 8 },
+    animationSpec = navBackSlide
+) + fadeIn(navBackFade)
+private val screenNavPopExit = slideOutHorizontally(
+    targetOffsetX = { it / 4 },
+    animationSpec = navBackExitSlide
+) + fadeOut(navBackExitFade)
 
 @Composable
 fun MainScreen(onRestart: () -> Unit = {}) {
@@ -118,13 +160,24 @@ fun MainScreen(onRestart: () -> Unit = {}) {
             }
         }
         ) { innerPadding ->
+        SharedTransitionLayout {
+        // The enclosing SharedTransitionScope coordinates shared-element keys
+        // across destinations; thread it to Home/Weather so their weather card
+        // can be marked as a shared element.
+        val sharedScope = this
         NavHost(
             navController = navController,
             startDestination = Screen.Home.route,
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier.padding(innerPadding),
+            enterTransition = { screenNavEnter },
+            exitTransition = { screenNavExit },
+            popEnterTransition = { screenNavPopEnter },
+            popExitTransition = { screenNavPopExit }
         ) {
             composable(Screen.Home.route) {
                 HomeScreen(
+                    sharedTransitionScope = sharedScope,
+                    animatedVisibilityScope = this,
                     onNavigate = { route ->
                         navController.navigate(route) {
                             popUpTo(navController.graph.findStartDestination().id) {
@@ -137,7 +190,9 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                 )
             }
             composable(Screen.Market.route) { MarketScreen() }
-            composable(Screen.Weather.route) { WeatherScreen() }
+            composable(Screen.Weather.route) {
+                WeatherScreen()
+            }
             composable(Screen.Alerts.route) {
                 AlertsScreen(
                     onNavigateToAlert = { route -> navController.navigate(route) }
@@ -152,7 +207,8 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                             "terms_of_use" -> navController.navigate(Screen.TermsOfUse.route)
                             else -> {}
                         }
-                    }
+                    },
+                    onRestart = onRestart
                 )
             }
             composable(Screen.Disease.route) {
@@ -194,6 +250,7 @@ fun MainScreen(onRestart: () -> Unit = {}) {
                     onDismissed = { navController.popBackStack() }
                 )
             }
+        }
         }
     }
     }

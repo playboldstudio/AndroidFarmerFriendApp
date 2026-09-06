@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PrivacyTip
+import androidx.compose.material.icons.filled.Palette
 import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Share
 import androidx.compose.material.icons.filled.Sync
@@ -51,6 +52,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -75,6 +79,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.androidfarmerfriend.BuildConfig
 import com.example.androidfarmerfriend.data.localization.AppStrings
 import com.example.androidfarmerfriend.data.localization.LocalAppStrings
+import com.example.androidfarmerfriend.data.util.UserPrefs
 import com.example.androidfarmerfriend.ui.auth.AuthBridge
 import com.example.androidfarmerfriend.ui.components.HeroTitle
 import com.example.androidfarmerfriend.ui.screens.auth.AuthMode
@@ -90,6 +95,7 @@ private const val NAME_MAX_LENGTH = 30
 @Composable
 fun ProfileScreen(
     onNavigate: (String) -> Unit = {},
+    onRestart: () -> Unit = {},
     viewModel: ProfileViewModel = viewModel()
 ) {
     val strings = LocalAppStrings.current
@@ -197,6 +203,15 @@ fun ProfileScreen(
                             onClick = { viewModel.onEvent(ProfileEvent.NavigateToNotifications) }
                         )
                     }
+
+                    ThemeSection(
+                        strings = strings,
+                        themeMode = state.themeMode,
+                        onSelectThemeMode = { mode ->
+                            viewModel.onEvent(ProfileEvent.SelectThemeMode(mode))
+                            onRestart()
+                        }
+                    )
                 } else {
                     GuestHero(strings = strings)
 
@@ -633,6 +648,78 @@ private fun EditPillButton(onClick: () -> Unit, label: String) {
 }
 
 /* ------------------------------ Menus ---------------------------- */
+
+/**
+ * Appearance section: a System / Light / Dark theme choice (works on every
+ * API level). Selecting an option persists the choice and recreates the
+ * activity so the theme reapplies across every screen.
+ */
+@Composable
+private fun ThemeSection(
+    strings: AppStrings,
+    themeMode: String,
+    onSelectThemeMode: (String) -> Unit
+) {
+    val colors = FarmerTheme.colors
+    MenuSection(title = strings.appearanceSection) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 14.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            TintedIconTile(
+                icon = Icons.Default.Palette,
+                tint = colors.alertPurple,
+                container = colors.softPurple
+            )
+            Spacer(Modifier.width(FarmerSpacing.md))
+            Text(
+                text = strings.themeLabel,
+                style = MaterialTheme.typography.labelLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = colors.textPrimary,
+                modifier = Modifier.weight(1f)
+            )
+        }
+        // SegmentedButton for the exclusive 3-option theme choice (M3 §5.7).
+        // M3 draws the check on the selected segment (non-color cue, R6.8) —
+        // do not add a second icon manually or the selection shows two checks.
+        SingleChoiceSegmentedButtonRow(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 14.dp)
+        ) {
+            val options = listOf(
+                strings.themeSystem to UserPrefs.THEME_SYSTEM,
+                strings.themeLight to UserPrefs.THEME_LIGHT,
+                strings.themeDark to UserPrefs.THEME_DARK
+            )
+            options.forEachIndexed { index, (label, key) ->
+                SegmentedButton(
+                    selected = themeMode == key,
+                    onClick = { onSelectThemeMode(key) },
+                    shape = SegmentedButtonDefaults.itemShape(
+                        index = index,
+                        count = options.size
+                    ),
+                    icon = {
+                        // Built-in check on the active segment only.
+                        SegmentedButtonDefaults.Icon(active = themeMode == key)
+                    },
+                    label = {
+                        Text(
+                            text = label,
+                            style = MaterialTheme.typography.labelMedium,
+                            maxLines = 1,
+                            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
+                        )
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 private fun MenuSection(

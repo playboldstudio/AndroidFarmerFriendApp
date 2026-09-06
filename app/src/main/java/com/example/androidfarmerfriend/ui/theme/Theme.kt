@@ -11,6 +11,19 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
+import com.example.androidfarmerfriend.data.util.UserPrefs
+
+/** The user's theme preference: follow the system, or force light/dark. */
+enum class ThemeMode(val key: String) {
+    SYSTEM(UserPrefs.THEME_SYSTEM),
+    LIGHT(UserPrefs.THEME_LIGHT),
+    DARK(UserPrefs.THEME_DARK);
+
+    companion object {
+        fun fromKey(key: String?): ThemeMode =
+            entries.firstOrNull { it.key == key } ?: SYSTEM
+    }
+}
 
 // Design-system tokens made available via CompositionLocal.
 val LocalFarmerColors = staticCompositionLocalOf { LightFarmerColors }
@@ -33,12 +46,18 @@ private val FarmerShapes = Shapes(
 
 @Composable
 fun AndroidFarmerFriendTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    themeMode: ThemeMode = ThemeMode.SYSTEM,
     content: @Composable () -> Unit
 ) {
+    val darkTheme = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
     val farmerColors = if (darkTheme) DarkFarmerColors else LightFarmerColors
-    val colorScheme = if (darkTheme) {
-        darkColorScheme(
+
+    val colorScheme = when {
+        darkTheme -> darkColorScheme(
             primary = farmerColors.primary,
             onPrimary = farmerColors.onPrimary,
             primaryContainer = farmerColors.softGreen,
@@ -62,8 +81,7 @@ fun AndroidFarmerFriendTheme(
             error = farmerColors.alertRed,
             onError = OnAccentWhite
         )
-    } else {
-        lightColorScheme(
+        else -> lightColorScheme(
             primary = farmerColors.primary,
             onPrimary = farmerColors.onPrimary,
             primaryContainer = farmerColors.softGreen,
@@ -89,7 +107,9 @@ fun AndroidFarmerFriendTheme(
         )
     }
 
-    CompositionLocalProvider(LocalFarmerColors provides farmerColors) {
+    CompositionLocalProvider(
+        LocalFarmerColors provides farmerColors
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = Typography,
